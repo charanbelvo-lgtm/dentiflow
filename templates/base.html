@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DentiFlow{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('favicon') }}" type="image/svg+xml">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+</head>
+<body>
+    <div id="toast-container"></div>
+    {% if current_user.is_authenticated %}
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="app-sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-tooth text-primary"></i> DentiFlow
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                {% if current_user.role == 'patient' %}
+                <a href="{{ url_for('dashboard.index') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="{{ url_for('appointments.index') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+                {% if patient_record_id %}<a href="{{ url_for('patients.detail', patient_id=patient_record_id) }}" class="nav-item"><i class="fa-solid fa-folder-open"></i> My Records</a>{% endif %}
+                <a href="{{ url_for('treatment_plans.index') }}" class="nav-item"><i class="fa-solid fa-clipboard-list"></i> Treatment Plan</a>
+                <a href="{{ url_for('billing.index') }}" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Bills</a>
+                {% else %}
+                <a href="/dashboard" class="nav-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="/queue" class="nav-item"><i class="fa-solid fa-users-viewfinder"></i> Queue</a>
+                <a href="/appointments" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+                <a href="/patients" class="nav-item"><i class="fa-solid fa-hospital-user"></i> Patients</a>
+                <a href="/clinical" class="nav-item"><i class="fa-solid fa-tooth"></i> Clinical</a>
+                <a href="{{ url_for('treatment_plans.index') }}" class="nav-item"><i class="fa-solid fa-clipboard-list"></i> Treatment Plans</a>
+                <a href="/billing" class="nav-item"><i class="fa-solid fa-file-invoice-dollar"></i> Billing</a>
+                <a href="/inventory" class="nav-item"><i class="fa-solid fa-boxes-stacked"></i> Inventory</a>
+                <a href="/staff" class="nav-item"><i class="fa-solid fa-user-doctor"></i> Staff</a>
+                <a href="/reports" class="nav-item"><i class="fa-solid fa-chart-pie"></i> Reports</a>
+                <a href="/operations" class="nav-item"><i class="fa-solid fa-cogs"></i> Operations</a>
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/settings" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+                <a href="/logout" class="nav-item text-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="app-main">
+            <header class="app-topbar">
+                <button id="sidebar-toggle" class="btn btn-icon"><i class="fa-solid fa-bars"></i></button>
+                <div class="topbar-search" id="topbar-search-trigger">
+                    <i class="fa-solid fa-search"></i>
+                    <span>Search (Ctrl+K)</span>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-profile">
+                        <div class="avatar">{{ current_user.name[0] }}</div>
+                        {% if current_user.doctor_profile %}<a class="user-name" href="{{ url_for('staff.doctor_profile', doctor_id=current_user.doctor_profile.id) }}">{{ current_user.name }}</a>{% else %}<span class="user-name">{{ current_user.name }}</span>{% endif %}
+                    </div>
+                </div>
+            </header>
+            <div class="app-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <!-- Global Search Modal -->
+    <div id="global-search-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content search-modal" style="margin-top: 50px;">
+            <div class="search-input-wrapper">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="global-search-input" placeholder="Search patients, appointments, invoices...">
+            </div>
+            <div id="global-search-results" class="search-results mt-3"></div>
+        </div>
+    </div>
+    {% else %}
+        {% block public_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

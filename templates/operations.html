@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Operations - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Operations</h1>
+</div>
+<div class="page-body" id="app-root">
+    <!-- Frontend JS will mount here or we render basic UI -->
+    <div class="card p-4 text-center">
+        <i class="fa-solid fa-gears fa-3x text-primary mb-3"></i>
+        <h3>Clinic operations</h3>
+        <p class="text-muted">Lab orders and equipment will appear here.</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/operations.js') }}"></script>
+{% endblock %}

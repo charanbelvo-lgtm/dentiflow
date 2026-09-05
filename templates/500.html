@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Service error - DentiFlow{% endblock %}
+{% block public_content %}
+<main class="public-page text-center" style="padding:12vh 24px;">
+	<div class="display-1 text-danger mb-3"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i></div>
+	<h1>Something went wrong behind the scenes.</h1>
+	<p class="text-muted mb-4">No records were changed. Please try again.</p>
+	<button class="btn btn-df-primary me-2" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+	<a class="btn btn-df-secondary" href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.login') }}">Dashboard</a>
+</main>
+{% endblock %}

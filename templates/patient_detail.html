@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Patient Detail - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><span class="text-muted small">Clinical record</span><h1 class="page-title">{{ patient.name }}</h1><span class="badge bg-light text-primary border">{{ patient.patient_id }}</span></div>
+</div>
+<div class="page-body" id="app-root">
+    <div class="df-card p-4 mb-4"><div class="d-flex flex-wrap align-items-center gap-3"><div class="avatar" style="width:64px;height:64px;font-size:24px;">{{ patient.name[0] }}</div><div><h2 class="h4 mb-1">{{ patient.name }}</h2><div class="text-muted">{{ patient.age }} years · {{ patient.gender }} · {{ patient.phone }}</div><div class="text-muted small">{{ patient.email or 'No email registered' }}</div></div><div class="ms-auto text-end"><div class="text-muted small">Outstanding balance</div><strong class="fs-4 text-danger">{{ patient.outstanding_balance|currency_round }}</strong></div></div></div>
+    <div id="medical-alert-banner" class="df-card p-3 mb-4 border-danger" {% if not patient.medical_alerts %}style="display:none"{% endif %}><strong class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Medical alert</strong>{% for alert in patient.medical_alerts %}<div>{{ alert.alert_text }}</div>{% endfor %}</div>
+    <div class="row g-4"><div class="col-lg-7"><div class="df-card p-4"><h2 class="h5">Clinical timeline</h2><div id="patient-timeline-list"><div class="text-muted">Loading clinical history...</div></div></div></div><div class="col-lg-5"><div class="df-card p-4"><h2 class="h5">Dental chart</h2><div id="patient-dental-chart-container"><div class="text-muted">Loading dental chart...</div></div></div></div><div class="col-12"><div class="df-card p-4"><h2 class="h5">Appointments</h2><div id="patient-appointments-list"><div class="text-muted">Loading appointments...</div></div></div></div><div class="col-12"><div class="df-card p-4"><h2 class="h5">Treatment plans</h2><div id="patient-treatment-plans-list"><div class="text-muted">Loading treatment plans...</div></div></div></div></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dental_chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/patient_detail.js') }}"></script>
+{% endblock %}

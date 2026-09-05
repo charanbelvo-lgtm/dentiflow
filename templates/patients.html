@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Patients - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div><span class="text-muted small">Clinical directory</span><h1 class="page-title">Patients</h1></div>
+</div>
+<div class="page-body" id="app-root">
+    <div class="df-card p-3 mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-lg-6"><label class="visually-hidden" for="patient-search-input">Search patients</label><input id="patient-search-input" class="form-control" type="search" placeholder="Search by name, phone, or patient ID"></div>
+            <div class="col-sm-6 col-lg-3"><label class="visually-hidden" for="filter-doctor">Filter by doctor</label><select id="filter-doctor" class="form-select"><option value="">All doctors</option>{% for doctor in doctors %}<option value="{{ doctor.id }}">{{ doctor.name }}</option>{% endfor %}</select></div>
+            <div class="col-sm-6 col-lg-3"><label class="visually-hidden" for="filter-blood">Filter by blood group</label><select id="filter-blood" class="form-select"><option value="">All blood groups</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+        </div>
+    </div>
+    <div class="df-card p-0 overflow-hidden">
+        <div class="p-4 border-bottom d-flex justify-content-between align-items-center"><h2 class="h5 mb-0">Patient roster</h2><span id="patients-total-count" class="badge bg-light text-dark border">{{ patients|length }} patients</span></div>
+        <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Patient</th><th>Age / gender</th><th>Contact</th><th>Last visit</th><th>Next appointment</th><th>Balance</th><th>Doctor</th><th></th></tr></thead><tbody id="patients-table-body">{% for patient in patients %}<tr><td><a class="fw-bold text-dark" href="{{ url_for('patients.detail', patient_id=patient.id) }}">{{ patient.name }}</a><div class="text-muted small">{{ patient.patient_id }}</div></td><td>{{ patient.age }} yrs · {{ patient.gender }}</td><td>{{ patient.phone }}<div class="text-muted small">{{ patient.email or 'No email' }}</div></td><td>{{ patient.last_visit.strftime('%d %b %Y') if patient.last_visit else 'Never' }}</td><td>{{ patient.next_appointment.strftime('%d %b %Y') if patient.next_appointment else 'None scheduled' }}</td><td class="text-danger">{{ patient.outstanding_balance|currency_round }}</td><td>{{ patient.primary_doctor.name if patient.primary_doctor else 'Unassigned' }}</td><td><a class="btn btn-sm btn-df-secondary" href="{{ url_for('patients.detail', patient_id=patient.id) }}">View</a></td></tr>{% else %}<tr><td colspan="8" class="text-center p-5 text-muted">No patients found.</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/patients.js') }}"></script>
+{% endblock %}

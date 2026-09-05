@@ -1,0 +1,128 @@
+/* ==========================================================================
+   DentiFlow - Responsive Design Breakpoints
+   Breakpoints: 1440px, 1280px, 1024px, 768px, 480px, 360px
+   ========================================================================== */
+
+/* Large Desktop (1440px+) */
+@media (min-width: 1440px) {
+  .page-content {
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* Standard Desktop / Laptop (1025px - 1280px) */
+@media (max-width: 1280px) {
+  .global-search-bar {
+    width: 240px;
+  }
+  .kpi-value {
+    font-size: 24px;
+  }
+}
+
+/* Tablet Landscape / Small Desktop (769px - 1024px) */
+@media (max-width: 1024px) {
+  .app-sidebar {
+    width: var(--sidebar-collapsed-width);
+  }
+  .app-sidebar .brand-text,
+  .app-sidebar .nav-section-title,
+  .app-sidebar .nav-item span,
+  .app-sidebar .user-info,
+  .app-sidebar .nav-item .badge-pill {
+    display: none;
+  }
+  .app-sidebar .nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+  .app-sidebar .nav-item i {
+    font-size: 18px;
+  }
+  .app-main {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+  .page-content {
+    padding: 24px;
+  }
+}
+
+/* Tablet Portrait & Mobile (max 768px) */
+@media (max-width: 768px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+  }
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .app-sidebar .brand-text,
+  .app-sidebar .nav-section-title,
+  .app-sidebar .nav-item span,
+  .app-sidebar .user-info,
+  .app-sidebar .nav-item .badge-pill {
+    display: inline-block;
+  }
+  .app-sidebar .nav-item {
+    justify-content: flex-start;
+    padding: 10px 14px;
+  }
+  .app-main {
+    margin-left: 0 !important;
+  }
+  .app-topbar {
+    padding: 0 16px;
+  }
+  .global-search-bar {
+    display: none;
+  }
+  .page-content {
+    padding: 16px;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .df-table-container {
+    overflow-x: auto;
+  }
+  .search-modal-content {
+    width: 90%;
+  }
+  .topbar-right .demo-mode-pill span {
+    display: none;
+  }
+}
+
+/* Mobile Small (max 480px) */
+@media (max-width: 480px) {
+  .kpi-value {
+    font-size: 20px;
+  }
+  .page-title {
+    font-size: 20px;
+  }
+  .df-card {
+    padding: 16px;
+  }
+  .btn-df-primary, .btn-df-secondary {
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+  .topbar-left .branch-select-pill {
+    display: none;
+  }
+}
+
+/* Extra Small (360px) */
+@media (max-width: 360px) {
+  .page-content {
+    padding: 12px;
+  }
+  .kpi-card {
+    padding: 14px;
+  }
+}

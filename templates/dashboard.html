@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <span class="text-muted small">Live care overview</span>
+        <h1 class="page-title">Good morning, {{ current_user.name }} <span aria-hidden="true">👋</span></h1>
+    </div>
+    <span class="live-status"><i class="fa-solid fa-circle"></i> Clinic live</span>
+</div>
+<div class="page-body" id="app-root">
+    <div id="dashboard-error" class="card p-4 mb-4 border-danger" hidden>
+        <div class="d-flex align-items-center gap-3">
+            <i class="fa-solid fa-cloud-exclamation text-danger" aria-hidden="true"></i>
+            <div><strong>Unable to load dashboard data.</strong><div class="text-muted small">Check the connection and try again.</div></div>
+            <button id="dashboard-retry" class="btn btn-df-primary ms-auto" type="button"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+        </div>
+    </div>
+    <section class="dashboard-hero mb-4">
+        <div class="hero-copy"><span class="eyebrow">PATIENT CARE, IN MOTION</span><h2>Every visit, beautifully coordinated.</h2><p>See who has arrived, who is with the doctor, and what needs attention next.</p><div class="hero-metrics"><div><strong id="kpi-appointments">0</strong><span>visits today</span></div><div><strong id="kpi-waiting">0</strong><span>waiting now</span></div><div><strong id="kpi-acceptance">0%</strong><span>plans accepted</span></div></div></div>
+        <div class="clinic-illustration" aria-label="Patient visit in progress"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><i class="fa-solid fa-tooth clinic-tooth"></i><i class="fa-solid fa-user-doctor clinic-doctor"></i><i class="fa-solid fa-user clinic-patient"></i><span class="flow-line line-one"></span><span class="flow-line line-two"></span><div class="visit-chip"><i class="fa-solid fa-circle-check"></i><span>Visit in progress</span></div></div>
+    </section>
+    <div class="row g-4">
+        <div class="col-xl-8"><div class="df-card p-4 h-100"><div class="section-heading"><div><span class="eyebrow">TODAY</span><h2 class="h5 mb-0">Patient journey</h2></div><a href="{{ url_for('appointments.index') }}" class="btn btn-sm btn-df-secondary"><i class="fa-solid fa-calendar-check"></i> Schedule</a></div><div class="care-flow"><div class="care-step active"><span class="step-icon"><i class="fa-solid fa-door-open"></i></span><strong>Arrived</strong><small>Reception check-in</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-stethoscope"></i></span><strong>Consult</strong><small>Doctor examination</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-tooth"></i></span><strong>Treatment</strong><small>Care plan underway</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-house-medical"></i></span><strong>Follow-up</strong><small>Next visit planned</small></div></div><div id="dashboard-timeline-list"><div class="text-muted">Loading visits...</div></div></div></div>
+        <div class="col-xl-4"><div class="df-card p-4 h-100 queue-panel"><div class="section-heading"><div><span class="eyebrow">LIVE QUEUE</span><h2 class="h5 mb-0">Ready for care</h2></div><span class="pulse-label"><i class="fa-solid fa-circle"></i> Live</span></div><div id="dashboard-queue-list"><div class="text-muted">Loading queue...</div></div><a class="btn btn-df-primary w-100 mt-3" href="{{ url_for('queue.index') }}">Open queue <i class="fa-solid fa-arrow-right"></i></a></div></div>
+        <div class="col-12"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">CARE ROOMS</span><h2 class="h5 mb-0">Today’s operatories</h2></div><a href="{{ url_for('staff.index') }}" class="btn btn-sm btn-df-secondary">View team</a></div><div id="dashboard-chairs-grid" class="row g-3"><div class="text-muted">Loading care rooms...</div></div></div></div>
+        <div class="col-lg-6"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">FOLLOW THROUGH</span><h2 class="h5 mb-0">Upcoming follow-ups</h2></div></div><div id="dashboard-followups-list"><div class="text-muted">Loading follow-ups...</div></div></div></div>
+        <div class="col-lg-6"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">NEEDS ATTENTION</span><h2 class="h5 mb-0">Clinic alerts</h2></div></div><div id="dashboard-alerts-container"><div class="text-muted">Loading alerts...</div></div></div></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
