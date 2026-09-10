@@ -1,6 +1,69 @@
 {% extends "base.html" %}
 {% block title %}Patient dashboard - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header"><div><span class="text-muted small">Your care workspace</span><h1 class="page-title">Welcome back, {{ current_user.name }} <span aria-hidden="true">👋</span></h1></div></div>
-<div class="page-body"><div class="df-card p-4 mb-4" style="background:linear-gradient(135deg,#102a43,#2563eb);color:#fff;"><div class="d-flex align-items-center gap-3"><div class="avatar" style="width:64px;height:64px;font-size:24px;background:#14b8a6;">{{ current_user.name[0] }}</div><div><h2 class="h4 text-white mb-1">{{ current_user.name }}</h2><p class="mb-0" style="color:#dbeafe;">Your appointments, records, treatment plan, and bills in one place.</p></div></div></div><div class="row g-3"><div class="col-sm-6 col-xl-3"><div class="df-card p-4 h-100"><span class="text-muted small">Next appointment</span><strong class="d-block mt-2">{{ patient.next_appointment.strftime('%d %b %Y') if patient and patient.next_appointment else 'None scheduled' }}</strong><a class="small d-block mt-3" href="{{ url_for('appointments.index') }}">View appointments <i class="fa-solid fa-arrow-right"></i></a></div></div><div class="col-sm-6 col-xl-3"><div class="df-card p-4 h-100"><span class="text-muted small">Outstanding balance</span><strong class="d-block mt-2 text-danger">{{ patient.outstanding_balance|currency_round if patient else '₹0' }}</strong><a class="small d-block mt-3" href="{{ url_for('billing.index') }}">View bills <i class="fa-solid fa-arrow-right"></i></a></div></div><div class="col-sm-6 col-xl-3"><div class="df-card p-4 h-100"><span class="text-muted small">Last visit</span><strong class="d-block mt-2">{{ patient.last_visit.strftime('%d %b %Y') if patient and patient.last_visit else 'No visits yet' }}</strong><a class="small d-block mt-3" href="{{ url_for('patients.detail', patient_id=patient.id) if patient else url_for('public.booking_page') }}">View records <i class="fa-solid fa-arrow-right"></i></a></div></div><div class="col-sm-6 col-xl-3"><div class="df-card p-4 h-100"><span class="text-muted small">Treatment plan</span><strong class="d-block mt-2">{{ patient.treatment_plans|length if patient else 0 }} active</strong><a class="small d-block mt-3" href="{{ url_for('treatment_plans.index') }}">View plan <i class="fa-solid fa-arrow-right"></i></a></div></div></div></div>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">PATIENT PORTAL</span>
+        <h1>Hello, <span data-user-name>{{ current_user.name }}</span></h1>
+        <p class="muted">Your care journey, in one calm place.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ Request appointment</a>
+</div>
+
+<div class="hero">
+    <div>
+        <span class="eyebrow">NEXT UP</span>
+        <h2>Your next visit is ready.</h2>
+        <p>Root canal treatment review with Dr. Ananya Sharma - Thursday, 29 May at 10:30 AM.</p>
+        <div class="quick-links">
+            <button class="btn" onclick="window.toast('Appointment added to calendar', 'success')">Add to calendar</button>
+            <a class="btn" href="{{ url_for('patients.detail', patient_id=patient.id) if patient else url_for('appointments.index') }}">View my record</a>
+        </div>
+    </div>
+    <div class="hero-art"><span>🦷</span></div>
+</div>
+
+<div class="grid grid-3" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Upcoming visit</h2>
+            <span class="pill green">Confirmed</span>
+        </div>
+        <h3>Root canal - Tooth #16</h3>
+        <p class="muted">29 May 2026 - 10:30 AM<br>DentiFlow Care - Chair 01</p>
+        <button class="btn btn-soft" onclick="window.toast('Reschedule request sent to clinic', 'success')">Request reschedule</button>
+    </div>
+
+    <div class="card">
+        <div class="section-title">
+            <h2>Treatment plan</h2>
+            <span class="pill orange">50% complete</span>
+        </div>
+        <h3>Root canal treatment</h3>
+        <div class="progress" style="margin:12px 0"><span style="width:50%"></span></div>
+        <p class="muted">2 of 4 appointments completed</p>
+        <a href="{{ url_for('treatment_plans.index') }}">Review plan &rarr;</a>
+    </div>
+
+    <div class="card">
+        <div class="section-title">
+            <h2>Balance</h2>
+            <span class="pill">INR</span>
+        </div>
+        <h3>INR 8,550 due</h3>
+        <p class="muted">Invoice INV-2026-1029<br>Due 29 May 2026</p>
+        <a class="btn btn-primary" href="{{ url_for('billing.index') }}">View bill &rarr;</a>
+    </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+    <div class="section-title">
+        <h2>Messages from your care team</h2>
+        <button class="btn btn-soft" onclick="window.toast('Message composer opened', 'success')">Message clinic</button>
+    </div>
+    <div class="notice">
+        <b>Dr. Ananya Sharma - Today</b><br>
+        Please avoid chewing on the upper right side until your next visit. We will complete the second stage of your treatment then.
+    </div>
+</div>
 {% endblock %}

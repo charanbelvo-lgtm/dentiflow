@@ -1,18 +1,84 @@
 {% extends "base.html" %}
 {% block title %}Reports - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Reports</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">PRACTICE INTELLIGENCE</span>
+        <h1>Reports</h1>
+        <p class="muted">A quick read on growth, care quality, and capacity.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Practice intelligence report downloaded', 'success')">Download report</button>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-chart-pie fa-3x text-primary mb-3"></i>
-        <h3>Reports and analytics</h3>
-        <p class="text-muted">Reports will appear here when data is available.</p>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon">INR</div>
+        <strong>INR 4.28L</strong>
+        <small>revenue this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong>128</strong>
+        <small>new patients</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong>76%</strong>
+        <small>chair utilization</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong>4.8/5</strong>
+        <small>patient rating</small>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+
+<div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Revenue trend</h2>
+            <span class="pill green">+12.4%</span>
+        </div>
+        <div class="bar-chart">
+            <div class="bar" style="height:48%"><em>INR 2.1L</em><small>Jan</small></div>
+            <div class="bar" style="height:62%"><em>INR 2.8L</em><small>Feb</small></div>
+            <div class="bar" style="height:56%"><em>INR 2.5L</em><small>Mar</small></div>
+            <div class="bar" style="height:76%"><em>INR 3.5L</em><small>Apr</small></div>
+            <div class="bar" style="height:92%"><em>INR 4.3L</em><small>May</small></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Care mix</h2>
+            <span class="muted">This month</span>
+        </div>
+        <div style="margin:18px 0">
+            <div class="row between">
+                <b>General dentistry</b>
+                <span>42%</span>
+            </div>
+            <div class="progress">
+                <span style="width:42%"></span>
+            </div>
+        </div>
+        <div style="margin:18px 0">
+            <div class="row between">
+                <b>Endodontics</b>
+                <span>31%</span>
+            </div>
+            <div class="progress">
+                <span style="width:31%;background:var(--purple)"></span>
+            </div>
+        </div>
+        <div style="margin:18px 0">
+            <div class="row between">
+                <b>Cosmetic care</b>
+                <span>27%</span>
+            </div>
+            <div class="progress">
+                <span style="width:27%;background:var(--orange)"></span>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

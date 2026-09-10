@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStaff() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        request.auth.token.role == 'doctor' ||
+        request.auth.token.role == 'receptionist'
+      );
+    }
+    
+    function isValidMedia() {
+      return request.resource.size < 25 * 1024 * 1024 // Max 25 MB per radiograph/PDF
+        && (
+          request.resource.contentType.matches('image/.*') ||
+          request.resource.contentType == 'application/pdf' ||
+          request.resource.contentType == 'application/dicom'
+        );
+    }
+
+    // Patient radiographs, CBCT slices, documents, and consent forms
+    match /patients/{patientId}/{allPaths=**} {
+      allow read: if isStaff() || (isAuthenticated() && request.auth.uid == patientId);
+      allow write: if isStaff() && isValidMedia();
+    }
+    
+    // Clinic logos & public assets
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+  }
+}

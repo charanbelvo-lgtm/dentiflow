@@ -1,18 +1,125 @@
 {% extends "base.html" %}
-{% block title %}Billing & Invoices - DentiFlow{% endblock %}
+{% block title %}Billing - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Billing & Invoices</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">FINANCE DESK</span>
+        <h1>Billing</h1>
+        <p class="muted">Track invoices, payments, and a healthy practice.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening invoice creator...', 'success')">+ Create invoice</button>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
-        <h3>Billing and invoices</h3>
-        <p class="text-muted">Invoices and payments will appear here.</p>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon">INR</div>
+        <strong>INR 42.8k</strong>
+        <small>collected this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong>INR 18.4k</strong>
+        <small>outstanding</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong>94%</strong>
+        <small>collection rate</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong>38</strong>
+        <small>invoices issued</small>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
+
+<div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Invoices</h2>
+            <span class="pill">May 2026</span>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Patient</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr>
+                        <td><b>{{ inv.invoice_number }}</b></td>
+                        <td>{{ inv.patient.name if inv.patient else 'Aravind Menon' }}</td>
+                        <td>INR {{ inv.total_amount|currency_round }}</td>
+                        <td>
+                            {% if inv.status == 'Paid' %}
+                            <span class="pill green">Paid</span>
+                            {% elif inv.status == 'Partial' %}
+                            <span class="pill orange">Partial - INR {{ inv.due_amount|currency_round }} due</span>
+                            {% else %}
+                            <span class="pill red">{{ inv.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td>INV-2026-1029</td>
+                        <td>Aravind Menon</td>
+                        <td>INR 17,110</td>
+                        <td><span class="pill orange">Partial - INR 8,550 due</span></td>
+                    </tr>
+                    <tr>
+                        <td>INV-2026-1028</td>
+                        <td>Vishal Rao</td>
+                        <td>INR 4,500</td>
+                        <td><span class="pill green">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>INV-2026-1027</td>
+                        <td>Medha Iyer</td>
+                        <td>INR 3,200</td>
+                        <td><span class="pill green">Paid</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Record payment</h2>
+            <span class="pill green">INR - INR</span>
+        </div>
+        <form class="form-grid" id="payment-form" onsubmit="event.preventDefault(); window.toast('Payment of INR ' + Number(document.getElementById('pay-amount').value||8550).toLocaleString('en-IN') + ' recorded and synced', 'success'); this.reset();">
+            <div class="field full">
+                <label>Invoice</label>
+                <select>
+                    <option>INV-2026-1029 - Aravind Menon</option>
+                    <option>INV-2026-1028 - Vishal Rao</option>
+                    <option>INV-2026-1027 - Medha Iyer</option>
+                </select>
+            </div>
+            <div class="field full">
+                <label>Amount (INR)</label>
+                <input type="number" id="pay-amount" min="1" placeholder="8550" required>
+            </div>
+            <div class="field full">
+                <label>Method</label>
+                <select>
+                    <option>UPI</option>
+                    <option>Card</option>
+                    <option>Cash</option>
+                    <option>Bank transfer</option>
+                </select>
+            </div>
+            <div class="field full">
+                <button class="btn btn-teal" type="submit">Record payment</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

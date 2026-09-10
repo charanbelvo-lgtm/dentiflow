@@ -15,6 +15,13 @@ def create_app(config_class=Config):
     # Init DB
     db.init_app(app)
 
+    # Init Firebase Service (Graceful fallback if unconfigured)
+    try:
+        from firebase_service import init_firebase
+        init_firebase(app)
+    except Exception as e:
+        app.logger.info(f"Firebase init deferred: {e}")
+
     # Init Login Manager
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -80,11 +87,22 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_global_vars():
         patient = Patient.query.filter_by(email=current_user.email).first() if current_user.is_authenticated and current_user.role == 'patient' else None
+        firebase_config = {
+            'apiKey': app.config.get('FIREBASE_API_KEY', ''),
+            'authDomain': app.config.get('FIREBASE_AUTH_DOMAIN', ''),
+            'projectId': app.config.get('FIREBASE_PROJECT_ID', ''),
+            'storageBucket': app.config.get('FIREBASE_STORAGE_BUCKET', ''),
+            'messagingSenderId': app.config.get('FIREBASE_MESSAGING_SENDER_ID', ''),
+            'appId': app.config.get('FIREBASE_APP_ID', ''),
+            'measurementId': app.config.get('FIREBASE_MEASUREMENT_ID', '')
+        }
         return {
             'app_name': 'DentiFlow',
             'app_tagline': 'Smarter Clinics. Happier Patients.',
             'version': '2.4.0-PRO',
-            'patient_record_id': patient.id if patient else None
+            'patient_record_id': patient.id if patient else None,
+            'firebase_config': firebase_config,
+            'firebase_configured': bool(app.config.get('FIREBASE_PROJECT_ID'))
         }
 
     # Health Check API

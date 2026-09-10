@@ -2,6 +2,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 from models import db, QueueToken, Patient, Doctor, Chair, Appointment, AuditLog
+from firebase_service import sync_queue_token_to_firestore
 
 queue_bp = Blueprint('queue', __name__)
 
@@ -46,7 +47,10 @@ def add_token():
     db.session.add(token)
     db.session.commit()
 
-    return jsonify({'status': 'success', 'message': f'{token.token_number} generated', 'token': token.to_dict()})
+    token_dict = token.to_dict()
+    sync_queue_token_to_firestore(token_dict)
+
+    return jsonify({'status': 'success', 'message': f'{token.token_number} generated', 'token': token_dict})
 
 @queue_bp.route('/api/queue/<int:token_id>/action', methods=['POST'])
 @login_required
@@ -86,6 +90,9 @@ def token_action(token_id):
 
     db.session.commit()
 
+    token_dict = token.to_dict()
+    sync_queue_token_to_firestore(token_dict)
+
     # Log audit
     log = AuditLog(
         user_name=current_user.name,
@@ -97,4 +104,4 @@ def token_action(token_id):
     db.session.add(log)
     db.session.commit()
 
-    return jsonify({'status': 'success', 'message': f'Token action {action} applied', 'token': token.to_dict()})
+    return jsonify({'status': 'success', 'message': f'Token action {action} applied', 'token': token_dict})

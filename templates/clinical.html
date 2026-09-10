@@ -1,18 +1,90 @@
 {% extends "base.html" %}
-{% block title %}Clinical - DentiFlow{% endblock %}
+{% block title %}Clinical Notes - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Clinical</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CLINICAL WORKSPACE</span>
+        <h1>Clinical notes</h1>
+        <p class="muted">Capture the why behind every treatment decision.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('clinical.chart') }}">Open dental chart -></a>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-tooth fa-3x text-primary mb-3"></i>
-        <h3>Clinical workspace</h3>
-        <p class="text-muted">Clinical records will appear here.</p>
+
+<div class="grid grid-3">
+    <div class="card" style="grid-column:span 2">
+        <div class="section-title">
+            <h2>New progress note</h2>
+            <span class="pill green">Autosave on</span>
+        </div>
+        <form class="form-grid" id="clinical-note-form">
+            <div class="field">
+                <label>Patient</label>
+                <select id="clinical-patient-select">
+                    {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.name }} - {{ p.patient_id }}</option>
+                    {% else %}
+                    <option>Aravind Menon - DF-2026-001</option>
+                    <option>Vishal Rao - DF-2026-002</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Visit type</label>
+                <select id="clinical-visit-type">
+                    <option>Root canal review</option>
+                    <option>Examination</option>
+                    <option>Follow-up</option>
+                    <option>Crown preparation</option>
+                </select>
+            </div>
+            <div class="field full">
+                <label>Subjective</label>
+                <textarea rows="3" id="clinical-subjective" placeholder="What did the patient report?"></textarea>
+            </div>
+            <div class="field full">
+                <label>Objective & assessment</label>
+                <textarea rows="4" id="clinical-objective" placeholder="Findings, diagnosis, tooth references..."></textarea>
+            </div>
+            <div class="field full">
+                <label>Plan</label>
+                <textarea rows="3" id="clinical-plan" placeholder="Next steps and patient instructions"></textarea>
+            </div>
+            <div class="field full">
+                <button type="button" class="btn btn-primary" onclick="window.toast('Clinical note saved and synced', 'success')">Save clinical note</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Recent notes</h2>
+            <span class="pill">3 this week</span>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-dot"></span>
+                <div>
+                    <b>Aravind - Tooth #16</b>
+                    <div class="muted">RCT recommended</div>
+                    <small class="muted">Today, 09:20</small>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--blue)"></span>
+                <div>
+                    <b>Vishal - Hygiene</b>
+                    <div class="muted">Healing well</div>
+                    <small class="muted">May 18</small>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--purple)"></span>
+                <div>
+                    <b>Medha - Pedo Sealant</b>
+                    <div class="muted">Caries prophylaxis completed</div>
+                    <small class="muted">May 04</small>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/clinical.js') }}"></script>
 {% endblock %}

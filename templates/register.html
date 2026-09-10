@@ -1,5 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Create account - DentiFlow{% endblock %}
+{% block title %}Create account · DentiFlow{% endblock %}
 {% block public_content %}
-<main class="public-page" style="min-height:100vh;padding:8vh 24px;background:linear-gradient(135deg,#effcff,#eef2ff);"><div class="login-card" style="max-width:520px;margin:auto;"><div class="login-logo"><i class="fa-solid fa-tooth"></i><h1>Create your DentiFlow account</h1><p>Choose the workspace that fits your role.</p></div>{% with messages = get_flashed_messages(with_categories=true) %}{% for cat,msg in messages %}<div class="alert-error">{{ msg }}</div>{% endfor %}{% endwith %}<form method="POST" action="{{ url_for('auth.register') }}"><div class="form-group"><label>Account type</label><select name="role" class="form-group input" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;"><option value="patient">Patient - appointments and records</option><option value="doctor">Doctor - clinical workspace</option></select></div><div class="form-group"><label>Full name</label><input name="name" required></div><div class="form-group"><label>Email</label><input type="email" name="email" required></div><div class="form-group"><label>Phone</label><input name="phone"></div><div class="form-group"><label>Password</label><input type="password" name="password" minlength="6" required></div><button class="btn-login" type="submit">Create account</button></form><p class="text-center mt-3"><a href="{{ url_for('auth.login') }}">Already have an account? Sign in</a></p></div></main>
+<main class="auth">
+    <section class="auth-art">
+        <div class="auth-tooth">✦</div>
+        <h2>Join DentiFlow.</h2>
+        <p>A unified clinical ecosystem for dental practitioners and patients.</p>
+        <div class="quick-links">
+            <span class="pill">Instant Access</span>
+            <span class="pill">Cloud Firestore Synced</span>
+        </div>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div class="eyebrow">GET STARTED</div>
+            <h1>Create account</h1>
+            <p class="muted">Set up your profile to access your dental workspace.</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                    <div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <div class="field">
+                    <label>Account type</label>
+                    <select name="role">
+                        <option value="patient">Patient — appointments & records</option>
+                        <option value="doctor">Doctor — clinical workspace</option>
+                    </select>
+                </div>
+                <div class="field" style="margin-top:12px">
+                    <label>Full name</label>
+                    <input name="name" placeholder="Ashwini Goud" required autofocus>
+                </div>
+                <div class="field" style="margin-top:12px">
+                    <label>Email address</label>
+                    <input type="email" name="email" placeholder="name@example.com" required>
+                </div>
+                <div class="field" style="margin-top:12px">
+                    <label>Phone number</label>
+                    <input name="phone" placeholder="+91 98765 43210">
+                </div>
+                <div class="field" style="margin-top:12px">
+                    <label>Password</label>
+                    <input type="password" name="password" minlength="6" placeholder="At least 6 characters" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px">
+                    Create account →
+                </button>
+            </form>
+
+            <p class="muted" style="font-size:13px;text-align:center;margin-top:20px">
+                Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
+            </p>
+        </div>
+    </section>
+</main>
 {% endblock %}

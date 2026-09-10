@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dental Chart - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">ODONTOGRAM</span>
+        <h1>Dental chart</h1>
+        <p class="muted">Click a tooth to inspect it. Right-click cycles its clinical state.</p>
+    </div>
+    <button class="btn btn-ghost" data-reset-chart>Reset demo chart</button>
+</div>
+
+<div class="chart">
+    <div class="mouth">
+        <div class="section-title">
+            <h2>Adult dentition - FDI notation</h2>
+            <span class="pill green">Saved locally</span>
+        </div>
+        <div class="chart-key">
+            <span class="legend"><i></i>Healthy</span>
+            <span class="legend"><i class="watch"></i>Watch</span>
+            <span class="legend"><i class="cavity"></i>Cavity</span>
+            <span class="legend"><i class="filling"></i>Filling</span>
+            <span class="legend"><i class="crown"></i>Crown</span>
+            <span class="legend"><i class="missing"></i>Missing</span>
+        </div>
+        <div data-dental-chart class="svg-chart">
+            <svg viewBox="0 0 760 300" role="img" aria-label="Interactive dental chart" style="width:100%;margin-top:20px">
+                <text x="380" y="22" text-anchor="middle" fill="#6b7c93" font-size="12">UPPER ARCH</text>
+                <g class="tooth" data-tooth="18"><rect x="35" y="38" width="60" height="58" rx="20"/><text x="65" y="72" text-anchor="middle">18</text></g>
+                <g class="tooth" data-tooth="17"><rect x="110" y="38" width="60" height="58" rx="20"/><text x="140" y="72" text-anchor="middle">17</text></g>
+                <g class="tooth" data-tooth="16"><rect x="185" y="38" width="60" height="58" rx="20"/><text x="215" y="72" text-anchor="middle">16</text></g>
+                <g class="tooth" data-tooth="15"><rect x="260" y="38" width="60" height="58" rx="20"/><text x="290" y="72" text-anchor="middle">15</text></g>
+                <g class="tooth" data-tooth="14"><rect x="335" y="38" width="60" height="58" rx="20"/><text x="365" y="72" text-anchor="middle">14</text></g>
+                <g class="tooth" data-tooth="13"><rect x="410" y="38" width="60" height="58" rx="20"/><text x="440" y="72" text-anchor="middle">13</text></g>
+                <g class="tooth" data-tooth="12"><rect x="485" y="38" width="60" height="58" rx="20"/><text x="515" y="72" text-anchor="middle">12</text></g>
+                <g class="tooth" data-tooth="11"><rect x="560" y="38" width="60" height="58" rx="20"/><text x="590" y="72" text-anchor="middle">11</text></g>
+                <text x="380" y="147" text-anchor="middle" fill="#6b7c93" font-size="12">LOWER ARCH</text>
+                <g class="tooth" data-tooth="48"><rect x="35" y="170" width="60" height="58" rx="20"/><text x="65" y="204" text-anchor="middle">48</text></g>
+                <g class="tooth" data-tooth="47"><rect x="110" y="170" width="60" height="58" rx="20"/><text x="140" y="204" text-anchor="middle">47</text></g>
+                <g class="tooth" data-tooth="46"><rect x="185" y="170" width="60" height="58" rx="20"/><text x="215" y="204" text-anchor="middle">46</text></g>
+                <g class="tooth" data-tooth="45"><rect x="260" y="170" width="60" height="58" rx="20"/><text x="290" y="204" text-anchor="middle">45</text></g>
+                <g class="tooth" data-tooth="44"><rect x="335" y="170" width="60" height="58" rx="20"/><text x="365" y="204" text-anchor="middle">44</text></g>
+                <g class="tooth" data-tooth="43"><rect x="410" y="170" width="60" height="58" rx="20"/><text x="440" y="204" text-anchor="middle">43</text></g>
+                <g class="tooth" data-tooth="42"><rect x="485" y="170" width="60" height="58" rx="20"/><text x="515" y="204" text-anchor="middle">42</text></g>
+                <g class="tooth" data-tooth="41"><rect x="560" y="170" width="60" height="58" rx="20"/><text x="590" y="204" text-anchor="middle">41</text></g>
+            </svg>
+        </div>
+    </div>
+    <aside class="card" data-tooth-detail data-selected="16">
+        <span class="eyebrow">SELECTED TOOTH</span>
+        <h2 data-detail-number>Tooth #16</h2>
+        <span class="pill orange" data-detail-state>Cavity</span>
+        <p class="muted" style="margin-top:18px">First molar - Upper right quadrant</p>
+        <div class="notice">
+            <b>Clinical detail</b><br>
+            Deep occlusal caries with percussion sensitivity. Recommend endodontic consultation.
+        </div>
+        <a class="btn btn-primary" style="margin-top:15px;width:100%;justify-content:center" href="{{ url_for('treatment_plans.index') }}">Add to treatment plan</a>
+    </aside>
+</div>
+{% endblock %}

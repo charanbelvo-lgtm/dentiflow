@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStaff() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        request.auth.token.role == 'doctor' ||
+        request.auth.token.role == 'receptionist'
+      );
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'admin';
+    }
+
+    // 1. Queue Tokens (Waiting Room Display & Calling)
+    match /queue_tokens/{tokenId} {
+      allow read: if true; // Public waiting room monitors can read active tokens
+      allow write: if isStaff() || isAdmin();
+    }
+
+    // 2. Patient Medical & Clinical Records
+    match /patients/{patientId} {
+      allow read: if isStaff() || (isAuthenticated() && request.auth.uid == patientId);
+      allow write: if isStaff() || isAdmin();
+      
+      // Subcollections (Tooth findings, Perio charts, Prescriptions, X-rays)
+      match /{subcollection}/{docId} {
+        allow read: if isStaff() || (isAuthenticated() && request.auth.uid == patientId);
+        allow write: if isStaff() || isAdmin();
+      }
+    }
+
+    // 3. Appointments & Schedule
+    match /appointments/{aptId} {
+      allow read: if isAuthenticated();
+      allow write: if isStaff() || isAdmin();
+    }
+
+    // 4. Invoices & Billing
+    match /invoices/{invoiceId} {
+      allow read: if isStaff() || (isAuthenticated() && resource.data.patient_id == request.auth.uid);
+      allow write: if isStaff() || isAdmin();
+    }
+
+    // 5. System Audit Logs & Login History
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isStaff();
+      allow update, delete: if false; // Immutable audit trail
+    }
+
+    match /login_history/{logId} {
+      allow read, write: if true;
+    }
+
+    // 6. User Profiles
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+  }
+}

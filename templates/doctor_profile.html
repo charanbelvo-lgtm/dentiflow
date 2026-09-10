@@ -1,6 +1,43 @@
 {% extends "base.html" %}
 {% block title %}{{ doctor.name }} - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header"><div><span class="text-muted small">Doctor profile</span><h1 class="page-title">{{ doctor.name }}</h1></div><a class="btn btn-df-secondary" href="{{ url_for('staff.index') }}"><i class="fa-solid fa-arrow-left"></i> Back to staff</a></div>
-<div class="page-body"><div class="df-card p-4 mb-4"><div class="d-flex flex-wrap gap-4 align-items-center"><div class="avatar" style="width:96px;height:96px;font-size:36px;">{{ doctor.name[0] }}</div><div><h2 class="h3 mb-1">{{ doctor.name }}</h2><p class="text-primary mb-2">{{ doctor.specialty }}</p><div class="text-muted">{{ doctor.experience_years }} years experience · {{ doctor.phone }} · {{ doctor.email }}</div></div></div></div><div class="row g-3"><div class="col-md-4"><div class="df-card p-4"><span class="text-muted small">Appointments today</span><strong class="d-block fs-2">{{ appointments_today }}</strong></div></div><div class="col-md-4"><div class="df-card p-4"><span class="text-muted small">Patients treated</span><strong class="d-block fs-2">{{ patients_treated }}</strong></div></div><div class="col-md-4"><div class="df-card p-4"><span class="text-muted small">Patient satisfaction</span><strong class="d-block fs-2">{{ doctor.rating }}/5</strong></div></div></div></div>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">DOCTOR PROFILE</span>
+        <h1>{{ doctor.name }}</h1>
+        <p class="muted">{{ doctor.specialty }} · {{ doctor.experience_years }} years clinical experience</p>
+    </div>
+    <a class="btn btn-ghost" href="{{ url_for('staff.index') }}">← Back to staff</a>
+</div>
+
+<div class="card" style="margin-bottom: 18px;">
+    <div class="row" style="align-items: center; gap: 20px;">
+        <div class="avatar" style="width: 80px; height: 80px; font-size: 32px;">{{ doctor.name[0] }}</div>
+        <div>
+            <h2>{{ doctor.name }}</h2>
+            <span class="pill green" style="margin-bottom: 8px;">{{ doctor.specialty }}</span>
+            <p class="muted" style="margin: 6px 0 0 0;">
+                Phone: {{ doctor.phone }} &bull; Email: {{ doctor.email }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    <div class="card stat">
+        <div class="stat-icon">📅</div>
+        <strong>{{ appointments_today }}</strong>
+        <small>Appointments today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">👥</div>
+        <strong>{{ patients_treated }}</strong>
+        <small>Patients treated</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">⭐</div>
+        <strong>{{ doctor.rating }} / 5.0</strong>
+        <small>Patient satisfaction</small>
+    </div>
+</div>
 {% endblock %}

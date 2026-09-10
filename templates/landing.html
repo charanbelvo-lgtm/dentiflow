@@ -1,21 +1,51 @@
 {% extends "base.html" %}
-{% block title %}DentiFlow - Smarter clinics{% endblock %}
+{% block title %}Welcome · DentiFlow{% endblock %}
 {% block public_content %}
-<style>
-	.landing { min-height:100vh; background:linear-gradient(135deg,#effcff 0%,#fff 48%,#eef2ff 100%); overflow:hidden; }
-	.landing-nav { display:flex; justify-content:space-between; align-items:center; padding:28px clamp(24px,6vw,88px); }
-	.landing-logo { color:#102a43; font:700 22px Poppins,sans-serif; }.landing-logo i { color:#2563eb; margin-right:8px; }
-	.landing-hero { display:grid; grid-template-columns:1.05fr .95fr; gap:48px; align-items:center; max-width:1280px; margin:0 auto; padding:54px clamp(24px,6vw,88px) 100px; }
-	.landing h1 { max-width:650px; font:700 clamp(42px,6vw,76px)/1.02 Poppins,sans-serif; letter-spacing:0; color:#102a43; }.landing h1 span { color:#2563eb; }
-	.landing-copy { max-width:570px; color:#52677c; font-size:18px; margin:24px 0 32px; }.landing-actions { display:flex; flex-wrap:wrap; gap:12px; }
-	.scene { min-height:360px; position:relative; border-radius:28px; background:linear-gradient(145deg,#102a43,#2563eb); box-shadow:0 28px 70px rgba(16,42,67,.25); overflow:hidden; animation:floatScene 5s ease-in-out infinite; }
-	.scene:before { content:''; position:absolute; width:270px; height:270px; border:28px solid rgba(255,255,255,.12); border-radius:50%; right:-70px; top:-80px; }.scene-building { position:absolute; left:14%; right:14%; bottom:54px; height:180px; background:#f8fafc; border-radius:14px 14px 4px 4px; }.scene-building:before { content:'DENTIFLOW CLINIC'; position:absolute; top:22px; left:0; right:0; text-align:center; color:#2563eb; font:bold 13px Poppins,sans-serif; letter-spacing:2px; }.scene-door { position:absolute; left:43%; bottom:0; width:18%; height:100px; background:#14b8a6; border-radius:10px 10px 0 0; }.scene-window { position:absolute; width:22%; height:60px; top:68px; background:#dbeafe; border:5px solid #cbd5e1; border-radius:8px; }.scene-window.left { left:10%; }.scene-window.right { right:10%; }.scene-tooth { position:absolute; right:18%; top:28%; color:#fff; font-size:68px; animation:pulseTooth 2.8s ease-in-out infinite; }.scene-card { position:absolute; left:8%; top:16%; background:#fff; color:#102a43; padding:14px 18px; border-radius:12px; box-shadow:0 12px 25px rgba(0,0,0,.18); font-size:13px; animation:cardDrift 4s ease-in-out infinite; }.landing-features { max-width:1280px; margin:0 auto; padding:0 clamp(24px,6vw,88px) 60px; display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }.landing-feature { padding:20px; background:rgba(255,255,255,.8); border:1px solid #dbeafe; border-radius:14px; }.landing-feature i { color:#14b8a6; font-size:20px; margin-bottom:12px; }.landing-feature strong { display:block; color:#102a43; }
-	@keyframes floatScene { 50% { transform:translateY(-8px); } } @keyframes pulseTooth { 50% { transform:scale(1.08) rotate(4deg); } } @keyframes cardDrift { 50% { transform:translate(8px,-6px); } }
-	@media(max-width:800px){.landing-hero{grid-template-columns:1fr;padding-top:24px}.scene{min-height:280px}.landing-features{grid-template-columns:repeat(2,1fr)}} @media(max-width:480px){.landing-nav{padding:20px 18px}.landing-hero{padding:30px 18px 60px}.landing h1{font-size:42px}.landing-copy{font-size:16px}.landing-features{grid-template-columns:1fr;padding:0 18px 40px}}
-</style>
 <main class="landing">
-	<nav class="landing-nav"><div class="landing-logo"><i class="fa-solid fa-tooth"></i>DentiFlow</div><a class="btn btn-df-secondary" href="{{ url_for('auth.login') }}">Sign in <i class="fa-solid fa-arrow-right"></i></a></nav>
-	<section class="landing-hero"><div><span class="badge bg-light text-primary border mb-3">CLINIC OPERATIONS, SIMPLIFIED</span><h1>Smarter clinics.<br><span>Happier patients.</span></h1><p class="landing-copy">One intelligent workspace for appointments, patient records, clinical workflows, treatment planning, billing, and the people who make care happen.</p><div class="landing-actions"><a class="btn btn-df-primary" href="{{ url_for('auth.login') }}"><i class="fa-solid fa-calendar-check"></i> View demo</a><a class="btn btn-df-secondary" href="{{ url_for('auth.register') }}">Create account</a></div></div><div class="scene" aria-label="DentiFlow clinic preview"><div class="scene-card"><i class="fa-solid fa-circle-check text-success"></i> Patient checked in</div><div class="scene-tooth"><i class="fa-solid fa-tooth"></i></div><div class="scene-building"><div class="scene-window left"></div><div class="scene-window right"></div><div class="scene-door"></div></div></div></section>
-	<section class="landing-features"><div class="landing-feature"><i class="fa-solid fa-calendar-check"></i><strong>Appointments</strong><span class="text-muted small">Keep every chair moving.</span></div><div class="landing-feature"><i class="fa-solid fa-hospital-user"></i><strong>Patient records</strong><span class="text-muted small">A clear clinical story.</span></div><div class="landing-feature"><i class="fa-solid fa-tooth"></i><strong>Dental chart</strong><span class="text-muted small">Chart findings with confidence.</span></div><div class="landing-feature"><i class="fa-solid fa-chart-line"></i><strong>Analytics</strong><span class="text-muted small">See the whole practice.</span></div></section>
+    <nav class="landing-nav">
+        <div class="landing-logo">✦ Denti<span>Flow</span></div>
+        <div class="row">
+            <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">Sign in</a>
+            <a class="btn btn-primary" href="{{ url_for('auth.login') }}">View demo →</a>
+        </div>
+    </nav>
+    <section class="landing-hero">
+        <div>
+            <span class="eyebrow">CLINIC OPERATIONS, SIMPLIFIED</span>
+            <h1>Smarter clinics.<br><span>Happier patients.</span></h1>
+            <p class="landing-copy">One calm workspace for appointments, clinical records, treatment planning, billing, and the people who make care happen.</p>
+            <div class="landing-actions">
+                <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Explore the demo →</a>
+                <a class="btn btn-ghost" href="{{ url_for('auth.register') }}">Create account</a>
+            </div>
+        </div>
+        <div class="scene" aria-label="Animated DentiFlow clinic">
+            <div class="scene-card">✓ Patient checked in</div>
+            <div class="scene-tooth">✦</div>
+            <div class="scene-building">
+                <div class="scene-window left"></div>
+                <div class="scene-window right"></div>
+                <div class="scene-door"></div>
+            </div>
+        </div>
+    </section>
+    <section class="features" id="features">
+        <div class="feature">
+            <b>Appointments</b>
+            <span class="muted">Keep every chair moving.</span>
+        </div>
+        <div class="feature">
+            <b>Patient records</b>
+            <span class="muted">A clear clinical story.</span>
+        </div>
+        <div class="feature">
+            <b>Dental chart</b>
+            <span class="muted">Chart findings with confidence.</span>
+        </div>
+        <div class="feature">
+            <b>Analytics</b>
+            <span class="muted">See the whole practice.</span>
+        </div>
+    </section>
 </main>
 {% endblock %}

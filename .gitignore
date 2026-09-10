@@ -7,3 +7,6 @@ venv/
 .venv/
 database.db
 *.db
+static/uploads/*
+!static/uploads/.gitkeep
+firebase-service-account.json

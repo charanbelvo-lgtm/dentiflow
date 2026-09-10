@@ -1,61 +1,65 @@
 {% extends "base.html" %}
-{% block title %}Login - DentiFlow{% endblock %}
+{% block title %}Sign in · DentiFlow{% endblock %}
 {% block public_content %}
-<style>
-  .auth-page { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; background:linear-gradient(135deg,#effcff,#eef2ff); }
-  .auth-art { padding:clamp(32px,7vw,100px); color:#fff; background:linear-gradient(145deg,#102a43,#2563eb); position:relative; overflow:hidden; }.auth-art:after { content:'✦  ✧  ✦'; position:absolute; right:10%; top:16%; font-size:42px; color:rgba(255,255,255,.28); animation:floatSlow 4s ease-in-out infinite; }.auth-art h2 { color:#fff; font-size:clamp(32px,4vw,58px); max-width:460px; }.auth-art p { max-width:430px; color:#dbeafe; font-size:17px; }.auth-tooth { font-size:120px; margin:70px 0 30px; color:#fff; animation:floatSlow 4s ease-in-out infinite; }
-  .auth-panel { display:flex; align-items:center; justify-content:center; padding:32px 24px; }.login-card { background:#fff; border-radius:20px; padding:38px 36px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(16,42,67,.14); }
-  .login-logo { text-align: center; margin-bottom: 28px; }
-  .login-logo i { font-size: 36px; color: #0ea5e9; }
-  .login-logo h1 { font-size: 24px; font-weight: 700; color: #1e293b; margin: 8px 0 4px; }
-  .login-logo p { color: #64748b; font-size: 13px; margin: 0; }
-  .form-group { margin-bottom: 16px; }
-  .form-group label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
-  .form-group input { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; transition: border-color .2s; }
-  .form-group input:focus { border-color: #0ea5e9; }
-  .btn-login { width: 100%; padding: 12px; background: #0ea5e9; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background .2s; }
-  .btn-login:hover { background: #0284c7; }
-  .demo-btns { display: flex; gap: 8px; margin-top: 14px; }
-  .demo-btns a { flex: 1; text-align: center; padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 500; color: #374151; text-decoration: none; transition: background .2s; }
-  .demo-btns a:hover { background: #f1f5f9; }
-  .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .divider { text-align: center; color: #94a3b8; font-size: 12px; margin: 14px 0; }
-  .role-choice { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }.role-choice label { border:1px solid #dbeafe; border-radius:12px; padding:14px; cursor:pointer; color:#52677c; transition:.2s; }.role-choice input { position:absolute; opacity:0; }.role-choice label:has(input:checked) { border-color:#2563eb; background:#eff6ff; color:#2563eb; box-shadow:0 0 0 2px #bfdbfe; }.signup-link { text-align:center; margin-top:18px; font-size:13px; }
-  @media(max-width:760px){.auth-page{grid-template-columns:1fr}.auth-art{padding:28px 24px}.auth-art .auth-tooth{font-size:64px;margin:20px 0}.auth-art p{font-size:14px}.auth-panel{padding:24px 16px}}
-</style>
-<main class="auth-page"><section class="auth-art"><div class="auth-tooth"><i class="fa-solid fa-tooth"></i></div><h2>Care that flows.</h2><p>Appointments, clinical notes, treatment plans, and billing in one calm workspace.</p></section><section class="auth-panel"><div class="login-card">
-  <div class="login-logo">
-    <i class="fa-solid fa-tooth"></i>
-    <h1>DentiFlow</h1>
-    <p>Smarter Clinics. Happier Patients.</p>
-  </div>
+<main class="auth">
+    <section class="auth-art">
+        <div class="auth-tooth">✦</div>
+        <h2>Care that flows.</h2>
+        <p>Appointments, clinical notes, treatment plans, and billing in one vibrant workspace.</p>
+        <div class="quick-links">
+            <span class="pill">Cloud Firebase Synced</span>
+            <span class="pill">Secure Clinical Data</span>
+        </div>
+    </section>
+    <section class="auth-panel">
+        <div class="auth-card">
+            <div class="eyebrow">WELCOME BACK</div>
+            <h1>DentiFlow</h1>
+            <p class="muted">Choose a demo role or sign in with your email.</p>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in messages %}
-      <div class="alert-error"><i class="fa-solid fa-circle-exclamation"></i> {{ msg }}</div>
-    {% endfor %}
-  {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                    <div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;">
+                        {{ msg }}
+                    </div>
+                {% endfor %}
+            {% endwith %}
 
-  <form method="POST" action="/login">
-    <div class="role-choice"><label><input type="radio" name="role" value="doctor" checked><i class="fa-solid fa-user-doctor"></i><strong> Doctor</strong><small class="d-block">Clinical dashboard</small></label><label><input type="radio" name="role" value="patient"><i class="fa-solid fa-user"></i><strong> Patient</strong><small class="d-block">Appointments & records</small></label></div>
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" name="email" placeholder="admin@dentiflow.com" required autofocus>
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" name="password" placeholder="••••••••" required>
-    </div>
-    <button type="submit" class="btn-login"><i class="fa-solid fa-arrow-right-to-bracket"></i> &nbsp;Sign In</button>
-  </form>
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="role-choice">
+                    <label>
+                        <input type="radio" name="role" value="doctor" checked> <b>Doctor</b>
+                        <small class="muted"><br>Clinical dashboard</small>
+                    </label>
+                    <label>
+                        <input type="radio" name="role" value="patient"> <b>Patient</b>
+                        <small class="muted"><br>Appointments & records</small>
+                    </label>
+                </div>
+                <div class="field">
+                    <label>Email address</label>
+                    <input type="email" name="email" placeholder="admin@dentiflow.com or you@gmail.com" required autofocus>
+                </div>
+                <div class="field" style="margin-top:14px">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px">
+                    Sign in →
+                </button>
+            </form>
 
-  <div class="divider">— or quick demo login —</div>
+            <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
+            <div class="grid grid-3">
+                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='doctor') }}">Doctor</a>
+                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='admin') }}">Admin</a>
+                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='reception') }}">Reception</a>
+            </div>
 
-  <div class="demo-btns">
-    <a href="/demo-login/admin"><i class="fa-solid fa-user-shield"></i> Admin</a>
-    <a href="/demo-login/doctor"><i class="fa-solid fa-user-doctor"></i> Doctor</a>
-    <a href="/demo-login/reception"><i class="fa-solid fa-headset"></i> Reception</a>
-  </div>
-  <div class="signup-link">New to DentiFlow? <a href="{{ url_for('auth.register') }}">Create an account</a></div>
-</div></section></main>
+            <p class="muted" style="font-size:12px;text-align:center;margin-top:20px">
+                <a href="{{ url_for('auth.register') }}">Create an account</a> · <a href="{{ url_for('dashboard.landing_or_dashboard') }}">← Back to landing</a>
+            </p>
+        </div>
+    </section>
+</main>
 {% endblock %}

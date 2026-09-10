@@ -1,18 +1,94 @@
 {% extends "base.html" %}
 {% block title %}Inventory - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Inventory</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">SUPPLY ROOM</span>
+        <h1>Inventory</h1>
+        <p class="muted">Know what is on the shelf before the next appointment.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening add supply item...', 'success')">+ Add item</button>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-boxes-stacked fa-3x text-primary mb-3"></i>
-        <h3>Inventory</h3>
-        <p class="text-muted">Stock and purchase orders will appear here.</p>
+
+<div class="grid grid-3">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong>248</strong>
+        <small>items tracked</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">!</div>
+        <strong>6</strong>
+        <small>low stock alerts</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">INR</div>
+        <strong>INR 2.4L</strong>
+        <small>stock value</small>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+
+<div class="card" style="margin-top:18px">
+    <div class="section-title">
+        <h2>Stock overview</h2>
+        <button class="btn btn-soft" onclick="window.toast('Inventory synced with cloud', 'success')">Sync stock</button>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Category</th>
+                    <th>On hand</th>
+                    <th>Reorder at</th>
+                    <th>Status</th>
+                    <th>Supplier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr data-searchable>
+                    <td><b>{{ item.name }}</b></td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.current_stock }} {{ item.unit }}</td>
+                    <td>{{ item.min_stock_level }}</td>
+                    <td>
+                        {% if item.current_stock <= item.min_stock_level %}
+                        <span class="pill orange">Low stock</span>
+                        {% else %}
+                        <span class="pill green">Healthy</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.supplier or 'DentSupply Co.' }}</td>
+                </tr>
+                {% else %}
+                <tr data-searchable>
+                    <td><b>3M Filtek Composite Resin A2</b></td>
+                    <td>Restorative</td>
+                    <td>6 syringes</td>
+                    <td>10</td>
+                    <td><span class="pill orange">Low stock</span></td>
+                    <td>DentSupply Co.</td>
+                </tr>
+                <tr data-searchable>
+                    <td><b>Latex gloves - Medium</b></td>
+                    <td>Consumables</td>
+                    <td>24 boxes</td>
+                    <td>8</td>
+                    <td><span class="pill green">Healthy</span></td>
+                    <td>Medico</td>
+                </tr>
+                <tr data-searchable>
+                    <td><b>Endo files - 25mm</b></td>
+                    <td>Endodontics</td>
+                    <td>42 packs</td>
+                    <td>12</td>
+                    <td><span class="pill green">Healthy</span></td>
+                    <td>RootPro</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

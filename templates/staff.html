@@ -1,15 +1,45 @@
 {% extends "base.html" %}
-{% block title %}Staff Management - DentiFlow{% endblock %}
+{% block title %}Care Team & Staff · DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <div><span class="text-muted small">Care team</span><h1 class="page-title">Doctors on duty</h1></div>
-    <span class="live-status"><i class="fa-solid fa-circle"></i> {{ doctors|length }} available profiles</span>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CARE TEAM</span>
+        <h1>Doctors & Practitioners</h1>
+        <p class="muted">Availability, clinical specializations, and caseload overview.</p>
+    </div>
+    <span class="pill green">{{ doctors|length }} available profiles</span>
 </div>
-<div class="page-body" id="app-root">
-    <div class="team-intro df-card p-4 mb-4"><div><span class="eyebrow">DENTIFLOW CARE TEAM</span><h2>Good care is a team sport.</h2><p class="mb-0">A clear view of availability, specialties, and today’s patient load.</p></div><i class="fa-solid fa-people-group"></i></div>
-    <div class="row g-4">{% for doctor in doctors %}<div class="col-md-6 col-xl-4"><a class="doctor-card d-block" href="{{ url_for('staff.doctor_profile', doctor_id=doctor.id) }}"><div class="doctor-card-top"><div class="doctor-avatar">{{ doctor.name[0] }}</div><span class="availability"><i class="fa-solid fa-circle"></i> Available</span></div><h2>{{ doctor.name }}</h2><p class="specialty">{{ doctor.specialty }}</p><div class="doctor-meta"><span><i class="fa-solid fa-calendar-check"></i> {{ doctor.appointments|length }} visits today</span><span><i class="fa-solid fa-star"></i> {{ doctor.rating }}</span></div><span class="doctor-link">Open profile <i class="fa-solid fa-arrow-up-right-from-square"></i></span></a></div>{% else %}<div class="col-12"><div class="df-card p-5 text-center text-muted">No doctor profiles found.</div></div>{% endfor %}</div>
+
+<div class="hero" style="margin-bottom: 22px;">
+    <div>
+        <span class="eyebrow">DENTIFLOW CLINICAL TEAM</span>
+        <h2>Excellence in Dental Care.</h2>
+        <p>A unified view of availability, specialties, and today’s patient load across all active dental chairs.</p>
+    </div>
+    <div class="hero-art"><span>🩺</span></div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/staff.js') }}"></script>
+
+<div class="grid grid-3">
+    {% for doctor in doctors %}
+    <div class="card">
+        <div class="section-title">
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">{{ doctor.name[0] }}</div>
+            <span class="pill green">Available</span>
+        </div>
+        <h3>{{ doctor.name }}</h3>
+        <p class="muted">{{ doctor.specialty }}<br>{{ doctor.experience_years }} yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ {{ doctor.rating }} rating</span>
+            <span class="muted" style="font-size: 12px;">{{ doctor.appointments|length }} visits today</span>
+        </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="{{ url_for('staff.doctor_profile', doctor_id=doctor.id) }}">
+            Open profile →
+        </a>
+    </div>
+    {% else %}
+    <div class="card empty" style="grid-column: 1 / -1;">
+        No doctor profiles found.
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

@@ -1,18 +1,114 @@
 {% extends "base.html" %}
 {% block title %}Appointments - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Appointments</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">SCHEDULE & QUEUE</span>
+        <h1>Appointments</h1>
+        <p class="muted">Coordinate every chair, clinician, and patient.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening appointment scheduler...', 'success')">+ Book appointment</button>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-calendar-check fa-3x text-primary mb-3"></i>
-        <h3>Appointments</h3>
-        <p class="text-muted">Your appointment schedule will appear here.</p>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong>18</strong>
+        <small>todays visits</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong>12</strong>
+        <small>completed</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong>4</strong>
+        <small>in queue</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong>2</strong>
+        <small>rescheduled</small>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
+
+<div class="card" style="margin-top:18px">
+    <div class="section-title">
+        <h2>Wednesday - 27 May 2026</h2>
+        <button class="btn btn-ghost" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Patient</th>
+                    <th>Visit</th>
+                    <th>Chair</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for apt in appointments %}
+                <tr>
+                    <td><b>{{ apt.start_time }}</b></td>
+                    <td class="patient">
+                        <span class="avatar">{{ apt.patient.name[:2].upper() if apt.patient else 'PT' }}</span>
+                        <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
+                            {{ apt.patient.name if apt.patient else 'Walk-in Patient' }}
+                        </a>
+                    </td>
+                    <td>{{ apt.procedure_name }}</td>
+                    <td>{{ apt.chair.name if apt.chair else 'Chair 01' }}</td>
+                    <td>
+                        {% if apt.status == 'In Progress' or apt.status == 'Confirmed' %}
+                        <span class="pill green">{{ apt.status }}</span>
+                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
+                        <span class="pill orange">{{ apt.status }}</span>
+                        {% else %}
+                        <span class="pill">{{ apt.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if apt.status == 'In Progress' %}
+                        <button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button>
+                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
+                        <button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button>
+                        {% else %}
+                        <button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td><b>09:00</b></td>
+                    <td class="patient"><span class="avatar">AM</span>Aravind Menon</td>
+                    <td>Root canal review</td>
+                    <td>Chair 01</td>
+                    <td><span class="pill green">In progress</span></td>
+                    <td><button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button></td>
+                </tr>
+                <tr>
+                    <td><b>10:30</b></td>
+                    <td class="patient"><span class="avatar">VR</span>Vishal Rao</td>
+                    <td>Scaling follow-up</td>
+                    <td>Chair 02</td>
+                    <td><span class="pill orange">Checked in</span></td>
+                    <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button></td>
+                </tr>
+                <tr>
+                    <td><b>12:00</b></td>
+                    <td class="patient"><span class="avatar">MI</span>Medha Iyer</td>
+                    <td>Pediatric consultation</td>
+                    <td>Chair 03</td>
+                    <td><span class="pill">Upcoming</span></td>
+                    <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

@@ -15,6 +15,13 @@ def index():
     doctors = Doctor.query.all()
     return render_template('clinical.html', patients=patients, doctors=doctors)
 
+@clinical_bp.route('/dental-chart')
+@clinical_bp.route('/chart')
+@login_required
+def chart():
+    patients = Patient.query.order_by(Patient.name.asc()).all()
+    return render_template('dental_chart.html', patients=patients)
+
 # 1. Tooth Chart Findings
 @clinical_bp.route('/api/patients/<int:patient_id>/teeth', methods=['GET', 'POST'])
 @login_required

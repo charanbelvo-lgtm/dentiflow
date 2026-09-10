@@ -1,18 +1,84 @@
 {% extends "base.html" %}
 {% block title %}Treatment Plans - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Treatment Plans</h1>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CARE PLANS</span>
+        <h1>Treatment plans</h1>
+        <p class="muted">Turn clinical findings into an understandable next step.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening treatment plan builder...', 'success')">+ Build plan</button>
 </div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-clipboard-list fa-3x text-primary mb-3"></i>
-        <h3>Treatment plans</h3>
-        <p class="text-muted">Treatment plans will appear here.</p>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h2>Aravind Menon</h2>
+                <span class="muted">Plan - Tooth #16</span>
+            </div>
+            <span class="pill orange">Awaiting consent</span>
+        </div>
+        <div class="row between">
+            <b>Root canal treatment</b>
+            <strong>INR 15,000</strong>
+        </div>
+        <div class="progress" style="margin:12px 0">
+            <span style="width:50%"></span>
+        </div>
+        <div class="row between muted">
+            <span>2 of 4 visits complete</span>
+            <span>50%</span>
+        </div>
+        <div class="timeline" style="margin-top:15px">
+            <div class="timeline-item">
+                <span class="timeline-dot"></span>
+                <div>
+                    <b>Consultation</b>
+                    <div class="muted">Completed - May 22</div>
+                </div>
+                <span class="pill green">Done</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--orange)"></span>
+                <div>
+                    <b>Cleaning & shaping</b>
+                    <div class="muted">Next - May 29</div>
+                </div>
+                <span class="pill orange">Next</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:#aab7c6"></span>
+                <div>
+                    <b>Obturation + crown</b>
+                    <div class="muted">To be scheduled</div>
+                </div>
+                <span class="pill">Later</span>
+            </div>
+        </div>
+        <div class="row" style="margin-top:16px">
+            <button class="btn btn-primary" onclick="window.toast('Consent link copied to clipboard', 'success')">Share with patient</button>
+            <button class="btn btn-ghost" onclick="window.toast('Treatment plan PDF exported', 'success')">Export PDF</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Plan health</h2>
+            <span class="pill green">86% accepted</span>
+        </div>
+        <div class="grid grid-2">
+            <div class="stat">
+                <strong>INR 1.86L</strong>
+                <small>planned value</small>
+            </div>
+            <div class="stat">
+                <strong>INR 92k</strong>
+                <small>collected</small>
+            </div>
+        </div>
+        <p class="notice" style="margin-top:16px">
+            3 plans need a follow-up this week. Patients respond best when the next step is shared immediately after the visit.
+        </p>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/treatment_plans.js') }}"></script>
 {% endblock %}

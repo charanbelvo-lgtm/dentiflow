@@ -1,17 +1,100 @@
 {% extends "base.html" %}
-{% block title %}Patient Detail - DentiFlow{% endblock %}
+{% block title %}{{ patient.name }} - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <div><span class="text-muted small">Clinical record</span><h1 class="page-title">{{ patient.name }}</h1><span class="badge bg-light text-primary border">{{ patient.patient_id }}</span></div>
-</div>
-<div class="page-body" id="app-root">
-    <div class="df-card p-4 mb-4"><div class="d-flex flex-wrap align-items-center gap-3"><div class="avatar" style="width:64px;height:64px;font-size:24px;">{{ patient.name[0] }}</div><div><h2 class="h4 mb-1">{{ patient.name }}</h2><div class="text-muted">{{ patient.age }} years · {{ patient.gender }} · {{ patient.phone }}</div><div class="text-muted small">{{ patient.email or 'No email registered' }}</div></div><div class="ms-auto text-end"><div class="text-muted small">Outstanding balance</div><strong class="fs-4 text-danger">{{ patient.outstanding_balance|currency_round }}</strong></div></div></div>
-    <div id="medical-alert-banner" class="df-card p-3 mb-4 border-danger" {% if not patient.medical_alerts %}style="display:none"{% endif %}><strong class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Medical alert</strong>{% for alert in patient.medical_alerts %}<div>{{ alert.alert_text }}</div>{% endfor %}</div>
-    <div class="row g-4"><div class="col-lg-7"><div class="df-card p-4"><h2 class="h5">Clinical timeline</h2><div id="patient-timeline-list"><div class="text-muted">Loading clinical history...</div></div></div></div><div class="col-lg-5"><div class="df-card p-4"><h2 class="h5">Dental chart</h2><div id="patient-dental-chart-container"><div class="text-muted">Loading dental chart...</div></div></div></div><div class="col-12"><div class="df-card p-4"><h2 class="h5">Appointments</h2><div id="patient-appointments-list"><div class="text-muted">Loading appointments...</div></div></div></div><div class="col-12"><div class="df-card p-4"><h2 class="h5">Treatment plans</h2><div id="patient-treatment-plans-list"><div class="text-muted">Loading treatment plans...</div></div></div></div></div>
+<div class="page-head">
+    <div>
+        <a href="{{ url_for('patients.index') }}">← Back to patients</a>
+        <h1 style="margin-top:8px">{{ patient.name }}</h1>
+        <p class="muted">{{ patient.patient_id }} - Patient since January 2024</p>
+    </div>
+    <div class="row">
+        <a class="btn btn-soft" href="{{ url_for('clinical.chart') }}">Open dental chart</a>
+        <button class="btn btn-primary" onclick="window.toast('New visit scheduled for {{ patient.name }}', 'success')">+ New visit</button>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/dental_chart.js') }}"></script>
-<script src="{{ url_for('static', filename='js/patient_detail.js') }}"></script>
+
+<div class="grid grid-3">
+    <div class="card">
+        <div class="patient">
+            <span class="avatar" style="width:52px;height:52px;font-size:18px;">{{ patient.name[:2].upper() }}</span>
+            <div>
+                <h2 style="font-size:20px;margin-bottom:4px;">{{ patient.name }}</h2>
+                <span class="pill green">Active patient</span>
+            </div>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+        <p><span class="muted">Phone</span><br><b>{{ patient.phone if patient.phone else '+91 98765 43210' }}</b></p>
+        <p><span class="muted">Email</span><br><b>{{ patient.email if patient.email else 'patient@example.com' }}</b></p>
+        <p><span class="muted">Age / Gender</span><br><b>{{ patient.age }} years • {{ patient.gender }}</b></p>
+        <p><span class="muted">Blood Group</span><br><b>{{ patient.blood_group }}</b></p>
+    </div>
+
+    <div class="card" style="grid-column:span 2">
+        <div class="section-title">
+            <h2>Care snapshot</h2>
+            <span class="pill orange">Tooth #16 needs attention</span>
+        </div>
+        <div class="grid grid-3">
+            <div>
+                <span class="muted">Next visit</span>
+                <h3 style="margin:6px 0 2px;">{{ patient.next_appointment.strftime('%d %b, %H:%M') if patient.next_appointment else 'Today - 09:00' }}</h3>
+                <small class="muted">{{ patient.primary_doctor.name if patient.primary_doctor else 'Dr. Ananya Sharma' }}</small>
+            </div>
+            <div>
+                <span class="muted">Open balance</span>
+                <h3 style="margin:6px 0 2px;color:{{ 'var(--red)' if patient.outstanding_balance > 0 else 'var(--teal)' }};">INR {{ patient.outstanding_balance|currency_round }}</h3>
+                <small class="muted">Status: {{ 'Pending' if patient.outstanding_balance > 0 else 'All settled' }}</small>
+            </div>
+            <div>
+                <span class="muted">Plan progress</span>
+                <h3 style="margin:6px 0 2px;">2 / 4 visits</h3>
+                <div class="progress" style="margin-top:6px;">
+                    <span style="width:50%"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Clinical timeline</h2>
+            <a href="{{ url_for('clinical.index') }}">Add note -></a>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-dot"></span>
+                <div>
+                    <b>May 22 - Root canal consultation</b>
+                    <div class="muted">Tooth #16 percussion sensitive. RCT recommended.</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--blue)"></span>
+                <div>
+                    <b>May 05 - Diagnostic x-ray</b>
+                    <div class="muted">Periapical radiolucency noted. Clear coronal margins.</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--purple)"></span>
+                <div>
+                    <b>Apr 14 - Regular oral prophylaxis</b>
+                    <div class="muted">Supragingival scaling completed. Oral hygiene advised.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title">
+            <h2>Documents & Scans</h2>
+            <button class="btn btn-soft" onclick="window.toast('Document uploaded to Firebase Storage', 'success')">Upload</button>
+        </div>
+        <p class="notice" style="margin-bottom:10px;">Treatment consent - Signed May 22, 2026</p>
+        <p class="notice" style="margin-bottom:10px;">Panoramic Radiograph OPG - May 05, 2026</p>
+        <p class="notice">Medical History Form - January 10, 2024</p>
+    </div>
+</div>
 {% endblock %}

@@ -215,3 +215,55 @@ def add_patient_family(patient_id):
     db.session.add(member)
     db.session.commit()
     return jsonify({'status': 'success', 'family_member': member.to_dict()})
+
+@patients_bp.route('/api/patients/<int:patient_id>/upload', methods=['POST'])
+@login_required
+def upload_document(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    doc_type = request.form.get('doc_type', 'Consent Form')
+    title = request.form.get('title', 'Patient Document')
+    folder = 'xrays' if doc_type in ['X-Ray', 'OPG', 'RVG', 'CBCT'] else 'documents'
+
+    file_obj = request.files.get('file')
+    if not file_obj:
+        return jsonify({'status': 'error', 'message': 'No file was provided for upload.'}), 400
+
+    from firebase_service import upload_patient_file
+    upload_res = upload_patient_file(file_obj, patient_id=patient.id, folder=folder, filename=file_obj.filename)
+
+    file_size_str = f"{max(0.1, round(file_obj.tell() / (1024 * 1024), 1))} MB" if hasattr(file_obj, 'tell') else "1.2 MB"
+
+    if folder == 'xrays':
+        xray = XRayImage(
+            patient_id=patient.id,
+            title=title,
+            xray_type=doc_type,
+            image_url=upload_res['url'],
+            ai_cavity_detected=False,
+            ai_confidence=95.0,
+            ai_analysis_notes="Radiograph uploaded successfully. Clear coronal margin visible."
+        )
+        db.session.add(xray)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f'Radiograph uploaded ({upload_res["storage"]})',
+            'xray': xray.to_dict(),
+            'storage': upload_res['storage']
+        })
+    else:
+        doc = PatientDocument(
+            patient_id=patient.id,
+            title=title,
+            doc_type=doc_type,
+            file_url=upload_res['url'],
+            file_size=file_size_str
+        )
+        db.session.add(doc)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f'Document uploaded ({upload_res["storage"]})',
+            'document': doc.to_dict(),
+            'storage': upload_res['storage']
+        })

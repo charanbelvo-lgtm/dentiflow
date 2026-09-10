@@ -1,35 +1,107 @@
 {% extends "base.html" %}
 {% block title %}Dashboard - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-head">
     <div>
-        <span class="text-muted small">Live care overview</span>
-        <h1 class="page-title">Good morning, {{ current_user.name }} <span aria-hidden="true">👋</span></h1>
+        <span class="eyebrow">LIVE CARE OVERVIEW</span>
+        <h1>Good morning, <span data-user-name>{{ current_user.name if current_user.name else 'Dr. Ananya Sharma' }}</span></h1>
+        <p class="muted">Here is what is moving through your clinic today.</p>
     </div>
-    <span class="live-status"><i class="fa-solid fa-circle"></i> Clinic live</span>
+    <div class="row">
+        <span class="pill green">Clinic live</span>
+        <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ Schedule visit</a>
+    </div>
 </div>
-<div class="page-body" id="app-root">
-    <div id="dashboard-error" class="card p-4 mb-4 border-danger" hidden>
-        <div class="d-flex align-items-center gap-3">
-            <i class="fa-solid fa-cloud-exclamation text-danger" aria-hidden="true"></i>
-            <div><strong>Unable to load dashboard data.</strong><div class="text-muted small">Check the connection and try again.</div></div>
-            <button id="dashboard-retry" class="btn btn-df-primary ms-auto" type="button"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+
+<div class="hero">
+    <div>
+        <span class="eyebrow">PATIENT CARE, IN MOTION</span>
+        <h2>Every visit, beautifully coordinated.</h2>
+        <p>See who has arrived, who is with the doctor, and what needs attention next.</p>
+        <div class="quick-links">
+            <a class="btn" href="{{ url_for('patients.index') }}">View patients</a>
+            <a class="btn" href="{{ url_for('clinical.chart') }}">Open chart</a>
         </div>
     </div>
-    <section class="dashboard-hero mb-4">
-        <div class="hero-copy"><span class="eyebrow">PATIENT CARE, IN MOTION</span><h2>Every visit, beautifully coordinated.</h2><p>See who has arrived, who is with the doctor, and what needs attention next.</p><div class="hero-metrics"><div><strong id="kpi-appointments">0</strong><span>visits today</span></div><div><strong id="kpi-waiting">0</strong><span>waiting now</span></div><div><strong id="kpi-acceptance">0%</strong><span>plans accepted</span></div></div></div>
-        <div class="clinic-illustration" aria-label="Patient visit in progress"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><i class="fa-solid fa-tooth clinic-tooth"></i><i class="fa-solid fa-user-doctor clinic-doctor"></i><i class="fa-solid fa-user clinic-patient"></i><span class="flow-line line-one"></span><span class="flow-line line-two"></span><div class="visit-chip"><i class="fa-solid fa-circle-check"></i><span>Visit in progress</span></div></div>
-    </section>
-    <div class="row g-4">
-        <div class="col-xl-8"><div class="df-card p-4 h-100"><div class="section-heading"><div><span class="eyebrow">TODAY</span><h2 class="h5 mb-0">Patient journey</h2></div><a href="{{ url_for('appointments.index') }}" class="btn btn-sm btn-df-secondary"><i class="fa-solid fa-calendar-check"></i> Schedule</a></div><div class="care-flow"><div class="care-step active"><span class="step-icon"><i class="fa-solid fa-door-open"></i></span><strong>Arrived</strong><small>Reception check-in</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-stethoscope"></i></span><strong>Consult</strong><small>Doctor examination</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-tooth"></i></span><strong>Treatment</strong><small>Care plan underway</small></div><div class="care-connector"></div><div class="care-step"><span class="step-icon"><i class="fa-solid fa-house-medical"></i></span><strong>Follow-up</strong><small>Next visit planned</small></div></div><div id="dashboard-timeline-list"><div class="text-muted">Loading visits...</div></div></div></div>
-        <div class="col-xl-4"><div class="df-card p-4 h-100 queue-panel"><div class="section-heading"><div><span class="eyebrow">LIVE QUEUE</span><h2 class="h5 mb-0">Ready for care</h2></div><span class="pulse-label"><i class="fa-solid fa-circle"></i> Live</span></div><div id="dashboard-queue-list"><div class="text-muted">Loading queue...</div></div><a class="btn btn-df-primary w-100 mt-3" href="{{ url_for('queue.index') }}">Open queue <i class="fa-solid fa-arrow-right"></i></a></div></div>
-        <div class="col-12"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">CARE ROOMS</span><h2 class="h5 mb-0">Today’s operatories</h2></div><a href="{{ url_for('staff.index') }}" class="btn btn-sm btn-df-secondary">View team</a></div><div id="dashboard-chairs-grid" class="row g-3"><div class="text-muted">Loading care rooms...</div></div></div></div>
-        <div class="col-lg-6"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">FOLLOW THROUGH</span><h2 class="h5 mb-0">Upcoming follow-ups</h2></div></div><div id="dashboard-followups-list"><div class="text-muted">Loading follow-ups...</div></div></div></div>
-        <div class="col-lg-6"><div class="df-card p-4"><div class="section-heading"><div><span class="eyebrow">NEEDS ATTENTION</span><h2 class="h5 mb-0">Clinic alerts</h2></div></div><div id="dashboard-alerts-container"><div class="text-muted">Loading alerts...</div></div></div></div>
+    <div class="hero-art"><span>✦</span></div>
+</div>
+
+<div class="grid grid-4" style="margin-top:18px">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong id="kpi-visits">18</strong>
+        <small>visits today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong id="kpi-waiting">4</strong>
+        <small>waiting now</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong id="kpi-revenue">42.8k</strong>
+        <small>collected this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong id="kpi-acceptance">86%</strong>
+        <small>plan acceptance</small>
     </div>
 </div>
-{% endblock %}
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Todays journey</h2>
+            <a href="{{ url_for('appointments.index') }}">See calendar</a>
+        </div>
+        <div class="timeline" id="dashboard-journey-list">
+            <div class="timeline-item">
+                <span class="timeline-dot"></span>
+                <div>
+                    <b>09:00 - Aravind Menon</b>
+                    <div class="muted">Root canal review - Chair 01</div>
+                </div>
+                <span class="pill green">In progress</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--orange)"></span>
+                <div>
+                    <b>10:30 - Vishal Rao</b>
+                    <div class="muted">Scaling follow-up - Chair 02</div>
+                </div>
+                <span class="pill orange">Checked in</span>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--blue)"></span>
+                <div>
+                    <b>12:00 - Medha Iyer</b>
+                    <div class="muted">Pediatric consultation</div>
+                </div>
+                <span class="pill">Upcoming</span>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Live queue</h2>
+            <span class="pill green" id="queue-live-count">4 waiting</span>
+        </div>
+        <div id="dashboard-queue-tokens">
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>01</b> - Aravind Menon<br><small class="muted">with Dr. Sharma</small></span>
+                <span class="pill green">Now</span>
+            </div>
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>02</b> - Vishal Rao<br><small class="muted">12 min wait</small></span>
+                <span class="pill orange">Next</span>
+            </div>
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>03</b> - Medha Iyer<br><small class="muted">25 min wait</small></span>
+                <span class="pill">Waiting</span>
+            </div>
+        </div>
+        <a class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px" href="{{ url_for('queue.index') }}">Open queue</a>
+    </div>
+</div>
 {% endblock %}

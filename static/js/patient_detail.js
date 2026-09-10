@@ -431,3 +431,41 @@ window.openAddAlertModal = function() {
     });
   }
 };
+
+window.uploadPatientFile = async function(fileInput, docType = 'X-Ray') {
+  if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+    showToast('Please select a file to upload', 'warning');
+    return;
+  }
+  const file = fileInput.files[0];
+  const folder = ['X-Ray', 'OPG', 'RVG', 'CBCT'].includes(docType) ? 'xrays' : 'documents';
+
+  showToast(`Uploading ${file.name} to cloud storage...`, 'info', 2000);
+
+  try {
+    let uploadRes;
+    if (window.DentiFlowFirebase && window.DentiFlowFirebase.isReady) {
+      uploadRes = await window.DentiFlowFirebase.uploadFile(file, currentPatientId, folder);
+    } else {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', file.name);
+      formData.append('doc_type', docType);
+      const res = await fetch(`/api/patients/${currentPatientId}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      uploadRes = await res.json();
+    }
+
+    if (uploadRes && (uploadRes.status === 'success' || uploadRes.url)) {
+      showToast(`File uploaded successfully (${uploadRes.storage || 'Cloud'})`, 'success');
+      loadPatientFullData(currentPatientId);
+    } else {
+      showToast('File upload failed', 'danger');
+    }
+  } catch (e) {
+    console.error('File upload error:', e);
+    showToast('Upload error. Please try again.', 'danger');
+  }
+};
