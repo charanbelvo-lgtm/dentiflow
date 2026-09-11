@@ -13,7 +13,8 @@ clinical_bp = Blueprint('clinical', __name__)
 def index():
     patients = Patient.query.order_by(Patient.name.asc()).all()
     doctors = Doctor.query.all()
-    return render_template('clinical.html', patients=patients, doctors=doctors)
+    notes = ClinicalNote.query.order_by(ClinicalNote.id.desc()).limit(8).all()
+    return render_template('clinical.html', patients=patients, doctors=doctors, notes=notes)
 
 @clinical_bp.route('/dental-chart')
 @clinical_bp.route('/chart')

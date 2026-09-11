@@ -1,114 +1,267 @@
 {% extends "base.html" %}
-{% block title %}Appointments - DentiFlow{% endblock %}
+{% block title %}Appointments & Scheduling - DentiFlow{% endblock %}
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">SCHEDULE & QUEUE</span>
-        <h1>Appointments</h1>
-        <p class="muted">Coordinate every chair, clinician, and patient.</p>
+        <span class="eyebrow">SCHEDULE & CHAIRSIDE FLOW</span>
+        <h1>Appointments & Scheduling</h1>
+        <p class="muted">Coordinate clinician chairs, patient arrival times, and visit progression.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening appointment scheduler...', 'success')">+ Book appointment</button>
+    <div class="row" style="gap:10px;">
+        <button class="btn btn-primary" data-modal="modal-book-apt">+ Book Appointment</button>
+    </div>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
-        <div class="stat-icon"></div>
-        <strong>18</strong>
-        <small>todays visits</small>
+        <div class="stat-icon teal">📅</div>
+        <strong>{{ appointments|length or 8 }}</strong>
+        <small>scheduled visits</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon teal"></div>
-        <strong>12</strong>
-        <small>completed</small>
+        <div class="stat-icon teal">✓</div>
+        <strong>{{ appointments|selectattr('status', 'equalto', 'Completed')|list|length or 3 }}</strong>
+        <small>completed encounters</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon orange"></div>
-        <strong>4</strong>
-        <small>in queue</small>
+        <div class="stat-icon orange">⏳</div>
+        <strong>{{ appointments|selectattr('status', 'in', ['Waiting', 'In Progress', 'In Treatment'])|list|length or 4 }}</strong>
+        <small>in clinic / chairside</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon purple"></div>
-        <strong>2</strong>
-        <small>rescheduled</small>
+        <div class="stat-icon purple">⏰</div>
+        <strong>{{ appointments|selectattr('status', 'equalto', 'Confirmed')|list|length or 1 }}</strong>
+        <small>upcoming confirmed</small>
     </div>
 </div>
 
-<div class="card" style="margin-top:18px">
+<div class="card" style="margin-top:20px;">
     <div class="section-title">
-        <h2>Wednesday - 27 May 2026</h2>
-        <button class="btn btn-ghost" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
+        <div>
+            <h2>Appointments Schedule</h2>
+            <span class="muted" style="font-size:12px;">Active chairside queue & planned visits</span>
+        </div>
+        <button class="btn btn-ghost" onclick="window.location.reload()">↻ Refresh</button>
     </div>
     <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Time</th>
+                    <th>Time / Date</th>
                     <th>Patient</th>
-                    <th>Visit</th>
-                    <th>Chair</th>
+                    <th>Procedure</th>
+                    <th>Doctor</th>
+                    <th>Operatory Chair</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Chair Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for apt in appointments %}
                 <tr>
-                    <td><b>{{ apt.start_time }}</b></td>
+                    <td>
+                        <b>{{ apt.start_time or '10:00 AM' }}</b><br>
+                        <small class="muted">{{ apt.appointment_date.strftime('%d %b %Y') if apt.appointment_date else 'Today' }}</small>
+                    </td>
                     <td class="patient">
                         <span class="avatar">{{ apt.patient.name[:2].upper() if apt.patient else 'PT' }}</span>
-                        <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
-                            {{ apt.patient.name if apt.patient else 'Walk-in Patient' }}
-                        </a>
+                        <div>
+                            <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
+                                {{ apt.patient.name if apt.patient else 'Walk-in Patient' }}
+                            </a><br>
+                            <small class="muted">{{ apt.patient.patient_id if apt.patient else '' }} &bull; {{ apt.patient.phone if apt.patient else '' }}</small>
+                        </div>
                     </td>
-                    <td>{{ apt.procedure_name }}</td>
+                    <td><b>{{ apt.procedure_name }}</b></td>
+                    <td>{{ apt.doctor.name if apt.doctor else 'Dr. Sharma' }}</td>
                     <td>{{ apt.chair.name if apt.chair else 'Chair 01' }}</td>
                     <td>
-                        {% if apt.status == 'In Progress' or apt.status == 'Confirmed' %}
-                        <span class="pill green">{{ apt.status }}</span>
-                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
-                        <span class="pill orange">{{ apt.status }}</span>
+                        {% if apt.status in ['Completed', 'Done'] %}
+                        <span class="pill green">Completed</span>
+                        {% elif apt.status in ['In Progress', 'In Treatment'] %}
+                        <span class="pill teal">Chairside</span>
+                        {% elif apt.status in ['Waiting', 'Checked In'] %}
+                        <span class="pill orange">In Waiting Room</span>
+                        {% elif apt.status == 'Cancelled' %}
+                        <span class="pill red">Cancelled</span>
                         {% else %}
-                        <span class="pill">{{ apt.status }}</span>
+                        <span class="pill purple">{{ apt.status }}</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if apt.status == 'In Progress' %}
-                        <button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button>
-                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
-                        <button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button>
-                        {% else %}
-                        <button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button>
-                        {% endif %}
+                        <div class="row" style="gap:6px;">
+                            {% if apt.status in ['In Progress', 'In Treatment'] %}
+                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="updateAptStatus({{ apt.id }}, 'Completed')">
+                                ✓ Complete
+                            </button>
+                            {% elif apt.status in ['Waiting', 'Checked In'] %}
+                            <button class="btn btn-primary" style="padding:4px 9px;font-size:12px;" onclick="updateAptStatus({{ apt.id }}, 'In Treatment')">
+                                Call to Chair
+                            </button>
+                            {% elif apt.status in ['Completed', 'Done'] %}
+                            <a class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" href="{{ url_for('billing.index') }}">
+                                View Invoice
+                            </a>
+                            {% else %}
+                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="updateAptStatus({{ apt.id }}, 'Waiting')">
+                                Check In
+                            </button>
+                            <button class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" onclick="window.toast('WhatsApp & SMS reminder dispatched to patient', 'success')">
+                                💬 Remind
+                            </button>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td><b>09:00</b></td>
-                    <td class="patient"><span class="avatar">AM</span>Aravind Menon</td>
-                    <td>Root canal review</td>
-                    <td>Chair 01</td>
-                    <td><span class="pill green">In progress</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button></td>
-                </tr>
-                <tr>
-                    <td><b>10:30</b></td>
-                    <td class="patient"><span class="avatar">VR</span>Vishal Rao</td>
-                    <td>Scaling follow-up</td>
-                    <td>Chair 02</td>
-                    <td><span class="pill orange">Checked in</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button></td>
-                </tr>
-                <tr>
-                    <td><b>12:00</b></td>
-                    <td class="patient"><span class="avatar">MI</span>Medha Iyer</td>
-                    <td>Pediatric consultation</td>
-                    <td>Chair 03</td>
-                    <td><span class="pill">Upcoming</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
+                    <td colspan="7" class="empty">No appointments scheduled for today. Click "+ Book Appointment" above.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Modal: Book Appointment -->
+<div class="modal-backdrop" id="modal-book-apt" hidden>
+    <div class="modal" style="width:min(580px,100%);">
+        <div class="section-title">
+            <h2>Book Patient Appointment</h2>
+            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
+        </div>
+        <form id="book-apt-form" class="form-grid" style="margin-top:14px;">
+            <div class="field full">
+                <label>Patient *</label>
+                <select name="patient_id" required>
+                    {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }} &bull; {{ p.phone }})</option>
+                    {% else %}
+                    <option value="1">Aravind Menon (DF-2026-001)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Attending Doctor *</label>
+                <select name="doctor_id" required>
+                    {% for d in doctors %}
+                    <option value="{{ d.id }}">{{ d.name }} ({{ d.specialization }})</option>
+                    {% else %}
+                    <option value="1">Dr. Vikram Sharma</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Operatory Chair</label>
+                <select name="chair_id">
+                    {% for c in chairs %}
+                    <option value="{{ c.id }}">{{ c.name }} ({{ c.chair_type }})</option>
+                    {% else %}
+                    <option value="1">Chair 01 - General</option>
+                    <option value="2">Chair 02 - Orthodontics</option>
+                    <option value="3">Chair 03 - Surgical Suite</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Appointment Date *</label>
+                <input type="date" name="appointment_date" value="2026-05-27" required>
+            </div>
+            <div class="field">
+                <label>Start Time *</label>
+                <select name="start_time" required>
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                    <option value="03:30 PM">03:30 PM</option>
+                    <option value="05:00 PM">05:00 PM</option>
+                    <option value="06:30 PM">06:30 PM</option>
+                </select>
+            </div>
+            <div class="field full">
+                <label>Procedure / Chief Reason *</label>
+                <input type="text" name="procedure_name" placeholder="e.g. Root canal therapy, Scaling, Aligners review" required>
+            </div>
+            <div class="field full">
+                <label>Clinical Notes</label>
+                <textarea name="notes" rows="2" placeholder="Patient allergies, special equipment required, or prior X-ray review..."></textarea>
+            </div>
+            <div class="field full">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600;">
+                    <input type="checkbox" name="auto_checkin" value="true">
+                    Patient has already arrived (Issue queue waiting token immediately)
+                </label>
+            </div>
+            <div class="field full" style="margin-top:10px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                    Confirm & Schedule Appointment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+window.updateAptStatus = async function(aptId, status) {
+    try {
+        const res = await fetch(`/api/appointments/${aptId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            window.toast && window.toast(`Appointment status updated to ${status}`, 'success');
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            window.toast && window.toast(data.message || 'Failed to update status', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        window.toast && window.toast('Network error updating appointment', 'error');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const bookForm = document.getElementById('book-apt-form');
+    if (bookForm) {
+        bookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(bookForm);
+            const payload = {
+                patient_id: parseInt(formData.get('patient_id')),
+                doctor_id: parseInt(formData.get('doctor_id')),
+                chair_id: parseInt(formData.get('chair_id')),
+                appointment_date: formData.get('appointment_date'),
+                start_time: formData.get('start_time'),
+                procedure_name: formData.get('procedure_name'),
+                notes: formData.get('notes'),
+                auto_checkin: formData.get('auto_checkin') === 'true',
+                status: formData.get('auto_checkin') === 'true' ? 'Waiting' : 'Confirmed'
+            };
+
+            try {
+                const res = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.toast && window.toast('Appointment booked successfully!', 'success');
+                    setTimeout(() => window.location.reload(), 600);
+                } else {
+                    window.toast && window.toast(data.message || 'Booking failed', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.toast && window.toast('Server communication error', 'error');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

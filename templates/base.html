@@ -22,6 +22,9 @@
                 <a href="{{ url_for('appointments.index') }}" class="{% if '/appointments' in request.path %}active{% endif %}">
                     <span>Appointments</span>
                 </a>
+                <a href="{{ url_for('queue.index') }}" class="{% if '/queue' in request.path %}active{% endif %}">
+                    <span>Live Queue</span>
+                </a>
                 <a href="{{ url_for('patients.index') }}" class="{% if '/patients' in request.path %}active{% endif %}">
                     <span>Patients</span>
                 </a>
@@ -32,20 +35,30 @@
                     <span>Dental chart</span>
                 </a>
                 <a href="{{ url_for('treatment_plans.index') }}" class="{% if '/treatment-plans' in request.path %}active{% endif %}">
-                    - <span>Treatment plans</span>
+                    <span>Treatment plans</span>
                 </a>
+
                 <div class="nav-label">Practice</div>
                 <a href="{{ url_for('billing.index') }}" class="{% if '/billing' in request.path %}active{% endif %}">
-                    <span>Billing</span>
+                    <span>Billing & Invoicing</span>
                 </a>
                 <a href="{{ url_for('inventory.index') }}" class="{% if '/inventory' in request.path %}active{% endif %}">
                     <span>Inventory</span>
                 </a>
-                <a href="{{ url_for('reports.index') }}" class="{% if '/reports' in request.path %}active{% endif %}">
-                    <span>Reports</span>
+                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/doctor-profile' in request.path %}active{% endif %}">
+                    <span>Staff & Doctors</span>
                 </a>
-                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/profile' in request.path %}active{% endif %}">
-                    <span>Profile</span>
+                <a href="{{ url_for('branches.index') }}" class="{% if '/branches' in request.path %}active{% endif %}">
+                    <span>Clinic Branches</span>
+                </a>
+                <a href="{{ url_for('operations.index') }}" class="{% if '/operations' in request.path %}active{% endif %}">
+                    <span>Operations & Lab</span>
+                </a>
+                <a href="{{ url_for('reports.index') }}" class="{% if '/reports' in request.path %}active{% endif %}">
+                    <span>Practice Reports</span>
+                </a>
+                <a href="{{ url_for('settings.index') }}" class="{% if '/settings' in request.path %}active{% endif %}">
+                    <span>Clinic Settings</span>
                 </a>
             </nav>
             <div class="sidebar-bottom">

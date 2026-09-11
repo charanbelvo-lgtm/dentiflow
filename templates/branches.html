@@ -1,16 +1,83 @@
 {% extends "base.html" %}
-{% block title %}Branches - DentiFlow{% endblock %}
+{% block title %}Clinic Branches - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">Branches</h1>
-</div>
-<div class="page-body" id="app-root">
-    <!-- Frontend JS will mount here or we render basic UI -->
-    <div class="card p-4 text-center">
-        <i class="fa-solid fa-building fa-3x text-primary mb-3"></i>
-        <h3>Clinic branches</h3>
-        <p class="text-muted">Branch information will appear here.</p>
+<div class="page-head">
+    <div>
+        <span class="eyebrow">MULTI-LOCATION NETWORK</span>
+        <h1>Clinic Branches & Centers</h1>
+        <p class="muted">Unified oversight of operatories, staffing, and revenue across all clinical locations.</p>
     </div>
+    <div class="row">
+        <span class="pill green">4 Active Centers</span>
+        <button class="btn btn-ghost" onclick="window.toast('Branch sync verified across cloud', 'success')">↻ Sync</button>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon teal">🏢</div>
+        <strong>4</strong>
+        <small>operational branches</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon">💺</div>
+        <strong>12 Chairs</strong>
+        <small>total operatory capacity</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">👥</div>
+        <strong>955</strong>
+        <small>active patients / mo</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple">₹</div>
+        <strong>₹12.2L</strong>
+        <small>network monthly revenue</small>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top: 24px;" id="branches-grid">
+    {% for b in branches %}
+    <div class="card" style="border-top: 4px solid {{ 'var(--blue)' if b.is_main else 'var(--teal)' }};">
+        <div class="section-title">
+            <div>
+                <h3>{{ b.name }}</h3>
+                <span class="muted" style="font-size:12px;">Branch Code: {{ b.code }}</span>
+            </div>
+            {% if b.is_main %}
+            <span class="pill green">HQ Flagship</span>
+            {% else %}
+            <span class="pill">Specialty Clinic</span>
+            {% endif %}
+        </div>
+        <p class="muted" style="font-size:13px;margin:10px 0;">
+            📍 {{ b.address }}<br>
+            📞 {{ b.phone }} &bull; ✉️ {{ b.email }}
+        </p>
+        <div class="grid grid-3" style="gap:10px;margin:16px 0;background:#f8fafc;padding:12px;border-radius:8px;">
+            <div>
+                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Chairs</small>
+                <div style="font-size:15px;font-weight:700;">{{ b.chairs|length or 3 }} Units</div>
+            </div>
+            <div>
+                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Doctors</small>
+                <div style="font-size:15px;font-weight:700;">{{ b.doctors|length or 2 }} Clinicians</div>
+            </div>
+            <div>
+                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Est. Mo. Rev</small>
+                <div style="font-size:15px;font-weight:700;color:var(--teal);">₹{{ '4.28L' if b.id == 1 else ('3.12L' if b.id == 2 else ('2.85L' if b.id == 3 else '1.95L')) }}</div>
+            </div>
+        </div>
+        <div class="row between" style="margin-top:14px;">
+            <span class="muted" style="font-size:12px;">
+                Status: <strong style="color:var(--teal);">Fully Operational</strong>
+            </span>
+            <button class="btn btn-soft" onclick="switchActiveBranch({{ b.id }}, '{{ b.name }}')">
+                Set as Active Center &rarr;
+            </button>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}
 {% block scripts %}

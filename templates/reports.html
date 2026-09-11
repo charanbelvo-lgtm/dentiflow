@@ -1,84 +1,137 @@
 {% extends "base.html" %}
-{% block title %}Reports - DentiFlow{% endblock %}
+{% block title %}Practice Intelligence & Clinical Analytics - DentiFlow{% endblock %}
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">PRACTICE INTELLIGENCE</span>
-        <h1>Reports</h1>
-        <p class="muted">A quick read on growth, care quality, and capacity.</p>
+        <span class="eyebrow">PRACTICE INTELLIGENCE & ANALYTICS</span>
+        <h1>Practice Intelligence</h1>
+        <p class="muted">Live operational metrics, treatment mix, financial yield, and clinician performance.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Practice intelligence report downloaded', 'success')">Download report</button>
-</div>
-
-<div class="grid grid-4">
-    <div class="card stat">
-        <div class="stat-icon">INR</div>
-        <strong>INR 4.28L</strong>
-        <small>revenue this month</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon teal"></div>
-        <strong>128</strong>
-        <small>new patients</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon orange"></div>
-        <strong>76%</strong>
-        <small>chair utilization</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon purple"></div>
-        <strong>4.8/5</strong>
-        <small>patient rating</small>
+    <div class="row" style="gap:8px;">
+        <div class="row" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px;gap:4px;" id="timeframe-selector">
+            <button class="btn btn-ghost" data-timeframe="today" style="padding:5px 10px;font-size:12px;border:0;">Today</button>
+            <button class="btn btn-ghost" data-timeframe="7d" style="padding:5px 10px;font-size:12px;border:0;">7D</button>
+            <button class="btn btn-primary" data-timeframe="30d" style="padding:5px 10px;font-size:12px;border:0;">30D</button>
+            <button class="btn btn-ghost" data-timeframe="90d" style="padding:5px 10px;font-size:12px;border:0;">90D</button>
+            <button class="btn btn-ghost" data-timeframe="1y" style="padding:5px 10px;font-size:12px;border:0;">1Y</button>
+        </div>
+        <button class="btn btn-primary" onclick="window.toast('Intelligence report generated and sent to clinic admin email', 'success')">
+            Export Report
+        </button>
     </div>
 </div>
 
-<div class="grid grid-2" style="margin-top:18px">
+<div class="grid grid-4" id="kpi-cards">
+    <div class="card stat">
+        <div class="stat-icon purple">₹</div>
+        <strong id="kpi-revenue">₹13,35,000</strong>
+        <small><span class="pill green" id="kpi-revenue-growth" style="padding:1px 6px;font-size:10px;">+14.8%</span> vs prior period</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">👥</div>
+        <strong id="kpi-patients">830</strong>
+        <small><span class="pill green" id="kpi-patient-growth" style="padding:1px 6px;font-size:10px;">+9.2%</span> treated patients</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">🎯</div>
+        <strong id="kpi-avg-rev">₹1,608</strong>
+        <small>avg revenue per encounter</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">⭐</div>
+        <strong id="kpi-nps">+78</strong>
+        <small>Net Promoter Score (NPS)</small>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:20px;">
+    <!-- Revenue Trend Chart -->
     <div class="card">
         <div class="section-title">
-            <h2>Revenue trend</h2>
-            <span class="pill green">+12.4%</span>
+            <div>
+                <h2>Revenue Trend</h2>
+                <span class="muted" style="font-size:12px;">Billed collections across timeline</span>
+            </div>
+            <span class="pill green" id="trend-badge">Active</span>
         </div>
-        <div class="bar-chart">
-            <div class="bar" style="height:48%"><em>INR 2.1L</em><small>Jan</small></div>
-            <div class="bar" style="height:62%"><em>INR 2.8L</em><small>Feb</small></div>
-            <div class="bar" style="height:56%"><em>INR 2.5L</em><small>Mar</small></div>
-            <div class="bar" style="height:76%"><em>INR 3.5L</em><small>Apr</small></div>
-            <div class="bar" style="height:92%"><em>INR 4.3L</em><small>May</small></div>
+        <div class="bar-chart" id="revenue-bar-chart" style="height:210px;margin-bottom:28px;">
+            <!-- Rendered dynamically by reports.js -->
         </div>
     </div>
+
+    <!-- Care Mix / Procedure Share -->
     <div class="card">
         <div class="section-title">
-            <h2>Care mix</h2>
-            <span class="muted">This month</span>
+            <div>
+                <h2>Clinical Care Mix</h2>
+                <span class="muted" style="font-size:12px;">Revenue share by procedure discipline</span>
+            </div>
+            <span class="pill purple">Clinical Yield</span>
         </div>
-        <div style="margin:18px 0">
-            <div class="row between">
-                <b>General dentistry</b>
-                <span>42%</span>
-            </div>
-            <div class="progress">
-                <span style="width:42%"></span>
-            </div>
+        <div id="procedure-mix-list" style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">
+            <!-- Rendered dynamically by reports.js -->
         </div>
-        <div style="margin:18px 0">
-            <div class="row between">
-                <b>Endodontics</b>
-                <span>31%</span>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:20px;">
+    <!-- Clinician Performance Share -->
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h2>Doctor Production Share</h2>
+                <span class="muted" style="font-size:12px;">Chairside revenue generated per provider</span>
             </div>
-            <div class="progress">
-                <span style="width:31%;background:var(--purple)"></span>
-            </div>
+            <span class="pill green">Top Tier</span>
         </div>
-        <div style="margin:18px 0">
-            <div class="row between">
-                <b>Cosmetic care</b>
-                <span>27%</span>
+        <div id="doctor-share-list" style="display:flex;flex-direction:column;gap:14px;margin-top:10px;">
+            <!-- Rendered dynamically by reports.js -->
+        </div>
+    </div>
+
+    <!-- Quality & Operations Card -->
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h2>Operational Efficiency & NPS</h2>
+                <span class="muted" style="font-size:12px;">Patient loyalty and capacity metrics</span>
             </div>
-            <div class="progress">
-                <span style="width:27%;background:var(--orange)"></span>
+            <span class="pill teal">Verified</span>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <div class="row between" style="margin-bottom:6px;">
+                    <span style="font-size:13px;font-weight:600;">NPS Distribution</span>
+                    <span class="muted" style="font-size:12px;">82% Promoters &bull; 14% Passives &bull; 4% Detractors</span>
+                </div>
+                <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;">
+                    <div style="width:82%;background:#10b981;" title="Promoters: 82%"></div>
+                    <div style="width:14%;background:#f59e0b;" title="Passives: 14%"></div>
+                    <div style="width:4%;background:#ef4444;" title="Detractors: 4%"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-3" style="gap:10px;margin-top:6px;">
+                <div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;">
+                    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;">Acceptance</span>
+                    <strong style="display:block;font-size:20px;color:var(--blue);margin-top:4px;">84.2%</strong>
+                    <small class="muted">plan sign-off</small>
+                </div>
+                <div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;">
+                    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;">No-Show Rate</span>
+                    <strong style="display:block;font-size:20px;color:#10b981;margin-top:4px;">3.8%</strong>
+                    <small class="muted">industry avg 14%</small>
+                </div>
+                <div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;">
+                    <span style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;">Material Cost</span>
+                    <strong style="display:block;font-size:20px;color:var(--purple);margin-top:4px;">12.4%</strong>
+                    <small class="muted">of revenue</small>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
 {% endblock %}

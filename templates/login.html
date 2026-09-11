@@ -50,10 +50,11 @@
             </form>
 
             <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
-            <div class="grid grid-3">
+            <div class="grid grid-4">
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='doctor') }}">Doctor</a>
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='admin') }}">Admin</a>
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='reception') }}">Reception</a>
+                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='patient') }}">Patient</a>
             </div>
 
             <p class="muted" style="font-size:12px;text-align:center;margin-top:20px">

@@ -113,7 +113,7 @@ def demo_login(role):
         'admin': 'admin@dentiflow.com',
         'doctor': 'doctor@dentiflow.com',
         'reception': 'reception@dentiflow.com',
-        'patient': 'budigeashwinigoud@gmail.com'
+        'patient': 'patient@dentiflow.com'
     }
     email = role_email_map.get(role, 'doctor@dentiflow.com')
     user = User.query.filter_by(email=email).first()

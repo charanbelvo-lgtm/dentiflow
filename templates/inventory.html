@@ -1,94 +1,156 @@
 {% extends "base.html" %}
-{% block title %}Inventory - DentiFlow{% endblock %}
+{% block title %}Clinical Inventory - DentiFlow{% endblock %}
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">SUPPLY ROOM</span>
-        <h1>Inventory</h1>
-        <p class="muted">Know what is on the shelf before the next appointment.</p>
+        <span class="eyebrow">SUPPLY ROOM & PHARMACY</span>
+        <h1>Clinical Inventory</h1>
+        <p class="muted">Track biomaterials, restoratives, consumables, and supplier reorder thresholds.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening add supply item...', 'success')">+ Add item</button>
+    <div class="row">
+        <button class="btn btn-primary" data-modal="modal-add-item">+ Add Supply Item</button>
+    </div>
 </div>
 
 <div class="grid grid-3">
     <div class="card stat">
-        <div class="stat-icon"></div>
-        <strong>248</strong>
-        <small>items tracked</small>
+        <div class="stat-icon teal">📦</div>
+        <strong>{{ items|length or 24 }}</strong>
+        <small>total tracked catalog items</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon orange">!</div>
-        <strong>6</strong>
-        <small>low stock alerts</small>
+        <div class="stat-icon orange">⚠️</div>
+        <strong>
+            {{ items|selectattr('current_stock', 'le', 10)|list|length or 3 }}
+        </strong>
+        <small>low stock reorder alerts</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon teal">INR</div>
-        <strong>INR 2.4L</strong>
-        <small>stock value</small>
+        <div class="stat-icon purple">₹</div>
+        <strong>₹2.45L</strong>
+        <small>on-hand inventory valuation</small>
     </div>
 </div>
 
-<div class="card" style="margin-top:18px">
+<div class="card" style="margin-top:24px;">
     <div class="section-title">
-        <h2>Stock overview</h2>
-        <button class="btn btn-soft" onclick="window.toast('Inventory synced with cloud', 'success')">Sync stock</button>
+        <div>
+            <h2>Supply Catalog & Stock Balances</h2>
+            <span class="muted" style="font-size:12px;">Real-time stock deduction per dental procedure</span>
+        </div>
+        <button class="btn btn-ghost" onclick="window.toast('Inventory synced with cloud stock ledger', 'success')">↻ Sync</button>
     </div>
     <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Item</th>
+                    <th>Item Name</th>
                     <th>Category</th>
-                    <th>On hand</th>
-                    <th>Reorder at</th>
+                    <th>On Hand</th>
+                    <th>Threshold</th>
                     <th>Status</th>
                     <th>Supplier</th>
+                    <th>Quick Stock Adjust</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in items %}
                 <tr data-searchable>
-                    <td><b>{{ item.name }}</b></td>
+                    <td>
+                        <b>{{ item.name }}</b><br>
+                        <small class="muted">Code: {{ item.item_code }} &bull; Batch: {{ item.batch_number or 'BATCH-2026' }}</small>
+                    </td>
                     <td>{{ item.category }}</td>
-                    <td>{{ item.current_stock }} {{ item.unit }}</td>
-                    <td>{{ item.min_stock_level }}</td>
+                    <td><strong style="font-size:14px;">{{ item.current_stock }}</strong> {{ item.unit }}</td>
+                    <td class="muted">{{ item.min_stock_level }} {{ item.unit }}</td>
                     <td>
                         {% if item.current_stock <= item.min_stock_level %}
-                        <span class="pill orange">Low stock</span>
+                        <span class="pill red">Low Stock</span>
                         {% else %}
-                        <span class="pill green">Healthy</span>
+                        <span class="pill green">Adequate</span>
                         {% endif %}
                     </td>
-                    <td>{{ item.supplier or 'DentSupply Co.' }}</td>
+                    <td class="muted">{{ item.supplier_name or 'DentSupply Co.' }}</td>
+                    <td>
+                        <div class="row" style="gap:6px;">
+                            <button class="btn btn-soft" style="padding:3px 8px;font-size:12px;" onclick="adjustStock({{ item.id }}, 'Add', 5, '{{ item.name }}')">
+                                +5 Restock
+                            </button>
+                            <button class="btn btn-ghost" style="padding:3px 8px;font-size:12px;" onclick="adjustStock({{ item.id }}, 'Deduct', 1, '{{ item.name }}')">
+                                -1 Use
+                            </button>
+                        </div>
+                    </td>
                 </tr>
                 {% else %}
                 <tr data-searchable>
-                    <td><b>3M Filtek Composite Resin A2</b></td>
+                    <td><b>3M Filtek Composite Resin A2</b><br><small class="muted">Code: MAT-01 &bull; Syringe</small></td>
                     <td>Restorative</td>
-                    <td>6 syringes</td>
-                    <td>10</td>
-                    <td><span class="pill orange">Low stock</span></td>
+                    <td><strong>6</strong> syringes</td>
+                    <td>10 syringes</td>
+                    <td><span class="pill red">Low Stock</span></td>
                     <td>DentSupply Co.</td>
-                </tr>
-                <tr data-searchable>
-                    <td><b>Latex gloves - Medium</b></td>
-                    <td>Consumables</td>
-                    <td>24 boxes</td>
-                    <td>8</td>
-                    <td><span class="pill green">Healthy</span></td>
-                    <td>Medico</td>
-                </tr>
-                <tr data-searchable>
-                    <td><b>Endo files - 25mm</b></td>
-                    <td>Endodontics</td>
-                    <td>42 packs</td>
-                    <td>12</td>
-                    <td><span class="pill green">Healthy</span></td>
-                    <td>RootPro</td>
+                    <td>
+                        <button class="btn btn-soft" style="padding:3px 8px;font-size:12px;">+5 Restock</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Modal: Add Supply Item -->
+<div class="modal-backdrop" id="modal-add-item" hidden>
+    <div class="modal">
+        <div class="section-title">
+            <h2>Add Clinical Supply Item</h2>
+            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
+        </div>
+        <form id="new-item-form" class="form-grid" style="margin-top:14px;">
+            <div class="field full">
+                <label>Item Name *</label>
+                <input type="text" name="name" placeholder="e.g. 3M Single Bond Universal" required>
+            </div>
+            <div class="field">
+                <label>Category</label>
+                <select name="category">
+                    {% for c in categories %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% else %}
+                    <option value="Dental Materials">Dental Materials</option>
+                    <option value="Consumables">Consumables</option>
+                    <option value="Medicines">Medicines</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Stock Unit</label>
+                <input type="text" name="unit" value="units" placeholder="syringes, boxes, vials" required>
+            </div>
+            <div class="field">
+                <label>Initial Quantity</label>
+                <input type="number" name="current_stock" value="20" min="1" required>
+            </div>
+            <div class="field">
+                <label>Reorder Alert Threshold</label>
+                <input type="number" name="min_stock_level" value="5" min="1" required>
+            </div>
+            <div class="field">
+                <label>Unit Price (₹)</label>
+                <input type="number" name="unit_price" value="1250" min="10" required>
+            </div>
+            <div class="field">
+                <label>Supplier</label>
+                <input type="text" name="supplier_name" value="DentSupply Prime India" required>
+            </div>
+            <div class="field full" style="margin-top:12px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Add Item to Inventory</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
 {% endblock %}

@@ -3,82 +3,187 @@
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">CARE PLANS</span>
-        <h1>Treatment plans</h1>
-        <p class="muted">Turn clinical findings into an understandable next step.</p>
+        <span class="eyebrow">CARE PLANS & ESTIMATES</span>
+        <h1>Treatment Plans</h1>
+        <p class="muted">Turn clinical diagnoses into transparent, phase-by-phase patient care journeys.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening treatment plan builder...', 'success')">+ Build plan</button>
+    <div class="row">
+        <button class="btn btn-primary" data-modal="modal-build-plan">+ Build Plan</button>
+    </div>
 </div>
 
-<div class="grid grid-2">
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon teal">📋</div>
+        <strong>{{ plans|length or 3 }} Plans</strong>
+        <small>total treatment plans</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon green">✓</div>
+        <strong>86%</strong>
+        <small>patient acceptance rate</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon">₹</div>
+        <strong>₹1.86L</strong>
+        <small>total planned care value</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">⏳</div>
+        <strong>3 Plans</strong>
+        <small>pending consent follow-up</small>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:24px;">
+    {% for plan in plans %}
     <div class="card">
         <div class="section-title">
             <div>
-                <h2>Aravind Menon</h2>
-                <span class="muted">Plan - Tooth #16</span>
+                <h2>{{ plan.patient.name if plan.patient else 'Patient' }}</h2>
+                <span class="muted" style="font-size:12px;">Plan #{{ plan.plan_number }} &bull; {{ plan.title }}</span>
             </div>
-            <span class="pill orange">Awaiting consent</span>
+            <span class="pill {{ 'green' if plan.status in ['Accepted', 'Completed'] else ('orange' if plan.status == 'In Progress' else '') }}">
+                {{ plan.status }}
+            </span>
         </div>
-        <div class="row between">
-            <b>Root canal treatment</b>
-            <strong>INR 15,000</strong>
+        <div class="row between" style="margin-bottom:8px;">
+            <b>{{ plan.title }}</b>
+            <strong style="font-size:16px;color:var(--ink);">₹{{ "{:,.0f}".format(plan.net_cost or plan.total_cost) }}</strong>
         </div>
-        <div class="progress" style="margin:12px 0">
-            <span style="width:50%"></span>
+        
+        <div class="progress" style="margin:10px 0 6px;">
+            <span style="width:{{ '100%' if plan.status == 'Completed' else ('65%' if plan.status == 'In Progress' else ('35%' if plan.status == 'Accepted' else '10%')) }};"></span>
         </div>
-        <div class="row between muted">
-            <span>2 of 4 visits complete</span>
-            <span>50%</span>
+        <div class="row between muted" style="font-size:12px;">
+            <span>Attending: {{ plan.doctor.name if plan.doctor else 'Dr. Ananya Sharma' }}</span>
+            <span>Created: {{ plan.created_at.strftime('%d %b %Y') if plan.created_at else 'Recent' }}</span>
         </div>
-        <div class="timeline" style="margin-top:15px">
+
+        {% if plan.phases %}
+        <div class="timeline" style="margin-top:16px;">
+            {% for phase in plan.phases %}
+            <div class="timeline-item">
+                <span class="timeline-dot" style="{{ 'background:var(--teal);' if phase.status == 'Completed' else ('background:var(--orange);' if phase.status == 'In Progress' else 'background:#cbd5e1;') }}"></span>
+                <div style="flex:1;">
+                    <b>Phase {{ phase.phase_number }}: {{ phase.title }}</b>
+                    {% for itm in phase.items %}
+                    <div class="muted" style="font-size:12px;">Tooth #{{ itm.tooth_number }} &bull; {{ itm.procedure_name }} (₹{{ "{:,.0f}".format(itm.net_cost) }})</div>
+                    {% endfor %}
+                </div>
+                <span class="pill {{ 'green' if phase.status == 'Completed' else ('orange' if phase.status == 'In Progress' else '') }}">
+                    {{ phase.status }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="timeline" style="margin-top:16px;">
             <div class="timeline-item">
                 <span class="timeline-dot"></span>
                 <div>
-                    <b>Consultation</b>
-                    <div class="muted">Completed - May 22</div>
+                    <b>Phase 1: Biomechanical Preparation</b>
+                    <div class="muted">Access cavity & rotary shaping</div>
                 </div>
                 <span class="pill green">Done</span>
             </div>
             <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--orange)"></span>
+                <span class="timeline-dot" style="background:var(--orange);"></span>
                 <div>
-                    <b>Cleaning & shaping</b>
-                    <div class="muted">Next - May 29</div>
+                    <b>Phase 2: Obturation & Monolithic Crown</b>
+                    <div class="muted">Bioceramic sealer + 3D Zirconia Crown</div>
                 </div>
-                <span class="pill orange">Next</span>
-            </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:#aab7c6"></span>
-                <div>
-                    <b>Obturation + crown</b>
-                    <div class="muted">To be scheduled</div>
-                </div>
-                <span class="pill">Later</span>
+                <span class="pill orange">Next Step</span>
             </div>
         </div>
-        <div class="row" style="margin-top:16px">
-            <button class="btn btn-primary" onclick="window.toast('Consent link copied to clipboard', 'success')">Share with patient</button>
-            <button class="btn btn-ghost" onclick="window.toast('Treatment plan PDF exported', 'success')">Export PDF</button>
+        {% endif %}
+
+        <div class="row" style="margin-top:18px;gap:8px;">
+            {% if plan.status == 'Proposed' %}
+            <button class="btn btn-teal" onclick="updatePlanStatus({{ plan.id }}, 'Accepted')">
+                Accept Plan
+            </button>
+            {% elif plan.status == 'Accepted' %}
+            <button class="btn btn-primary" onclick="convertPlanToInvoice({{ plan.id }})">
+                Convert to Invoice &rarr;
+            </button>
+            {% endif %}
+            <button class="btn btn-soft" onclick="window.toast('Treatment consent link copied to clipboard', 'success')">
+                Share Consent
+            </button>
+            <button class="btn btn-ghost" onclick="window.toast('Treatment estimate PDF generated', 'success')">
+                Export PDF
+            </button>
         </div>
     </div>
-    <div class="card">
+    {% else %}
+    <div class="card empty" style="grid-column:1/-1;">
+        No treatment plans found. Click "+ Build Plan" to create the first patient plan.
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Build Treatment Plan Modal -->
+<div class="modal-backdrop" id="modal-build-plan" hidden>
+    <div class="modal">
         <div class="section-title">
-            <h2>Plan health</h2>
-            <span class="pill green">86% accepted</span>
+            <h2>Build Treatment Plan</h2>
+            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
         </div>
-        <div class="grid grid-2">
-            <div class="stat">
-                <strong>INR 1.86L</strong>
-                <small>planned value</small>
+        <form id="new-plan-form" class="form-grid" style="margin-top:14px;">
+            <div class="field full">
+                <label>Select Patient *</label>
+                <select name="patient_id" required>
+                    {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }})</option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="stat">
-                <strong>INR 92k</strong>
-                <small>collected</small>
+            <div class="field">
+                <label>Attending Clinician</label>
+                <select name="doctor_id">
+                    {% for d in doctors %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
-        </div>
-        <p class="notice" style="margin-top:16px">
-            3 plans need a follow-up this week. Patients respond best when the next step is shared immediately after the visit.
-        </p>
+            <div class="field">
+                <label>Plan Title / Care Goal *</label>
+                <input type="text" name="title" value="Root Canal Therapy & Crown Restoration" required>
+            </div>
+            <div class="field">
+                <label>Primary Procedure</label>
+                <select name="procedure_name">
+                    <option value="Single-Visit Molar Root Canal Treatment">Single-Visit Molar Root Canal Treatment</option>
+                    <option value="Monolithic 3D Zirconia Crown">Monolithic 3D Zirconia Crown</option>
+                    <option value="Tooth Colored Composite Restoration">Tooth Colored Composite Restoration</option>
+                    <option value="Titanium Dental Implant Fixture">Titanium Dental Implant Fixture</option>
+                    <option value="Clear Aligners Comprehensive Plan">Clear Aligners Comprehensive Plan</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Tooth Number / Region</label>
+                <input type="text" name="tooth_number" value="16" placeholder="e.g. 16, 21, All Arches" required>
+            </div>
+            <div class="field">
+                <label>Estimated Total Fee (₹)</label>
+                <input type="number" name="total_cost" value="15000" min="500" required>
+            </div>
+            <div class="field">
+                <label>Courtesy Discount (₹)</label>
+                <input type="number" name="discount_amount" value="1000" min="0">
+            </div>
+            <div class="field full">
+                <label>Clinical Notes & Rationale</label>
+                <textarea name="notes" rows="2" placeholder="Tooth status, restorative prognosis, patient consent discussion..."></textarea>
+            </div>
+            <div class="field full" style="margin-top:12px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Save Treatment Plan</button>
+            </div>
+        </form>
     </div>
 </div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/treatment_plans.js') }}"></script>
 {% endblock %}
