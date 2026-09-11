@@ -278,13 +278,102 @@
     const form = document.querySelector("[data-login]");
     if (!form) return;
 
-    const roleRadios = form.querySelectorAll("input[name=role]");
+    let currentMode = "signin";
+    const tabSignIn = document.getElementById("tab-btn-signin");
+    const tabSignUp = document.getElementById("tab-btn-signup");
+    const eyebrow = document.getElementById("auth-eyebrow");
+    const title = document.getElementById("auth-title");
+    const subtitle = document.getElementById("auth-subtitle");
+    const submitBtn = document.getElementById("auth-submit-btn");
+    const demoSection = document.getElementById("demo-login-section");
+    const switchPrompt = document.getElementById("auth-switch-prompt");
+    const switchLink = document.getElementById("auth-switch-link");
+    const nameLabel = document.getElementById("auth-name-label");
     const nameInput = form.querySelector("[name=name]");
     const emailInput = form.querySelector("[name=email], input[type=email]");
+    const phoneField = document.getElementById("signup-phone-field");
+    const phoneInput = form.querySelector("[name=phone]");
+    const passwordInput = form.querySelector("[name=password]");
+    const confirmField = document.getElementById("signup-confirm-field");
+    const confirmInput = form.querySelector("[name=confirm_password]");
+    const termsField = document.getElementById("signup-terms-field");
+    const termsCheckbox = document.getElementById("auth-terms-checkbox");
+    const roleRadios = form.querySelectorAll("input[name=role]");
+
+    function setMode(mode) {
+      currentMode = mode;
+      const isSignup = mode === "signup";
+
+      if (tabSignIn) {
+        tabSignIn.classList.toggle("active", !isSignup);
+        tabSignIn.setAttribute("aria-selected", !isSignup ? "true" : "false");
+      }
+      if (tabSignUp) {
+        tabSignUp.classList.toggle("active", isSignup);
+        tabSignUp.setAttribute("aria-selected", isSignup ? "true" : "false");
+      }
+
+      if (eyebrow) eyebrow.textContent = isSignup ? "JOIN DENTIFLOW" : "WELCOME BACK";
+      if (title) title.textContent = isSignup ? "Create an Account" : "DentiFlow";
+      if (subtitle) subtitle.textContent = isSignup 
+        ? "Register your profile to access your dental workspace." 
+        : "Choose a demo role or enter your details to sign in.";
+
+      if (nameLabel) nameLabel.textContent = isSignup ? "Full Name *" : "Your name";
+      if (nameInput) {
+        nameInput.required = isSignup;
+        if (isSignup && !nameInput.value) {
+          nameInput.placeholder = "Enter your full name";
+        }
+      }
+
+      if (phoneField) phoneField.style.display = isSignup ? "block" : "none";
+      if (phoneInput) phoneInput.required = isSignup;
+
+      if (confirmField) confirmField.style.display = isSignup ? "block" : "none";
+      if (confirmInput) confirmInput.required = isSignup;
+
+      if (termsField) termsField.style.display = isSignup ? "block" : "none";
+      if (demoSection) demoSection.style.display = isSignup ? "none" : "block";
+
+      if (submitBtn) submitBtn.textContent = isSignup ? "Create Account & Sign In →" : "Sign in →";
+
+      if (switchPrompt) {
+        switchPrompt.innerHTML = isSignup
+          ? 'Already have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Sign in</a>'
+          : 'Don\'t have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Create an account</a>';
+        const newLink = document.getElementById("auth-switch-link");
+        if (newLink) {
+          newLink.addEventListener("click", e => {
+            e.preventDefault();
+            setMode(currentMode === "signup" ? "signin" : "signup");
+          });
+        }
+      }
+
+      updateRoleHints();
+    }
+
+    if (tabSignIn) tabSignIn.addEventListener("click", () => setMode("signin"));
+    if (tabSignUp) tabSignUp.addEventListener("click", () => setMode("signup"));
+    if (switchLink) {
+      switchLink.addEventListener("click", e => {
+        e.preventDefault();
+        setMode(currentMode === "signup" ? "signin" : "signup");
+      });
+    }
+
+    // Check URL query and hash (e.g. ?mode=signup or #signup)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("mode") === "signup" || window.location.hash === "#signup") {
+      setMode("signup");
+    } else {
+      setMode("signin");
+    }
 
     function updateRoleHints() {
       const selectedRole = form.querySelector("input[name=role]:checked")?.value || "doctor";
-      if (nameInput) {
+      if (nameInput && currentMode === "signin") {
         if (selectedRole === "patient") {
           nameInput.placeholder = "Ashwini Goud (Patient)";
         } else if (selectedRole === "admin") {
@@ -330,9 +419,71 @@
     form.addEventListener("submit", e => {
       e.preventDefault();
       const selectedRole = form.querySelector("input[name=role]:checked")?.value || "doctor";
-      const nameVal = form.querySelector("[name=name]")?.value.trim();
-      const emailVal = form.querySelector("[name=email], input[type=email]")?.value.trim();
+      const nameVal = nameInput?.value.trim();
+      const emailVal = emailInput?.value.trim();
+      const passVal = passwordInput?.value;
+      const phoneVal = phoneInput?.value.trim();
 
+      if (currentMode === "signup") {
+        if (!nameVal) {
+          toast("Please enter your full name", "error");
+          nameInput?.focus();
+          return;
+        }
+        if (!emailVal || !emailVal.includes("@")) {
+          toast("Please enter a valid email address", "error");
+          emailInput?.focus();
+          return;
+        }
+        if (!passVal || passVal.length < 4) {
+          toast("Password must be at least 4 characters", "error");
+          passwordInput?.focus();
+          return;
+        }
+        const confirmVal = confirmInput?.value;
+        if (passVal !== confirmVal) {
+          toast("Passwords do not match. Please verify.", "error");
+          confirmInput?.focus();
+          return;
+        }
+        if (termsCheckbox && !termsCheckbox.checked) {
+          toast("Please accept the terms of service to continue", "error");
+          return;
+        }
+
+        let displayName = nameVal;
+        if ((selectedRole === "doctor" || selectedRole === "admin") && !/^dr\.?\s+/i.test(displayName)) {
+          displayName = "Dr. " + displayName;
+        }
+
+        const newUser = {
+          name: displayName,
+          role: selectedRole,
+          email: emailVal,
+          phone: phoneVal || "+91 98765 43210",
+          createdAt: new Date().toISOString()
+        };
+
+        // Save to current session
+        localStorage.setItem("dentiflowUser", JSON.stringify(newUser));
+
+        // Save to registered users list in localStorage
+        try {
+          const registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
+          registered.push(newUser);
+          localStorage.setItem("dentiflowRegisteredUsers", JSON.stringify(registered));
+        } catch (err) {
+          // ignore
+        }
+
+        toast(`Welcome to DentiFlow, ${displayName}! Your ${selectedRole} account has been created.`, "success");
+        setTimeout(() => {
+          location.href = selectedRole === "patient" ? "./patient-dashboard.html" : (selectedRole === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
+        }, 300);
+        return;
+      }
+
+      // Sign In mode
       let displayName = nameVal;
       if (!displayName && emailVal) {
         displayName = formatNameFromEmail(emailVal);
@@ -376,6 +527,75 @@
     modal.style.display = "none";
   }
 
+  function playClinicChime() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+      // Melodic clinic chime chord: C5 (523.25Hz), E5 (659.25Hz), G5 (783.99Hz)
+      const notes = [523.25, 659.25, 783.99];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        const startTime = ctx.currentTime + idx * 0.14;
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.28, startTime + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.42);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.48);
+      });
+    } catch (e) {
+      console.warn("Chime audio context error:", e);
+    }
+  }
+
+  function callPatientToChair(aptId) {
+    let list = getAppointments();
+    const apt = list.find(a => a.id === aptId);
+    if (!apt) return;
+
+    // Previous patient in that chair is completed
+    list.forEach(a => {
+      if (a.chair === apt.chair && a.id !== apt.id && a.isTreating) {
+        a.isTreating = false;
+        a.status = "Completed";
+      }
+    });
+
+    apt.status = "In progress";
+    apt.isTreating = true;
+    saveAppointments(list);
+
+    // Audio chime sound
+    playClinicChime();
+
+    // Prominent toast notification
+    toast(`📢 Calling ${apt.patientName} to ${apt.chair} (${apt.doctor})! Patient alerted on queue display.`, "success");
+
+    renderAppointmentsAndQueue();
+  }
+
+  function completePatientVisit(aptId) {
+    let list = getAppointments();
+    const apt = list.find(a => a.id === aptId);
+    if (!apt) return;
+
+    apt.status = "Completed";
+    apt.isTreating = false;
+    saveAppointments(list);
+
+    toast(`✓ Visit completed for ${apt.patientName}! ${apt.chair} is sanitized & available.`, "success");
+
+    renderAppointmentsAndQueue();
+  }
+
   function setupActions() {
     document.querySelectorAll("[data-toast]").forEach(x => x.addEventListener("click", () => toast(x.dataset.toast, "success")));
     document.querySelectorAll("[data-modal]").forEach(btn => btn.addEventListener("click", e => {
@@ -402,6 +622,41 @@
     document.querySelectorAll("form[data-action]").forEach(form => form.addEventListener("submit", e => {
       e.preventDefault(); toast(form.dataset.action || "Saved to this browser", "success"); form.reset();
     }));
+
+    // Global action delegator for Queue & Appointments
+    document.addEventListener("click", e => {
+      const callBtn = e.target.closest("[data-action='call-patient']");
+      if (callBtn) {
+        e.preventDefault();
+        callPatientToChair(callBtn.dataset.id);
+        return;
+      }
+      const completeBtn = e.target.closest("[data-action='complete-patient']");
+      if (completeBtn) {
+        e.preventDefault();
+        completePatientVisit(completeBtn.dataset.id);
+        return;
+      }
+      const completeTreatingBtn = e.target.closest("[data-action='complete-current-treating']");
+      if (completeTreatingBtn) {
+        e.preventDefault();
+        const list = getAppointments();
+        const treating = list.find(a => a.isTreating) || list.find(a => a.status === "In progress") || list[0];
+        if (treating) {
+          completePatientVisit(treating.id);
+        } else {
+          toast("No patient currently in procedure", "info");
+        }
+        return;
+      }
+      const refreshBtn = e.target.closest("[data-action='refresh-queue']");
+      if (refreshBtn) {
+        e.preventDefault();
+        renderAppointmentsAndQueue();
+        toast("Appointment schedule & queue refreshed", "success");
+        return;
+      }
+    });
   }
 
   function setupPayment() {
@@ -667,14 +922,34 @@
         if (subEl) subEl.textContent = "Coordinate every chair, clinician, and patient.";
         if (eyebrowEl) eyebrowEl.textContent = "SCHEDULE & QUEUE";
 
-        const treating = list.find(a => a.isTreating) || list[0];
+        const treating = list.find(a => a.isTreating) || list.find(a => a.status === "In progress");
         const nowTreatingName = document.getElementById("now-treating-name");
         const nowTreatingDetails = document.getElementById("now-treating-details");
-        if (nowTreatingName && treating) {
-          nowTreatingName.innerHTML = `${treating.patientName} &bull; ${treating.category}`;
+        if (nowTreatingName) {
+          nowTreatingName.innerHTML = treating 
+            ? `${treating.patientName} &bull; ${treating.category}` 
+            : "No active procedure &bull; Chairs available";
         }
-        if (nowTreatingDetails && treating) {
-          nowTreatingDetails.textContent = `Patient is currently in ${treating.chair} with ${treating.doctor}. Procedure in progress (started ${treating.time} &bull; 35 mins elapsed).`;
+        if (nowTreatingDetails) {
+          nowTreatingDetails.textContent = treating
+            ? `Patient is currently in ${treating.chair} with ${treating.doctor}. Procedure in progress (started ${treating.time} &bull; active).`
+            : "All chairs are currently sanitized and ready for the next scheduled patient.";
+        }
+
+        const queueStrip = document.getElementById("queue-strip-container");
+        if (queueStrip) {
+          const waitingList = list.filter(a => !a.isTreating && a.status !== "Completed");
+          let chipsHtml = `<span class="queue-member-chip" style="background:rgba(255,255,255,.28);font-weight:700;">Now: ${treating ? treating.patientName : 'Chair Open'}</span>`;
+          if (waitingList.length > 0) {
+            chipsHtml += `<span class="queue-member-chip">Next: ${waitingList[0].patientName} (${waitingList[0].token} &bull; ${waitingList[0].waitTime})</span>`;
+          }
+          if (waitingList.length > 1) {
+            chipsHtml += `<span class="queue-member-chip">Queued: ${waitingList[1].patientName} (${waitingList[1].token} &bull; ${waitingList[1].waitTime})</span>`;
+          }
+          if (waitingList.length > 2) {
+            chipsHtml += `<span class="queue-member-chip">+${waitingList.length - 2} more in queue</span>`;
+          }
+          queueStrip.innerHTML = chipsHtml;
         }
 
         const queueCount = list.filter(a => a.status !== "Completed").length;
@@ -689,7 +964,7 @@
         const tbody = document.getElementById("doctor-appointments-tbody");
         if (tbody) {
           tbody.innerHTML = list.map(apt => `
-            <tr>
+            <tr data-apt-id="${apt.id}">
               <td><b>${apt.time}</b></td>
               <td class="patient">
                 <span class="avatar">${initials(apt.patientName)}</span>
@@ -697,13 +972,16 @@
               </td>
               <td>${apt.category}</td>
               <td>${apt.doctor}</td>
-              <td>${apt.chair}</td>
+              <td><b>${apt.chair}</b></td>
               <td><span class="pill ${apt.paymentStatus.includes('Paid') ? 'green' : 'orange'}">${apt.paymentStatus}</span></td>
-              <td><span class="pill ${apt.status === 'In progress' ? 'green' : (apt.status === 'Checked in' ? 'orange' : '')}">${apt.status}</span></td>
+              <td><span class="pill ${apt.status === 'In progress' ? 'green' : (apt.status === 'Checked in' ? 'orange' : (apt.status === 'Completed' ? 'blue' : ''))}">${apt.status}</span></td>
               <td>
                 ${apt.status === 'In progress'
-                  ? `<button class="btn btn-soft" data-toast="Patient marked complete">Complete</button>`
-                  : `<button class="btn btn-soft" data-toast="Patient called to chair">Call patient</button>`
+                  ? `<button class="btn btn-primary" data-action="complete-patient" data-id="${apt.id}" style="padding:6px 14px;font-size:13px;font-weight:600;">✓ Complete</button>`
+                  : (apt.status === 'Completed'
+                    ? `<span class="pill green" style="padding:6px 12px;font-size:12px;font-weight:600;">Done ✓</span>`
+                    : `<button class="btn btn-soft" data-action="call-patient" data-id="${apt.id}" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button>`
+                  )
                 }
               </td>
             </tr>

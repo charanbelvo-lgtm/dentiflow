@@ -141,7 +141,7 @@
               <span class="eyebrow" style="color:#a7f3d0;">💺 CLINICAL CHAIR 01 &bull; NOW TREATING</span>
               <h2 id="now-treating-name">Aravind Menon &bull; Root Canal Review</h2>
               <p style="color:#d1fae5;margin:4px 0 0;" id="now-treating-details">Patient is currently in chair with Dr. Ananya Sharma. Procedure in progress (started 09:00 AM &bull; 35 mins elapsed).</p>
-              <div class="queue-strip">
+              <div class="queue-strip" id="queue-strip-container">
                 <span class="queue-member-chip" style="background:rgba(255,255,255,.25);font-weight:700;">Now: Aravind Menon</span>
                 <span class="queue-member-chip">Next: Vishal Rao (#02 &bull; 12m)</span>
                 <span class="queue-member-chip">Queued: Medha Iyer (#03 &bull; 30m)</span>
@@ -149,7 +149,7 @@
               </div>
             </div>
             <div class="row">
-              <button class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" data-toast="Treatment marked completed">✓ Mark Complete</button>
+              <button class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" data-action="complete-current-treating">✓ Mark Complete</button>
               <a class="btn" style="background:rgba(255,255,255,.2);color:#fff;" href="./dental-chart.html">Open Chart</a>
             </div>
           </div>
@@ -187,7 +187,7 @@
               </div>
               <div class="row">
                 <span class="pill green" id="live-members-badge">4 members in queue</span>
-                <button class="btn btn-ghost" data-toast="Calendar refreshed">Refresh</button>
+                <button class="btn btn-ghost" data-action="refresh-queue">Refresh</button>
               </div>
             </div>
             <div class="table-wrap">
