@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tax Invoice INV-2026-1029 - DentiFlow Dental Clinics</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --teal: #0d9488;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: #f8fafc;
+            padding: 24px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .invoice-card {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 44px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 24px;
+            margin-bottom: 24px;
+        }
+        .brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .clinic-info {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+        .invoice-title {
+            text-align: right;
+        }
+        .invoice-title h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+        .badge-paid { background: #dcfce7; color: #15803d; }
+        .badge-partial { background: #fef3c7; color: #b45309; }
+        .badge-pending { background: #fee2e2; color: #b91c1c; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 28px;
+        }
+        .meta-col h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+        .meta-col b {
+            font-size: 15px;
+            color: #0f172a;
+        }
+        .meta-col p {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        th {
+            background: #f1f5f9;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            margin-top: 10px;
+        }
+        .summary-notes {
+            font-size: 12px;
+            color: var(--muted);
+            padding: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border-left: 3px solid var(--primary);
+        }
+        .summary-table td {
+            padding: 6px 8px;
+            border: none;
+        }
+        .summary-table tr.total-row td {
+            font-size: 16px;
+            font-weight: 700;
+            border-top: 2px solid #0f172a;
+            padding-top: 10px;
+            color: #0f172a;
+        }
+
+        .footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .sign-box {
+            text-align: center;
+            width: 180px;
+            border-top: 1px dashed #94a3b8;
+            padding-top: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .controls {
+            max-width: 820px;
+            margin: 16px auto 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-ghost { background: #fff; border-color: var(--border); color: var(--ink); }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .controls { display: none !important; }
+            .invoice-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+        }
+    </style>
+
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <a href="./billing.html" class="btn btn-ghost">&larr; Back to Billing</a>
+        <button onclick="window.print()" class="btn btn-primary">Print / Save as PDF</button>
+    </div>
+
+    <div class="invoice-card">
+        <div class="header">
+            <div>
+                <div class="brand">✦ DentiFlow Dental Healthcare</div>
+                <div class="clinic-info">
+                    <strong>Downtown Dental Flagship</strong><br>
+                    100 Feet Rd, Indiranagar, Bengaluru, KA 560038<br>
+                    Phone: +91 80 4123 4567 &bull; Email: indiranagar@dentiflow.com<br>
+                    GSTIN: 29AAAAA0000A1Z5 &bull; HSN/SAC: 999312 (Dental & Medical Healthcare Services)
+                </div>
+            </div>
+            <div class="invoice-title">
+                <h1>TAX INVOICE</h1>
+                <div><b>INV-2026-1029</b></div>
+                <div style="color:var(--muted);font-size:12px;margin-top:2px;">Date: 11 Sep 2026</div>
+                
+                <span class="badge badge-partial">&bull; PARTIAL PAYMENT</span>
+                
+            </div>
+        </div>
+
+        <div class="meta-grid">
+            <div class="meta-col">
+                <h3>Billed To (Patient)</h3>
+                <b>Aravind Menon</b>
+                <p>
+                    Patient ID: DF-2026-001 &bull; Age/Gender: 29y / Male<br>
+                    Phone: 123456789<br>
+                    Address: Indiranagar, Bengaluru
+                </p>
+            </div>
+            <div class="meta-col">
+                <h3>Attending Clinician</h3>
+                <b>Dr. Ananya Sharma</b>
+                <p>
+                    Chief Endodontist &amp; Cosmetic Dentist<br>
+                    Reg. No: KDC-28492-A<br>
+                    Payment Terms: Due within 14 days
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th>Procedure / Dental Service</th>
+                    <th class="text-center">SAC</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Discount</th>
+                    <th class="text-right">GST (18%)</th>
+                    <th class="text-right">Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                    
+                    <tr>
+                        <td class="text-muted">1</td>
+                        <td>
+                            <strong>Rotary Single-Visit Root Canal (Tooth #16)</strong>
+                        </td>
+                        <td class="text-center text-muted">999312</td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">₹7,500.00</td>
+                        <td class="text-right">₹500.00</td>
+                        <td class="text-right">₹1,260.00</td>
+                        <td class="text-right"><strong>₹8,260.00</strong></td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="text-muted">2</td>
+                        <td>
+                            <strong>Monolithic 3D Multilayer Zirconia Crown</strong>
+                        </td>
+                        <td class="text-center text-muted">999312</td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">₹8,000.00</td>
+                        <td class="text-right">₹500.00</td>
+                        <td class="text-right">₹1,350.00</td>
+                        <td class="text-right"><strong>₹8,850.00</strong></td>
+                    </tr>
+                    
+                
+            </tbody>
+        </table>
+
+        <div class="summary-grid">
+            <div class="summary-notes">
+                <strong>Payment & Clinical Terms:</strong><br>
+                1. Diagnostic findings and warranties are recorded under DentiFlow Electronic Health Record.<br>
+                2. Payments can be settled via UPI (Google Pay/PhonePe), Credit/Debit Card, or Net Banking.<br>
+                3. Healthcare clinical consultation and diagnostics are GST assessed under SAC code 999312.
+            </div>
+            <table class="summary-table">
+                <tr>
+                    <td class="text-muted">Subtotal:</td>
+                    <td class="text-right">₹15,500.00</td>
+                </tr>
+                
+                <tr>
+                    <td class="text-muted">Discount:</td>
+                    <td class="text-right" style="color:var(--teal);">- ₹1,000.00</td>
+                </tr>
+                
+                <tr>
+                    <td class="text-muted">GST (CGST 9% + SGST 9%):</td>
+                    <td class="text-right">₹2,610.00</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total Amount:</td>
+                    <td class="text-right">₹17,110.00</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Amount Paid:</td>
+                    <td class="text-right" style="color:#15803d;font-weight:600;">₹14,610.00</td>
+                </tr>
+                <tr>
+                    <td class="text-muted">Balance Due:</td>
+                    <td class="text-right" style="color:#b91c1c;font-weight:700;">₹2,500.00</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div style="font-size:11px;color:var(--muted);max-width:380px;">
+                This is a computer-generated tax invoice verified on DentiFlow Healthcare Cloud. For queries contact support@dentiflow.com.
+            </div>
+            <div class="sign-box">
+                Authorized Signatory / Stamp<br>
+                <strong>Dr. Ananya Sharma</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

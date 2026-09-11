@@ -1,3 +1,322 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Treatment plans  -  DentiFlow</title><link rel="stylesheet" href="./css/style.css"></head><body><div class="site-shell"><aside class="sidebar"><a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a><nav class="nav"><div class="nav-label">Workspace</div><a href="./dashboard.html"> <span>Dashboard</span></a><a href="./appointments.html"> <span>Appointments</span></a><a href="./patients.html"> <span>Patients</span></a><a href="./clinical.html"> <span>Clinical notes</span></a><a href="./dental-chart.html"> <span>Dental chart</span></a><a href="./treatment-plans.html"> <span>Treatment plans</span></a><div class="nav-label">Practice</div><a href="./billing.html"> <span>Billing</span></a><a href="./inventory.html"> <span>Inventory</span></a><a href="./reports.html"> <span>Reports</span></a><a href="./profile.html"> <span>Profile</span></a></nav><div class="sidebar-bottom"><a href="./patient-dashboard.html"> <span>Patient view</span></a><a href="#" data-logout> <span>Sign out</span></a></div></aside><main class="main"><header class="topbar"><div class="topbar-left"><button class="menu-toggle" data-menu aria-label="Open menu"></button><label class="search"> <input data-search placeholder="Search this demo..."></label></div><div class="top-actions"><span class="pill green"> Demo mode</span><div class="user-chip"><span data-user-name>Dr. Ananya Sharma</span><span class="avatar" data-avatar>AS</span></div></div></header><section class="content"><div class="page-head"><div><span class="eyebrow">CARE PLANS</span><h1>Treatment plans</h1><p class="muted">Turn clinical findings into an understandable next step.</p></div><button class="btn btn-primary" data-modal="app-modal">+ Build plan</button></div><div class="grid grid-2"><div class="card"><div class="section-title"><div><h2>Aravind Menon</h2><span class="muted">Plan  -  Tooth #16</span></div><span class="pill orange">Awaiting consent</span></div><div class="row between"><b>Root canal treatment</b><strong>INR 15,000</strong></div><div class="progress" style="margin:12px 0"><span style="width:50%"></span></div><div class="row between muted"><span>2 of 4 visits complete</span><span>50%</span></div><div class="timeline" style="margin-top:15px"><div class="timeline-item"><span class="timeline-dot"></span><div><b>Consultation</b><div class="muted">Completed  -  May 22</div></div><span class="pill green">Done</span></div><div class="timeline-item"><span class="timeline-dot" style="background:var(--orange)"></span><div><b>Cleaning & shaping</b><div class="muted">Next  -  May 29</div></div><span class="pill orange">Next</span></div><div class="timeline-item"><span class="timeline-dot" style="background:#aab7c6"></span><div><b>Obturation + crown</b><div class="muted">To be scheduled</div></div><span class="pill">Later</span></div></div><div class="row" style="margin-top:16px"><button class="btn btn-primary" data-toast="Consent link copied">Share with patient</button><button class="btn btn-ghost" data-toast="Plan exported">Export PDF</button></div></div><div class="card"><div class="section-title"><h2>Plan health</h2><span class="pill green">86% accepted</span></div><div class="grid grid-2"><div class="stat"><strong>INR 1.86L</strong><small>planned value</small></div><div class="stat"><strong>INR 92k</strong><small>collected</small></div></div><p class="notice" style="margin-top:16px">3 plans need a follow-up this week. Patients respond best when the next step is shared immediately after the visit.</p></div></div></section></main></div><script src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Treatment Plans - DentiFlow</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
 
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./queue.html" class="">
+                    <span>Live Queue</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="active">
+                    <span>Treatment plans</span>
+                </a>
 
+                <div class="nav-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing & Invoicing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Staff & Doctors</span>
+                </a>
+                <a href="./branches.html" class="">
+                    <span>Clinic Branches</span>
+                </a>
+                <a href="./operations.html" class="">
+                    <span>Operations & Lab</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Practice Reports</span>
+                </a>
+                <a href="./settings.html" class="">
+                    <span>Clinic Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <span class="pill green"> Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CARE PLANS & ESTIMATES</span>
+        <h1>Treatment Plans</h1>
+        <p class="muted">Turn clinical diagnoses into transparent, phase-by-phase patient care journeys.</p>
+    </div>
+    <div class="row">
+        <button class="btn btn-primary" data-modal="modal-build-plan">+ Build Plan</button>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon teal">📋</div>
+        <strong>1 Plans</strong>
+        <small>total treatment plans</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon green">✓</div>
+        <strong>86%</strong>
+        <small>patient acceptance rate</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon">₹</div>
+        <strong>₹1.86L</strong>
+        <small>total planned care value</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">⏳</div>
+        <strong>3 Plans</strong>
+        <small>pending consent follow-up</small>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:24px;">
+    
+    <div class="card">
+        <div class="section-title">
+            <div>
+                <h2>Aravind Menon</h2>
+                <span class="muted" style="font-size:12px;">Plan #TP-2026-042 &bull; Comprehensive Endodontic &amp; Aesthetic Restorative Plan</span>
+            </div>
+            <span class="pill orange">
+                In Progress
+            </span>
+        </div>
+        <div class="row between" style="margin-bottom:8px;">
+            <b>Comprehensive Endodontic &amp; Aesthetic Restorative Plan</b>
+            <strong style="font-size:16px;color:var(--ink);">₹25,000</strong>
+        </div>
+        
+        <div class="progress" style="margin:10px 0 6px;">
+            <span style="width:65%;"></span>
+        </div>
+        <div class="row between muted" style="font-size:12px;">
+            <span>Attending: Dr. Ananya Sharma</span>
+            <span>Created: 11 Sep 2026</span>
+        </div>
+
+        
+        <div class="timeline" style="margin-top:16px;">
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--orange);"></span>
+                <div style="flex:1;">
+                    <b>Phase 1: Phase 1: Pain Relief &amp; Endodontic Stabilization</b>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #16 &bull; Rotary Molar Root Canal Therapy (₹7,000)</div>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #16 &bull; Core Build-up &amp; Fiber Post (₹2,500)</div>
+                    
+                </div>
+                <span class="pill orange">
+                    In Progress
+                </span>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:#cbd5e1;"></span>
+                <div style="flex:1;">
+                    <b>Phase 2: Phase 2: Permanent Prosthodontic Rehabilitation</b>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #16 &bull; Monolithic 3D Zirconia Crown (10 Yr Warranty) (₹8,000)</div>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #17 &bull; Composite Nano-Hybrid Restoration (₹2,500)</div>
+                    
+                </div>
+                <span class="pill ">
+                    Pending
+                </span>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:#cbd5e1;"></span>
+                <div style="flex:1;">
+                    <b>Phase 3: Phase 3: Preventive Hygiene &amp; Nightguard Maintenance</b>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #Full Arch &bull; Ultrasonic Scaling &amp; Airflow Polishing (₹1,500)</div>
+                    
+                    <div class="muted" style="font-size:12px;">Tooth #Upper Arch &bull; Custom Hard-Soft Occlusal Nightguard (₹3,500)</div>
+                    
+                </div>
+                <span class="pill ">
+                    Pending
+                </span>
+            </div>
+            
+        </div>
+        
+
+        <div class="row" style="margin-top:18px;gap:8px;">
+            
+            <button class="btn btn-soft" onclick="window.toast('Treatment consent link copied to clipboard', 'success')">
+                Share Consent
+            </button>
+            <button class="btn btn-ghost" onclick="window.toast('Treatment estimate PDF generated', 'success')">
+                Export PDF
+            </button>
+        </div>
+    </div>
+    
+</div>
+
+<!-- Build Treatment Plan Modal -->
+<div class="modal-backdrop" id="modal-build-plan" hidden>
+    <div class="modal">
+        <div class="section-title">
+            <h2>Build Treatment Plan</h2>
+            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
+        </div>
+        <form id="new-plan-form" class="form-grid" style="margin-top:14px;">
+            <div class="field full">
+                <label>Select Patient *</label>
+                <select name="patient_id" required>
+                    
+                    <option value="5">Aravind Kumar (DF-2026-005)</option>
+                    
+                    <option value="1">Aravind Menon (DF-2026-001)</option>
+                    
+                    <option value="4">Lokesh (DF-2026-004)</option>
+                    
+                    <option value="8">Lokesh Iyer (DF-2026-008)</option>
+                    
+                    <option value="3">Medha (DF-2026-003)</option>
+                    
+                    <option value="7">Medha Nair (DF-2026-007)</option>
+                    
+                    <option value="2">Vishal (DF-2026-002)</option>
+                    
+                    <option value="6">Vishal Rao (DF-2026-006)</option>
+                    
+                </select>
+            </div>
+            <div class="field">
+                <label>Attending Clinician</label>
+                <select name="doctor_id">
+                    
+                    <option value="1">Dr. Ananya Sharma</option>
+                    
+                    <option value="2">Dr. Rohan Patel</option>
+                    
+                    <option value="3">Dr. Meera Nair</option>
+                    
+                    <option value="4">Dr. Vikram Rao</option>
+                    
+                    <option value="5">Rashmitha</option>
+                    
+                </select>
+            </div>
+            <div class="field">
+                <label>Plan Title / Care Goal *</label>
+                <input type="text" name="title" value="Root Canal Therapy & Crown Restoration" required>
+            </div>
+            <div class="field">
+                <label>Primary Procedure</label>
+                <select name="procedure_name">
+                    <option value="Single-Visit Molar Root Canal Treatment">Single-Visit Molar Root Canal Treatment</option>
+                    <option value="Monolithic 3D Zirconia Crown">Monolithic 3D Zirconia Crown</option>
+                    <option value="Tooth Colored Composite Restoration">Tooth Colored Composite Restoration</option>
+                    <option value="Titanium Dental Implant Fixture">Titanium Dental Implant Fixture</option>
+                    <option value="Clear Aligners Comprehensive Plan">Clear Aligners Comprehensive Plan</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Tooth Number / Region</label>
+                <input type="text" name="tooth_number" value="16" placeholder="e.g. 16, 21, All Arches" required>
+            </div>
+            <div class="field">
+                <label>Estimated Total Fee (₹)</label>
+                <input type="number" name="total_cost" value="15000" min="500" required>
+            </div>
+            <div class="field">
+                <label>Courtesy Discount (₹)</label>
+                <input type="number" name="discount_amount" value="1000" min="0">
+            </div>
+            <div class="field full">
+                <label>Clinical Notes & Rationale</label>
+                <textarea name="notes" rows="2" placeholder="Tooth status, restorative prognosis, patient consent discussion..."></textarea>
+            </div>
+            <div class="field full" style="margin-top:12px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Save Treatment Plan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase Client Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        
+        window.CURRENT_USER = {
+            id: 2,
+            name: "Dr. Ananya Sharma",
+            email: "doctor@dentiflow.com",
+            role: "doctor"
+        };
+        
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+<script src="./js/treatment_plans.js"></script>
+
+</body>
+</html>

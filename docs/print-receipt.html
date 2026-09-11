@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Payment Receipt RCP-2026-904 - DentiFlow Dental Clinics</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --teal: #0d9488;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: #f8fafc;
+            padding: 24px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .receipt-card {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid var(--teal);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        .brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .clinic-info {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+        .receipt-title {
+            text-align: right;
+        }
+        .receipt-title h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--teal);
+            letter-spacing: 0.04em;
+        }
+        .receipt-amount-box {
+            background: #f0fdfa;
+            border: 2px dashed var(--teal);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .receipt-amount-box small {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--teal);
+            font-weight: 700;
+        }
+        .receipt-amount-box .amount {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 4px 0;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        .info-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .info-table td.label {
+            color: var(--muted);
+            width: 38%;
+            font-weight: 500;
+        }
+        .info-table td.val {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .footer {
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .controls {
+            max-width: 680px;
+            margin: 16px auto 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+        .btn-primary { background: var(--teal); color: #fff; }
+        .btn-ghost { background: #fff; border-color: var(--border); color: var(--ink); }
+
+        @media print {
+            body { background: #fff; padding: 0; }
+            .controls { display: none !important; }
+            .receipt-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+        }
+    </style>
+
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    <div class="controls">
+        <a href="./billing.html" class="btn btn-ghost">&larr; Back to Billing</a>
+        <button onclick="window.print()" class="btn btn-primary">Print / Save Receipt</button>
+    </div>
+
+    <div class="receipt-card">
+        <div class="header">
+            <div>
+                <div class="brand">✦ DentiFlow Dental Healthcare</div>
+                <div class="clinic-info">
+                    Indiranagar Flagship Clinic &bull; Bengaluru, KA 560038<br>
+                    Phone: +91 80 4123 4567 &bull; GSTIN: 29AAAAA0000A1Z5
+                </div>
+            </div>
+            <div class="receipt-title">
+                <h1>OFFICIAL RECEIPT</h1>
+                <div style="font-weight:700;margin-top:2px;">RCP-2026-904</div>
+                <div style="color:var(--muted);font-size:11px;">Date: 09 Sep 2026, 01:39 PM</div>
+            </div>
+        </div>
+
+        <div class="receipt-amount-box">
+            <small>Amount Received Successfully</small>
+            <div class="amount">₹14,610.00</div>
+            <span style="font-size:12px;color:var(--teal);font-weight:600;">Status: Verified & Synced (UPI)</span>
+        </div>
+
+        <table class="info-table">
+            <tr>
+                <td class="label">Patient Name:</td>
+                <td class="val">Aravind Menon</td>
+            </tr>
+            <tr>
+                <td class="label">Patient ID:</td>
+                <td class="val">DF-2026-001</td>
+            </tr>
+            <tr>
+                <td class="label">Invoice Reference:</td>
+                <td class="val">
+                    
+                    <a href="./print-invoice.html" style="color:var(--primary);text-decoration:none;">
+                        INV-2026-1029 &rarr;
+                    </a>
+                    
+                </td>
+            </tr>
+            <tr>
+                <td class="label">Payment Mode:</td>
+                <td class="val"><b>UPI</b> (Ref / Txn ID: UPI-948102948201)</td>
+            </tr>
+            
+            <tr>
+                <td class="label">Invoice Total Amount:</td>
+                <td class="val">₹17,110.00</td>
+            </tr>
+            <tr>
+                <td class="label">Total Paid to Date:</td>
+                <td class="val" style="color:#15803d;">₹14,610.00</td>
+            </tr>
+            <tr>
+                <td class="label">Remaining Balance Due:</td>
+                <td class="val" style="color:#b91c1c;">
+                    ₹2,500.00
+                </td>
+            </tr>
+            
+            
+            <tr>
+                <td class="label">Payment Notes:</td>
+                <td class="val" style="color:var(--muted);font-weight:400;">Paid via Google Pay / QR scanner</td>
+            </tr>
+            
+        </table>
+
+        <div class="footer">
+            <div style="font-size:11px;color:var(--muted);max-width:340px;">
+                Thank you for trusting DentiFlow for your oral healthcare. All payments are securely acknowledged.
+            </div>
+            <div style="text-align:center;width:170px;border-top:1px dashed #94a3b8;padding-top:6px;font-size:11px;color:var(--muted);">
+                Cashier / Front Desk Signature<br>
+                <strong>DentiFlow Billing Desk</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

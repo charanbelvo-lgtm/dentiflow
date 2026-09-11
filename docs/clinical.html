@@ -1,3 +1,348 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clinical notes  -  DentiFlow</title><link rel="stylesheet" href="./css/style.css"></head><body><div class="site-shell"><aside class="sidebar"><a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a><nav class="nav"><div class="nav-label">Workspace</div><a href="./dashboard.html"> <span>Dashboard</span></a><a href="./appointments.html"> <span>Appointments</span></a><a href="./patients.html"> <span>Patients</span></a><a href="./clinical.html"> <span>Clinical notes</span></a><a href="./dental-chart.html"> <span>Dental chart</span></a><a href="./treatment-plans.html"> <span>Treatment plans</span></a><div class="nav-label">Practice</div><a href="./billing.html"> <span>Billing</span></a><a href="./inventory.html"> <span>Inventory</span></a><a href="./reports.html"> <span>Reports</span></a><a href="./profile.html"> <span>Profile</span></a></nav><div class="sidebar-bottom"><a href="./patient-dashboard.html"> <span>Patient view</span></a><a href="#" data-logout> <span>Sign out</span></a></div></aside><main class="main"><header class="topbar"><div class="topbar-left"><button class="menu-toggle" data-menu aria-label="Open menu"></button><label class="search"> <input data-search placeholder="Search this demo..."></label></div><div class="top-actions"><span class="pill green"> Demo mode</span><div class="user-chip"><span data-user-name>Dr. Ananya Sharma</span><span class="avatar" data-avatar>AS</span></div></div></header><section class="content"><div class="page-head"><div><span class="eyebrow">CLINICAL WORKSPACE</span><h1>Clinical notes</h1><p class="muted">Capture the why behind every treatment decision.</p></div><a class="btn btn-primary" href="./dental-chart.html">Open dental chart -></a></div><div class="grid grid-3"><div class="card" style="grid-column:span 2"><div class="section-title"><h2>New progress note</h2><span class="pill green">Autosave on</span></div><form class="form-grid" data-action="Clinical note saved"><div class="field"><label>Patient</label><select><option>Aravind Menon  -  DF-2026-001</option><option>Vishal Rao  -  DF-2026-002</option></select></div><div class="field"><label>Visit type</label><select><option>Root canal review</option><option>Examination</option><option>Follow-up</option></select></div><div class="field full"><label>Subjective</label><textarea rows="3" placeholder="What did the patient report?"></textarea></div><div class="field full"><label>Objective & assessment</label><textarea rows="4" placeholder="Findings, diagnosis, tooth references..."></textarea></div><div class="field full"><label>Plan</label><textarea rows="3" placeholder="Next steps and patient instructions"></textarea></div><div class="field full"><button class="btn btn-primary">Save clinical note</button></div></form></div><div class="card"><div class="section-title"><h2>Recent notes</h2><span class="pill">3 this week</span></div><div class="timeline"><div class="timeline-item"><span class="timeline-dot"></span><div><b>Aravind  -  Tooth #16</b><div class="muted">RCT recommended</div><small>Today, 09:20</small></div></div><div class="timeline-item"><span class="timeline-dot" style="background:var(--blue)"></span><div><b>Vishal  -  Hygiene</b><div class="muted">Healing well</div><small>May 18</small></div></div></div></div></div></section></main></div><script src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Clinical Notes & SOAP Documentation - DentiFlow</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
 
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./queue.html" class="">
+                    <span>Live Queue</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="active">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
 
+                <div class="nav-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing & Invoicing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Staff & Doctors</span>
+                </a>
+                <a href="./branches.html" class="">
+                    <span>Clinic Branches</span>
+                </a>
+                <a href="./operations.html" class="">
+                    <span>Operations & Lab</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Practice Reports</span>
+                </a>
+                <a href="./settings.html" class="">
+                    <span>Clinic Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <span class="pill green"> Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CLINICAL DOCUMENTATION & SOAP WORKSPACE</span>
+        <h1>Clinical Notes</h1>
+        <p class="muted">Document intraoral findings, diagnostic assessments, and chairside care plans.</p>
+    </div>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-primary" href="./dental-chart.html">Open 32-Tooth Odontogram -></a>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    <div class="card" style="grid-column:span 2">
+        <div class="section-title">
+            <div>
+                <h2>New Clinical Progress Note (SOAP)</h2>
+                <span class="muted" style="font-size:12px;">Standardized clinical encounter record</span>
+            </div>
+            <span class="pill green">HIPAA & EHR Compliant</span>
+        </div>
+
+        <!-- Quick Template Fill Buttons -->
+        <div style="margin-bottom:14px;">
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;display:block;">Quick Clinical Templates</span>
+            <div class="row" style="gap:6px;flex-wrap:wrap;">
+                <button type="button" class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" onclick="applySOAPTemplate('rct')">Rotary RCT</button>
+                <button type="button" class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" onclick="applySOAPTemplate('filling')">Composite Filling</button>
+                <button type="button" class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" onclick="applySOAPTemplate('scaling')">Ultrasonic Scaling</button>
+                <button type="button" class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" onclick="applySOAPTemplate('extraction')">Surgical Extraction</button>
+            </div>
+        </div>
+
+        <form class="form-grid" id="clinical-note-form">
+            <div class="field">
+                <label>Patient *</label>
+                <select id="clinical-patient-select" name="patient_id" required>
+                    
+                    <option value="5">Aravind Kumar (DF-2026-005)</option>
+                    
+                    <option value="1">Aravind Menon (DF-2026-001)</option>
+                    
+                    <option value="4">Lokesh (DF-2026-004)</option>
+                    
+                    <option value="8">Lokesh Iyer (DF-2026-008)</option>
+                    
+                    <option value="3">Medha (DF-2026-003)</option>
+                    
+                    <option value="7">Medha Nair (DF-2026-007)</option>
+                    
+                    <option value="2">Vishal (DF-2026-002)</option>
+                    
+                    <option value="6">Vishal Rao (DF-2026-006)</option>
+                    
+                </select>
+            </div>
+            <div class="field">
+                <label>Attending Clinician</label>
+                <select id="clinical-doctor-select" name="doctor_id">
+                    
+                    <option value="1">Dr. Ananya Sharma ()</option>
+                    
+                    <option value="2">Dr. Rohan Patel ()</option>
+                    
+                    <option value="3">Dr. Meera Nair ()</option>
+                    
+                    <option value="4">Dr. Vikram Rao ()</option>
+                    
+                    <option value="5">Rashmitha ()</option>
+                    
+                </select>
+            </div>
+            <div class="field full">
+                <label>Subjective (Patient Reported History & Pain Level)</label>
+                <textarea rows="2" id="clinical-subjective" placeholder="e.g. Patient reports lingering throbbing pain in upper right quadrant radiating to temple, provoked by cold fluids."></textarea>
+            </div>
+            <div class="field full">
+                <label>Objective (Clinical Findings, Percussion & Radiographs)</label>
+                <textarea rows="3" id="clinical-objective" placeholder="e.g. Tooth #16 positive to vertical percussion. Deep occlusal restoration breakdown. Periapical radiograph shows PDL widening at mesiobuccal root apex."></textarea>
+            </div>
+            <div class="field full">
+                <label>Assessment (Diagnosis & ICD-10 Classification)</label>
+                <textarea rows="2" id="clinical-assessment" placeholder="e.g. Symptomatic Irreversible Pulpitis with Acute Apical Periodontitis - Tooth #16 (K04.01)."></textarea>
+            </div>
+            <div class="field full">
+                <label>Plan (Treatment Carried Out, Prescription, Follow-up)</label>
+                <textarea rows="2" id="clinical-plan" placeholder="e.g. Initiated single-visit rotary endodontics under rubber dam. Working length verified via apex locator. Prescribed Amoxicillin 500mg + Ibuprofen 400mg. Recall in 7 days for core build-up."></textarea>
+            </div>
+            <div class="field full" style="margin-top:8px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                    Save & Commit Clinical Progress Note
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Progress Notes Timeline -->
+    <div class="card">
+        <div class="section-title">
+            <h2>Recent Clinical Notes</h2>
+            <span class="pill purple">5 notes</span>
+        </div>
+        <div class="timeline" id="recent-notes-timeline">
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--teal);"></span>
+                <div>
+                    <b>Aravind Menon</b>
+                    <div style="font-size:12px;color:var(--ink);margin-top:2px;">Routine maintenance...</div>
+                    <small class="muted">11 Sep 2026, 14:09</small>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--teal);"></span>
+                <div>
+                    <b>Aravind Menon</b>
+                    <div style="font-size:12px;color:var(--ink);margin-top:2px;">Routine maintenance...</div>
+                    <small class="muted">11 Sep 2026, 14:08</small>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--teal);"></span>
+                <div>
+                    <b>Aravind Menon</b>
+                    <div style="font-size:12px;color:var(--ink);margin-top:2px;">Routine maintenance...</div>
+                    <small class="muted">11 Sep 2026, 14:08</small>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--teal);"></span>
+                <div>
+                    <b>Aravind Menon</b>
+                    <div style="font-size:12px;color:var(--ink);margin-top:2px;">Asymptomatic Tooth #16 ready for 3D obturation....</div>
+                    <small class="muted">11 Sep 2026, 13:39</small>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <span class="timeline-dot" style="background:var(--teal);"></span>
+                <div>
+                    <b>Aravind Menon</b>
+                    <div style="font-size:12px;color:var(--ink);margin-top:2px;">Symptomatic Irreversible Pulpitis with Symptomatic Apical Pe...</div>
+                    <small class="muted">11 Sep 2026, 13:39</small>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase Client Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        
+        window.CURRENT_USER = {
+            id: 2,
+            name: "Dr. Ananya Sharma",
+            email: "doctor@dentiflow.com",
+            role: "doctor"
+        };
+        
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+<script>
+const soapPresets = {
+    rct: {
+        subjective: "Patient reports severe throbbing nocturnal pain on right upper jaw, aggravated by cold beverages.",
+        objective: "Tooth #16 sensitive to vertical percussion (+2). EPT test delayed. Periapical radiograph reveals deep caries approaching coronal pulp chamber with apical PDL space widening.",
+        assessment: "Symptomatic Irreversible Pulpitis with Acute Apical Periodontitis - Tooth #16 (ICD-10 K04.01)",
+        plan: "Administered 2% Lignocaine with 1:80000 adrenaline. Rubber dam isolated. Access cavity prepared. Canals instrumented with Protaper Gold rotary files to F2. Irrigated with 3% NaOCl and 17% EDTA. Obturation scheduled next visit."
+    },
+    filling: {
+        subjective: "Patient complaints of food entrapment in upper left back tooth without active pain.",
+        objective: "Intraoral exam shows Class II occlusal-distal carious cavitation on tooth #24. Cold sensitivity within normal limits.",
+        assessment: "Dental Caries on Enamel and Dentin - Tooth #24 (ICD-10 K02.1)",
+        plan: "Caries excavated with slow-speed round bur. Selective enamel etch with 37% phosphoric acid for 15s. Single Bond Universal applied and cured. 3M Filtek Z250 composite incrementally placed and light-cured. Occlusion verified."
+    },
+    scaling: {
+        subjective: "Patient presents for routine preventive checkup and reports slight gum bleeding during brushing.",
+        objective: "Moderate supragingival calculus along lingual surfaces of lower anterior teeth (31-43). Marginal gingival erythema, BOP positive on 20% sites. No pathological pocketing (>3mm).",
+        assessment: "Dental Plaque-Induced Generalized Gingivitis (ICD-10 K05.1)",
+        plan: "Full-mouth ultrasonic scaling completed using piezo tip. Polishing done with fine prophy paste. Chlorhexidine 0.2% mouthrinse prescribed for 7 days. Demonstrated Modified Bass brushing technique."
+    },
+    extraction: {
+        subjective: "Patient complains of recurrent pericoronal swelling and pain in lower right wisdom tooth area.",
+        objective: "Tooth #48 mesioangularly impacted. Operculum inflamed. OPG radiograph reveals roots in close proximity to inferior alveolar nerve canal.",
+        assessment: "Mesioangular Impaction with Pericoronitis - Tooth #48 (ICD-10 K01.1)",
+        plan: "Inferior alveolar nerve block and long buccal nerve block administered. Mucoperiosteal flap elevated. Guttering and coronal sectioning under copious saline irrigation. Tooth delivered intact. Socket curetted and irrigated. Interrupted silk sutures placed."
+    }
+};
+
+function applySOAPTemplate(type) {
+    const p = soapPresets[type];
+    if (!p) return;
+    document.getElementById('clinical-subjective').value = p.subjective;
+    document.getElementById('clinical-objective').value = p.objective;
+    document.getElementById('clinical-assessment').value = p.assessment;
+    document.getElementById('clinical-plan').value = p.plan;
+    window.toast && window.toast(`Applied ${type.toUpperCase()} template`, 'success');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('clinical-note-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const patientId = document.getElementById('clinical-patient-select').value;
+            const doctorId = document.getElementById('clinical-doctor-select').value;
+            const subjective = document.getElementById('clinical-subjective').value;
+            const objective = document.getElementById('clinical-objective').value;
+            const assessment = document.getElementById('clinical-assessment').value;
+            const plan = document.getElementById('clinical-plan').value;
+
+            const payload = {
+                doctor_id: parseInt(doctorId),
+                subjective: subjective,
+                objective: objective,
+                assessment: assessment,
+                plan: plan,
+                is_ai_draft: false,
+                raw_transcript: subjective
+            };
+
+            try {
+                const res = await fetch(`/api/patients/${patientId}/voice-notes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.toast && window.toast('Clinical note saved and committed to EHR!', 'success');
+                    setTimeout(() => window.location.reload(), 600);
+                } else {
+                    window.toast && window.toast(data.message || 'Failed to save note', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                window.toast && window.toast('Network error saving note', 'error');
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

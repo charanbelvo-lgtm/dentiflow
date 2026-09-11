@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Aravind Menon - DentiFlow</title>
+    <title>Care Team & Staff · DentiFlow</title>
     <link rel="icon" href="/favicon.ico" type="image/svg+xml">
     <link rel="stylesheet" href="./css/style.css">
 
@@ -27,7 +27,7 @@
                 <a href="./queue.html" class="">
                     <span>Live Queue</span>
                 </a>
-                <a href="./patients.html" class="active">
+                <a href="./patients.html" class="">
                     <span>Patients</span>
                 </a>
                 <a href="./clinical.html" class="">
@@ -47,7 +47,7 @@
                 <a href="./inventory.html" class="">
                     <span>Inventory</span>
                 </a>
-                <a href="./staff.html" class="">
+                <a href="./staff.html" class="active">
                     <span>Staff & Doctors</span>
                 </a>
                 <a href="./branches.html" class="">
@@ -92,99 +92,104 @@
                 
 <div class="page-head">
     <div>
-        <a href="./patients.html">← Back to patients</a>
-        <h1 style="margin-top:8px">Aravind Menon</h1>
-        <p class="muted">DF-2026-001 - Patient since January 2024</p>
+        <span class="eyebrow">CARE TEAM</span>
+        <h1>Doctors & Practitioners</h1>
+        <p class="muted">Availability, clinical specializations, and caseload overview.</p>
     </div>
-    <div class="row">
-        <a class="btn btn-soft" href="./dental-chart.html">Open dental chart</a>
-        <button class="btn btn-primary" onclick="window.toast('New visit scheduled for Aravind Menon', 'success')">+ New visit</button>
+    <span class="pill green">5 available profiles</span>
+</div>
+
+<div class="hero" style="margin-bottom: 22px;">
+    <div>
+        <span class="eyebrow">DENTIFLOW CLINICAL TEAM</span>
+        <h2>Excellence in Dental Care.</h2>
+        <p>A unified view of availability, specialties, and today’s patient load across all active dental chairs.</p>
     </div>
+    <div class="hero-art"><span>🩺</span></div>
 </div>
 
 <div class="grid grid-3">
-    <div class="card">
-        <div class="patient">
-            <span class="avatar" style="width:52px;height:52px;font-size:18px;">AR</span>
-            <div>
-                <h2 style="font-size:20px;margin-bottom:4px;">Aravind Menon</h2>
-                <span class="pill green">Active patient</span>
-            </div>
-        </div>
-        <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-        <p><span class="muted">Phone</span><br><b>123456789</b></p>
-        <p><span class="muted">Email</span><br><b>patient@dentiflow.com</b></p>
-        <p><span class="muted">Age / Gender</span><br><b>29 years • Male</b></p>
-        <p><span class="muted">Blood Group</span><br><b>O+</b></p>
-    </div>
-
-    <div class="card" style="grid-column:span 2">
-        <div class="section-title">
-            <h2>Care snapshot</h2>
-            <span class="pill orange">Tooth #16 needs attention</span>
-        </div>
-        <div class="grid grid-3">
-            <div>
-                <span class="muted">Next visit</span>
-                <h3 style="margin:6px 0 2px;">Today - 09:00</h3>
-                <small class="muted">Dr. Ananya Sharma</small>
-            </div>
-            <div>
-                <span class="muted">Open balance</span>
-                <h3 style="margin:6px 0 2px;color:var(--red);">INR ₹2,500</h3>
-                <small class="muted">Status: Pending</small>
-            </div>
-            <div>
-                <span class="muted">Plan progress</span>
-                <h3 style="margin:6px 0 2px;">2 / 4 visits</h3>
-                <div class="progress" style="margin-top:6px;">
-                    <span style="width:50%"></span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-2" style="margin-top:18px">
+    
     <div class="card">
         <div class="section-title">
-            <h2>Clinical timeline</h2>
-            <a href="./clinical.html">Add note -></a>
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">D</div>
+            <span class="pill green">Available</span>
         </div>
-        <div class="timeline">
-            <div class="timeline-item">
-                <span class="timeline-dot"></span>
-                <div>
-                    <b>May 22 - Root canal consultation</b>
-                    <div class="muted">Tooth #16 percussion sensitive. RCT recommended.</div>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--blue)"></span>
-                <div>
-                    <b>May 05 - Diagnostic x-ray</b>
-                    <div class="muted">Periapical radiolucency noted. Clear coronal margins.</div>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--purple)"></span>
-                <div>
-                    <b>Apr 14 - Regular oral prophylaxis</b>
-                    <div class="muted">Supragingival scaling completed. Oral hygiene advised.</div>
-                </div>
-            </div>
+        <h3>Dr. Ananya Sharma</h3>
+        <p class="muted">Chief Endodontist &amp; Cosmetic Dentist<br>11 yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ 4.95 rating</span>
+            <span class="muted" style="font-size: 12px;">4 visits today</span>
         </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="/doctor-profile/1">
+            Open profile →
+        </a>
     </div>
-
+    
     <div class="card">
         <div class="section-title">
-            <h2>Documents & Scans</h2>
-            <button class="btn btn-soft" onclick="window.toast('Document uploaded to Firebase Storage', 'success')">Upload</button>
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">D</div>
+            <span class="pill green">Available</span>
         </div>
-        <p class="notice" style="margin-bottom:10px;">Treatment consent - Signed May 22, 2026</p>
-        <p class="notice" style="margin-bottom:10px;">Panoramic Radiograph OPG - May 05, 2026</p>
-        <p class="notice">Medical History Form - January 10, 2024</p>
+        <h3>Dr. Rohan Patel</h3>
+        <p class="muted">Consultant Orthodontist (Invisalign Platinum)<br>9 yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ 4.9 rating</span>
+            <span class="muted" style="font-size: 12px;">3 visits today</span>
+        </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="/doctor-profile/2">
+            Open profile →
+        </a>
     </div>
+    
+    <div class="card">
+        <div class="section-title">
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">D</div>
+            <span class="pill green">Available</span>
+        </div>
+        <h3>Dr. Meera Nair</h3>
+        <p class="muted">Periodontist &amp; Implantologist<br>14 yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ 4.88 rating</span>
+            <span class="muted" style="font-size: 12px;">2 visits today</span>
+        </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="/doctor-profile/3">
+            Open profile →
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="section-title">
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">D</div>
+            <span class="pill green">Available</span>
+        </div>
+        <h3>Dr. Vikram Rao</h3>
+        <p class="muted">Oral &amp; Maxillofacial Surgeon<br>16 yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ 4.92 rating</span>
+            <span class="muted" style="font-size: 12px;">1 visits today</span>
+        </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="/doctor-profile/4">
+            Open profile →
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="section-title">
+            <div class="avatar" style="width: 44px; height: 44px; font-size: 16px;">R</div>
+            <span class="pill green">Available</span>
+        </div>
+        <h3>Rashmitha</h3>
+        <p class="muted">General Dentistry<br>8 yrs experience</p>
+        <div class="row between" style="margin: 14px 0 8px;">
+            <span class="muted" style="font-size: 12px;">★ 4.9 rating</span>
+            <span class="muted" style="font-size: 12px;">0 visits today</span>
+        </div>
+        <a class="btn btn-soft" style="width: 100%; justify-content: center;" href="/doctor-profile/5">
+            Open profile →
+        </a>
+    </div>
+    
 </div>
 
             </section>

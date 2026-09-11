@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Live Queue Management - DentiFlow</title>
+    <link rel="icon" href="/favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./queue.html" class="active">
+                    <span>Live Queue</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+
+                <div class="nav-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing & Invoicing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Staff & Doctors</span>
+                </a>
+                <a href="./branches.html" class="">
+                    <span>Clinic Branches</span>
+                </a>
+                <a href="./operations.html" class="">
+                    <span>Operations & Lab</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Practice Reports</span>
+                </a>
+                <a href="./settings.html" class="">
+                    <span>Clinic Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <span class="pill green"> Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">PATIENT FLOW & TRIAGE</span>
+        <h1>Live Queue Management</h1>
+        <p class="muted">Real-time operatory chair matrix and reception waiting room queue.</p>
+    </div>
+    <div class="row">
+        <button class="btn btn-ghost" onclick="loadQueueData()">↻ Refresh</button>
+        <button class="btn btn-primary" data-modal="modal-new-token">+ Issue Token</button>
+    </div>
+</div>
+
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon teal">💺</div>
+        <strong id="stat-serving-count">0 Active</strong>
+        <small>patients in chairs</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">⏳</div>
+        <strong id="stat-waiting-count">0 In Queue</strong>
+        <small>reception waiting</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon">⏱</div>
+        <strong>14 min</strong>
+        <small>average wait time</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple">✓</div>
+        <strong id="stat-completed-count">12 Done</strong>
+        <small>completed today</small>
+    </div>
+</div>
+
+<!-- Active Chairs Matrix -->
+<div style="margin-top: 24px;">
+    <div class="section-title">
+        <h2>Active Chairs (Now Serving)</h2>
+        <span class="pill green">Live Operatories</span>
+    </div>
+    <div class="grid grid-2" id="now-serving-container">
+        
+        <div class="card" style="border-top: 4px solid #cbd5e1;">
+            <div class="section-title">
+                <div>
+                    <h3>Operatory Alpha (Endodontics)</h3>
+                    <span class="muted" style="font-size:12px;">Chair 01 &bull; Anthos A3 Plus + Sirona RVG</span>
+                </div>
+                <span class="pill ">
+                    Cleaning
+                </span>
+            </div>
+            
+            <p class="muted" style="font-size:13px;margin:12px 0;">No patient currently seated. Ready for next call.</p>
+            
+        </div>
+        
+        <div class="card" style="border-top: 4px solid #cbd5e1;">
+            <div class="section-title">
+                <div>
+                    <h3>Operatory Beta (Oral Surgery)</h3>
+                    <span class="muted" style="font-size:12px;">Chair 02 &bull; Kavo Primus 1058 Life + Apex Locator</span>
+                </div>
+                <span class="pill ">
+                    Available
+                </span>
+            </div>
+            
+            <p class="muted" style="font-size:13px;margin:12px 0;">No patient currently seated. Ready for next call.</p>
+            
+        </div>
+        
+        <div class="card" style="border-top: 4px solid #cbd5e1;">
+            <div class="section-title">
+                <div>
+                    <h3>Operatory Gamma (Orthodontics)</h3>
+                    <span class="muted" style="font-size:12px;">Chair 03 &bull; A-dec 500 LED Operatory</span>
+                </div>
+                <span class="pill ">
+                    Cleaning
+                </span>
+            </div>
+            
+            <p class="muted" style="font-size:13px;margin:12px 0;">No patient currently seated. Ready for next call.</p>
+            
+        </div>
+        
+        <div class="card" style="border-top: 4px solid var(--orange);">
+            <div class="section-title">
+                <div>
+                    <h3>Operatory Delta (Preventive &amp; Hygiene)</h3>
+                    <span class="muted" style="font-size:12px;">Chair 04 &bull; Belmont Clesta II Dental Chair</span>
+                </div>
+                <span class="pill orange">
+                    Patient Waiting
+                </span>
+            </div>
+            
+            <div style="background:#f8fafc;padding:12px;border-radius:8px;margin:8px 0;">
+                <b>Lokesh</b><br>
+                <span class="muted" style="font-size:12px;">Scaling &amp; Polishing &bull; Dr. Meera Nair</span>
+            </div>
+            
+        </div>
+        
+    </div>
+</div>
+
+<!-- Reception Queue List -->
+<div class="card" style="margin-top: 24px;">
+    <div class="section-title">
+        <h2>Reception Waiting List</h2>
+        <span class="pill orange" id="waiting-count-badge">Waiting</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table" id="queue-table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Procedure</th>
+                    <th>Status</th>
+                    <th>Wait Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="up-next-tbody">
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">Loading live queue...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Issue Token Modal -->
+<div class="modal-backdrop" id="modal-new-token" hidden>
+    <div class="modal">
+        <div class="section-title">
+            <h2>Issue Queue Token</h2>
+            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
+        </div>
+        <form id="new-token-form" class="form-grid" style="margin-top:14px;">
+            <div class="field full">
+                <label>Select Patient *</label>
+                <select name="patient_id" required>
+                    
+                    <option value="1">Aravind Menon (DF-2026-001)</option>
+                    
+                    <option value="2">Vishal (DF-2026-002)</option>
+                    
+                    <option value="3">Medha (DF-2026-003)</option>
+                    
+                    <option value="4">Lokesh (DF-2026-004)</option>
+                    
+                    <option value="5">Aravind Kumar (DF-2026-005)</option>
+                    
+                    <option value="6">Vishal Rao (DF-2026-006)</option>
+                    
+                    <option value="7">Medha Nair (DF-2026-007)</option>
+                    
+                    <option value="8">Lokesh Iyer (DF-2026-008)</option>
+                    
+                </select>
+            </div>
+            <div class="field">
+                <label>Assigned Doctor</label>
+                <select name="doctor_id">
+                    
+                    <option value="1">Dr. Ananya Sharma</option>
+                    
+                    <option value="2">Dr. Rohan Patel</option>
+                    
+                    <option value="3">Dr. Meera Nair</option>
+                    
+                    <option value="4">Dr. Vikram Rao</option>
+                    
+                    <option value="5">Rashmitha</option>
+                    
+                </select>
+            </div>
+            <div class="field">
+                <label>Chair Preference</label>
+                <select name="chair_id">
+                    
+                    <option value="1">Operatory Alpha (Endodontics)</option>
+                    
+                    <option value="2">Operatory Beta (Oral Surgery)</option>
+                    
+                    <option value="3">Operatory Gamma (Orthodontics)</option>
+                    
+                    <option value="4">Operatory Delta (Preventive &amp; Hygiene)</option>
+                    
+                </select>
+            </div>
+            <div class="field full">
+                <label>Procedure / Visit Purpose</label>
+                <input type="text" name="procedure_name" value="Walk-in Consultation" required>
+            </div>
+            <div class="field">
+                <label>Estimated Wait (Minutes)</label>
+                <input type="number" name="estimated_wait_min" value="15" min="5" max="120">
+            </div>
+            <div class="field" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
+                <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <input type="checkbox" name="is_emergency" value="true">
+                    <span style="color:var(--red);font-weight:700;">Triage Emergency!</span>
+                </label>
+            </div>
+            <div class="field full" style="margin-top:12px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Generate & Print Token</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase Client Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        
+        window.CURRENT_USER = {
+            id: 2,
+            name: "Dr. Ananya Sharma",
+            email: "doctor@dentiflow.com",
+            role: "doctor"
+        };
+        
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+<script src="./js/queue.js"></script>
+
+</body>
+</html>
