@@ -1,12 +1,17 @@
 .rocketride/
 .env
 __pycache__/
+pycache/
 *.pyc
 *.pyo
 venv/
 .venv/
+env/
+instance/
+.vscode/
 database.db
 *.db
+dentiflow.db
 static/uploads/*
 !static/uploads/.gitkeep
 firebase-service-account.json

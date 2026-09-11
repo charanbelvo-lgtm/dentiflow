@@ -17,6 +17,12 @@ for js_file in os.listdir(os.path.join('static', 'js')):
     if js_file.endswith('.js'):
         shutil.copy(os.path.join('static', 'js', js_file), os.path.join(DOCS_DIR, 'js', js_file))
 
+# Ensure .nojekyll
+nojekyll_path = os.path.join(DOCS_DIR, '.nojekyll')
+if not os.path.exists(nojekyll_path):
+    with open(nojekyll_path, 'w') as f:
+        f.write('')
+
 # 2. Pages mapping (Flask Route -> docs HTML file)
 PAGE_MAP = {
     '/': 'index.html',
@@ -50,7 +56,7 @@ URL_REPLACEMENTS = [
     (r'href="/queue"', r'href="./queue.html"'),
     (r'href="/appointments"', r'href="./appointments.html"'),
     (r'href="/patients"', r'href="./patients.html"'),
-    (r'href="/patients/1"', r'href="./patient-detail.html"'),
+    (r'href="/patients/\d+"', r'href="./patient-detail.html"'),
     (r'href="/clinical"', r'href="./clinical.html"'),
     (r'href="/chart"', r'href="./dental-chart.html"'),
     (r'href="/dental-chart"', r'href="./dental-chart.html"'),
@@ -65,9 +71,16 @@ URL_REPLACEMENTS = [
     (r'href="/portal"', r'href="./patient-portal.html"'),
     (r'href="/login"', r'href="./login.html"'),
     (r'href="/logout"', r'href="./login.html"'),
-    (r'href="/invoices/1/print"', r'href="./print-invoice.html"'),
-    (r'href="/receipts/1/print"', r'href="./print-receipt.html"'),
-    (r'href="/prescriptions/1/print"', r'href="./print-prescription.html"'),
+    (r'href="/register"', r'href="./login.html"'),
+    (r'href="/demo-login/doctor"', r'href="./dashboard.html"'),
+    (r'href="/demo-login/admin"', r'href="./dashboard.html"'),
+    (r'href="/demo-login/reception\w*"', r'href="./dashboard.html"'),
+    (r'href="/demo-login/patient"', r'href="./patient-portal.html"'),
+    (r'href="/doctor-profile/\d+"', r'href="./staff.html"'),
+    (r'href="/invoices/\d+/print"', r'href="./print-invoice.html"'),
+    (r'href="/receipts/\d+/print"', r'href="./print-receipt.html"'),
+    (r'href="/prescriptions/\d+/print"', r'href="./print-prescription.html"'),
+    (r'href="/favicon\.ico"', r'href="./favicon.ico"'),
     (r'href="/"', r'href="./index.html"'),
     (r'href="/book"', r'href="./index.html"'),
 ]
@@ -78,12 +91,24 @@ MOCK_API_SCRIPT = """
 """
 
 with app.test_client() as client:
-    # Authenticate as doctor to render all clinical & administrative views
+    # 1. Render patient-dashboard separately
+    client.get('/demo-login/patient', follow_redirects=True)
+    res = client.get('/dashboard')
+    if res.status_code == 200:
+        html = res.data.decode('utf-8')
+        for pattern, repl in URL_REPLACEMENTS:
+            html = re.sub(pattern, repl, html)
+        if '</head>' in html:
+            html = html.replace('</head>', f'{MOCK_API_SCRIPT}</head>')
+        with open(os.path.join(DOCS_DIR, 'patient-dashboard.html'), 'w', encoding='utf-8') as f:
+            f.write(html)
+        print("Generated patient-dashboard.html")
+
+    # 2. Authenticate as doctor to render all clinical & administrative views
     client.get('/demo-login/doctor', follow_redirects=True)
     
     for route, filename in PAGE_MAP.items():
         if route == '/login':
-            # Unauthenticated login page
             client.get('/logout', follow_redirects=True)
             res = client.get('/login')
             client.get('/demo-login/doctor', follow_redirects=True)
