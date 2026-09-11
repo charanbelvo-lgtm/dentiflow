@@ -26,17 +26,25 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('auth.login') }}">
-                <div class="role-choice">
+                <div class="role-choice" style="grid-template-columns:repeat(3,1fr);">
                     <label>
                         <input type="radio" name="role" value="doctor" checked> <b>Doctor</b>
-                        <small class="muted"><br>Clinical dashboard</small>
+                        <small class="muted"><br>Clinical & visits</small>
                     </label>
                     <label>
                         <input type="radio" name="role" value="patient"> <b>Patient</b>
-                        <small class="muted"><br>Appointments & records</small>
+                        <small class="muted"><br>Book & wait time</small>
+                    </label>
+                    <label>
+                        <input type="radio" name="role" value="admin"> <b>Admin</b>
+                        <small class="muted"><br>Inventory & profits</small>
                     </label>
                 </div>
                 <div class="field">
+                    <label>Your name <small class="muted">(optional)</small></label>
+                    <input type="text" name="name" placeholder="Ashwini Goud or Dr. Alex" autocomplete="name">
+                </div>
+                <div class="field" style="margin-top:14px">
                     <label>Email address</label>
                     <input type="email" name="email" placeholder="admin@dentiflow.com or you@gmail.com" required autofocus>
                 </div>
@@ -50,11 +58,11 @@
             </form>
 
             <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
-            <div class="grid grid-4">
+            <div class="grid grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='doctor') }}">Doctor</a>
+                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='patient') }}">Patient</a>
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='admin') }}">Admin</a>
                 <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='reception') }}">Reception</a>
-                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='patient') }}">Patient</a>
             </div>
 
             <p class="muted" style="font-size:12px;text-align:center;margin-top:20px">

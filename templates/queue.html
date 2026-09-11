@@ -1,160 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Live Queue Management - DentiFlow{% endblock %}
+{% block title %}Queue Management - DentiFlow{% endblock %}
 {% block content %}
-<div class="page-head">
-    <div>
-        <span class="eyebrow">PATIENT FLOW & TRIAGE</span>
-        <h1>Live Queue Management</h1>
-        <p class="muted">Real-time operatory chair matrix and reception waiting room queue.</p>
-    </div>
-    <div class="row">
-        <button class="btn btn-ghost" onclick="loadQueueData()">↻ Refresh</button>
-        <button class="btn btn-primary" data-modal="modal-new-token">+ Issue Token</button>
-    </div>
+<div class="page-header">
+    <h1 class="page-title">Queue Management</h1>
 </div>
-
-<div class="grid grid-4">
-    <div class="card stat">
-        <div class="stat-icon teal">💺</div>
-        <strong id="stat-serving-count">0 Active</strong>
-        <small>patients in chairs</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon orange">⏳</div>
-        <strong id="stat-waiting-count">0 In Queue</strong>
-        <small>reception waiting</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon">⏱</div>
-        <strong>14 min</strong>
-        <small>average wait time</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon purple">✓</div>
-        <strong id="stat-completed-count">12 Done</strong>
-        <small>completed today</small>
-    </div>
-</div>
-
-<!-- Active Chairs Matrix -->
-<div style="margin-top: 24px;">
-    <div class="section-title">
-        <h2>Active Chairs (Now Serving)</h2>
-        <span class="pill green">Live Operatories</span>
-    </div>
-    <div class="grid grid-2" id="now-serving-container">
-        {% for chair in chairs %}
-        <div class="card" style="border-top: 4px solid {{ 'var(--teal)' if chair.status == 'In Treatment' else ('var(--orange)' if chair.status == 'Patient Waiting' else '#cbd5e1') }};">
-            <div class="section-title">
-                <div>
-                    <h3>{{ chair.name }}</h3>
-                    <span class="muted" style="font-size:12px;">{{ chair.chair_number }} &bull; {{ chair.equipment_specs or 'Anthos Dental Unit' }}</span>
-                </div>
-                <span class="pill {{ 'green' if chair.status == 'In Treatment' else ('orange' if chair.status == 'Patient Waiting' else '') }}">
-                    {{ chair.status }}
-                </span>
-            </div>
-            {% if chair.current_patient %}
-            <div style="background:#f8fafc;padding:12px;border-radius:8px;margin:8px 0;">
-                <b>{{ chair.current_patient }}</b><br>
-                <span class="muted" style="font-size:12px;">{{ chair.current_procedure or 'Consultation' }} &bull; {{ chair.current_doctor or 'Clinician' }}</span>
-            </div>
-            {% else %}
-            <p class="muted" style="font-size:13px;margin:12px 0;">No patient currently seated. Ready for next call.</p>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<!-- Reception Queue List -->
-<div class="card" style="margin-top: 24px;">
-    <div class="section-title">
-        <h2>Reception Waiting List</h2>
-        <span class="pill orange" id="waiting-count-badge">Waiting</span>
-    </div>
-    <div class="table-wrap">
-        <table class="table" id="queue-table">
-            <thead>
-                <tr>
-                    <th>Token</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Procedure</th>
-                    <th>Status</th>
-                    <th>Wait Time</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="up-next-tbody">
-                <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">Loading live queue...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Issue Token Modal -->
-<div class="modal-backdrop" id="modal-new-token" hidden>
-    <div class="modal">
-        <div class="section-title">
-            <h2>Issue Queue Token</h2>
-            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
-        </div>
-        <form id="new-token-form" class="form-grid" style="margin-top:14px;">
-            <div class="field full">
-                <label>Select Patient *</label>
-                <select name="patient_id" required>
-                    {% for p in patients %}
-                    <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }})</option>
-                    {% else %}
-                    <option value="1">Aravind Menon (DF-2026-001)</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field">
-                <label>Assigned Doctor</label>
-                <select name="doctor_id">
-                    {% for d in doctors %}
-                    <option value="{{ d.id }}">{{ d.name }}</option>
-                    {% else %}
-                    <option value="1">Dr. Ananya Sharma</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field">
-                <label>Chair Preference</label>
-                <select name="chair_id">
-                    {% for c in chairs %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
-                    {% else %}
-                    <option value="1">Chair 01</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field full">
-                <label>Procedure / Visit Purpose</label>
-                <input type="text" name="procedure_name" value="Walk-in Consultation" required>
-            </div>
-            <div class="field">
-                <label>Estimated Wait (Minutes)</label>
-                <input type="number" name="estimated_wait_min" value="15" min="5" max="120">
-            </div>
-            <div class="field" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
-                <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
-                    <input type="checkbox" name="is_emergency" value="true">
-                    <span style="color:var(--red);font-weight:700;">Triage Emergency!</span>
-                </label>
-            </div>
-            <div class="field full" style="margin-top:12px;">
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Generate & Print Token</button>
-            </div>
-        </form>
+<div class="page-body" id="app-root">
+    <!-- Frontend JS will mount here or we render basic UI -->
+    <div class="card p-4 text-center">
+        <i class="fa-solid fa-users-viewfinder fa-3x text-primary mb-3"></i>
+        <h3>Patient queue</h3>
+        <p class="text-muted">The live queue is currently empty.</p>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/queue.js') }}"></script>
 {% endblock %}
-

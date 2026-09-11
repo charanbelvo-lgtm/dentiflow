@@ -81,8 +81,12 @@ def login():
         password = data.get('password') or ''
         remember = bool(data.get('remember', False))
 
+        name_input = (data.get('name') or '').strip()
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
+            if name_input and user.name != name_input:
+                user.name = name_input
+                db.session.commit()
             login_user(user, remember=remember)
 
             # Audit log
@@ -90,6 +94,35 @@ def login():
                 user_name=user.name,
                 user_role=user.role,
                 action=f"User {user.name} logged in successfully",
+                module="Authentication",
+                ip_address=request.remote_addr or '127.0.0.1'
+            )
+            db.session.add(log)
+            db.session.commit()
+
+            if request.is_json:
+                return jsonify({'status': 'success', 'redirect': url_for('dashboard.index'), 'user': user.to_dict()})
+            return redirect(url_for('dashboard.index'))
+        elif not user and len(password) >= 6 and '@' in email:
+            role = (data.get('role') or 'patient').strip().lower()
+            if role not in {'doctor', 'patient', 'admin', 'reception'}:
+                role = 'patient'
+            display_name = name_input
+            if not display_name:
+                prefix = email.split('@')[0]
+                display_name = ' '.join(w.capitalize() for w in prefix.replace('.', ' ').replace('-', ' ').replace('_', ' ').split())
+                if role == 'doctor' and not display_name.lower().startswith('dr'):
+                    display_name = 'Dr. ' + display_name
+            user = User(email=email, name=display_name, role=role)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            login_user(user, remember=remember)
+
+            log = AuditLog(
+                user_name=user.name,
+                user_role=user.role,
+                action=f"User {user.name} signed in / created successfully",
                 module="Authentication",
                 ip_address=request.remote_addr or '127.0.0.1'
             )
@@ -113,10 +146,20 @@ def demo_login(role):
         'admin': 'admin@dentiflow.com',
         'doctor': 'doctor@dentiflow.com',
         'reception': 'reception@dentiflow.com',
-        'patient': 'patient@dentiflow.com'
+        'patient': 'budigeashwinigoud@gmail.com'
     }
     email = role_email_map.get(role, 'doctor@dentiflow.com')
     user = User.query.filter_by(email=email).first()
+    if not user and role == 'patient':
+        user = User(
+            email='budigeashwinigoud@gmail.com',
+            name='Ashwini Goud',
+            role='patient',
+            phone='+91 98765 43213'
+        )
+        user.set_password('patient123')
+        db.session.add(user)
+        db.session.commit()
     if user:
         login_user(user, remember=True)
         log = AuditLog(

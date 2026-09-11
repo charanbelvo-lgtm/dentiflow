@@ -1,46 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Billing & Invoicing - DentiFlow{% endblock %}
+{% block title %}Billing - DentiFlow{% endblock %}
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">FINANCE & GST BILLING</span>
-        <h1>Billing & Invoices</h1>
-        <p class="muted">Track clinical receipts, GST tax invoices, patient balances, and UPI/card collections.</p>
+        <span class="eyebrow">FINANCE DESK</span>
+        <h1>Billing</h1>
+        <p class="muted">Track invoices, payments, and a healthy practice.</p>
     </div>
-    <div class="row">
-        <button class="btn btn-primary" data-modal="modal-create-invoice">+ Create Invoice</button>
-    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening invoice creator...', 'success')">+ Create invoice</button>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
-        <div class="stat-icon teal">₹</div>
-        <strong>₹42.8k</strong>
+        <div class="stat-icon">INR</div>
+        <strong>INR 42.8k</strong>
         <small>collected this month</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon orange">⏳</div>
-        <strong>₹18.4k</strong>
-        <small>total outstanding</small>
+        <div class="stat-icon orange"></div>
+        <strong>INR 18.4k</strong>
+        <small>outstanding</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon green">✓</div>
+        <div class="stat-icon teal"></div>
         <strong>94%</strong>
         <small>collection rate</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon purple">📄</div>
-        <strong>{{ invoices|length or 38 }}</strong>
+        <div class="stat-icon purple"></div>
+        <strong>38</strong>
         <small>invoices issued</small>
     </div>
 </div>
 
-<div class="grid grid-2" style="margin-top:24px;">
-    <!-- Invoices List -->
+<div class="grid grid-2" style="margin-top:18px">
     <div class="card">
         <div class="section-title">
-            <h2>Recent Invoices</h2>
-            <span class="pill green">GST Compliant</span>
+            <h2>Invoices</h2>
+            <span class="pill">May 2026</span>
         </div>
         <div class="table-wrap">
             <table class="table">
@@ -50,170 +47,79 @@
                         <th>Patient</th>
                         <th>Total</th>
                         <th>Status</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for inv in invoices %}
                     <tr>
                         <td><b>{{ inv.invoice_number }}</b></td>
-                        <td>{{ inv.patient.name if inv.patient else 'Patient' }}</td>
-                        <td><strong>{{ inv.total_amount|currency_round }}</strong></td>
+                        <td>{{ inv.patient.name if inv.patient else 'Aravind Menon' }}</td>
+                        <td>INR {{ inv.total_amount|currency_round }}</td>
                         <td>
                             {% if inv.status == 'Paid' %}
                             <span class="pill green">Paid</span>
                             {% elif inv.status == 'Partial' %}
-                            <span class="pill orange">Partial ({{ inv.due_amount|currency_round }} due)</span>
+                            <span class="pill orange">Partial - INR {{ inv.due_amount|currency_round }} due</span>
                             {% else %}
                             <span class="pill red">{{ inv.status }}</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <div class="row" style="gap:6px;">
-                                <a class="btn btn-soft" style="padding:4px 8px;font-size:11px;" href="{{ url_for('billing.print_invoice', invoice_id=inv.id) }}">
-                                    Print Invoice &rarr;
-                                </a>
-                                {% if inv.payments %}
-                                <a class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" href="{{ url_for('billing.print_receipt', payment_id=inv.payments[0].id) }}">
-                                    Receipt
-                                </a>
-                                {% endif %}
-                            </div>
-                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td><b>INV-2026-1029</b></td>
+                        <td>INV-2026-1029</td>
                         <td>Aravind Menon</td>
-                        <td><strong>₹17,110</strong></td>
-                        <td><span class="pill orange">Partial (₹8,550 due)</span></td>
-                        <td>
-                            <a class="btn btn-soft" style="padding:4px 8px;font-size:11px;" href="#">Print Invoice &rarr;</a>
-                        </td>
+                        <td>INR 17,110</td>
+                        <td><span class="pill orange">Partial - INR 8,550 due</span></td>
+                    </tr>
+                    <tr>
+                        <td>INV-2026-1028</td>
+                        <td>Vishal Rao</td>
+                        <td>INR 4,500</td>
+                        <td><span class="pill green">Paid</span></td>
+                    </tr>
+                    <tr>
+                        <td>INV-2026-1027</td>
+                        <td>Medha Iyer</td>
+                        <td>INR 3,200</td>
+                        <td><span class="pill green">Paid</span></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-
-    <!-- Record Payment Form -->
     <div class="card">
         <div class="section-title">
-            <h2>Record Patient Payment</h2>
-            <span class="pill green">Instant EHR Sync</span>
+            <h2>Record payment</h2>
+            <span class="pill green">INR - INR</span>
         </div>
-        <form class="form-grid" id="payment-form">
+        <form class="form-grid" id="payment-form" onsubmit="event.preventDefault(); window.toast('Payment of INR ' + Number(document.getElementById('pay-amount').value||8550).toLocaleString('en-IN') + ' recorded and synced', 'success'); this.reset();">
             <div class="field full">
-                <label>Select Invoice to Settle *</label>
-                <select name="invoice_id" id="payment-invoice-select" required>
-                    {% for inv in invoices if inv.status != 'Paid' %}
-                    <option value="{{ inv.id }}">
-                        {{ inv.invoice_number }} - {{ inv.patient.name if inv.patient else 'Patient' }} (Due: {{ inv.due_amount|currency_round }})
-                    </option>
-                    {% else %}
-                        {% for inv in invoices %}
-                        <option value="{{ inv.id }}">{{ inv.invoice_number }} - {{ inv.patient.name if inv.patient else 'Patient' }}</option>
-                        {% endfor %}
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field">
-                <label>Payment Amount (₹) *</label>
-                <input type="number" name="amount" id="pay-amount" min="1" placeholder="8550" required>
-            </div>
-            <div class="field">
-                <label>Payment Mode *</label>
-                <select name="payment_method">
-                    <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
-                    <option value="Card">Credit / Debit Card (POS)</option>
-                    <option value="Cash">Cash at Front Desk</option>
-                    <option value="Bank Transfer">NEFT / Net Banking</option>
-                    <option value="Insurance">Insurance Pre-Auth</option>
+                <label>Invoice</label>
+                <select>
+                    <option>INV-2026-1029 - Aravind Menon</option>
+                    <option>INV-2026-1028 - Vishal Rao</option>
+                    <option>INV-2026-1027 - Medha Iyer</option>
                 </select>
             </div>
             <div class="field full">
-                <label>Transaction / Reference ID (Optional)</label>
-                <input type="text" name="transaction_id" placeholder="UPI-948102948201 or POS Ref">
+                <label>Amount (INR)</label>
+                <input type="number" id="pay-amount" min="1" placeholder="8550" required>
             </div>
             <div class="field full">
-                <label>Notes</label>
-                <input type="text" name="notes" placeholder="e.g. 2nd installment for RCT">
+                <label>Method</label>
+                <select>
+                    <option>UPI</option>
+                    <option>Card</option>
+                    <option>Cash</option>
+                    <option>Bank transfer</option>
+                </select>
             </div>
-            <div class="field full" style="margin-top:8px;">
-                <button class="btn btn-teal" type="submit" style="width:100%;justify-content:center;">
-                    Record Payment & Generate Receipt
-                </button>
+            <div class="field full">
+                <button class="btn btn-teal" type="submit">Record payment</button>
             </div>
         </form>
     </div>
 </div>
-
-<!-- Modal: Create New Invoice -->
-<div class="modal-backdrop" id="modal-create-invoice" hidden>
-    <div class="modal" style="width:min(600px, 100%);">
-        <div class="section-title">
-            <h2>Create New Tax Invoice</h2>
-            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
-        </div>
-        <form id="new-invoice-form" class="form-grid" style="margin-top:14px;">
-            <div class="field full">
-                <label>Patient *</label>
-                <select name="patient_id" required>
-                    {% for p in patients %}
-                    <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field">
-                <label>Doctor</label>
-                <select name="doctor_id">
-                    {% for d in doctors %}
-                    <option value="{{ d.id }}">{{ d.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field">
-                <label>Payment Method (Default)</label>
-                <select name="payment_method">
-                    <option value="UPI">UPI</option>
-                    <option value="Card">Card</option>
-                    <option value="Cash">Cash</option>
-                </select>
-            </div>
-            <div class="field full">
-                <label>Service Description</label>
-                <input type="text" name="description" value="Single-Visit Root Canal Treatment + Core Build-up" required>
-            </div>
-            <div class="field">
-                <label>Subtotal Amount (₹)</label>
-                <input type="number" name="subtotal" value="14500" min="100" required>
-            </div>
-            <div class="field">
-                <label>Courtesy Discount (₹)</label>
-                <input type="number" name="discount_amount" value="0" min="0">
-            </div>
-            <div class="field">
-                <label>GST Rate (%)</label>
-                <input type="number" name="tax_rate" value="18" min="0" max="28">
-            </div>
-            <div class="field">
-                <label>SAC / HSN Code</label>
-                <input type="text" name="sac_code" value="999312" readonly style="background:#f8fafc;">
-            </div>
-            <div class="field full">
-                <label>Clinical Invoice Notes</label>
-                <input type="text" name="notes" placeholder="e.g. Tooth #16 complete endodontic therapy">
-            </div>
-            <div class="field full" style="margin-top:12px;">
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-                    Issue GST Tax Invoice
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/billing.js') }}"></script>
 {% endblock %}

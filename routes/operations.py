@@ -34,7 +34,6 @@ def index():
 
 # 1. Dental Lab Orders Tracker
 @operations_bp.route('/api/lab-orders', methods=['GET', 'POST'])
-@operations_bp.route('/api/operations/lab-orders', methods=['GET', 'POST'])
 @login_required
 def api_lab_orders():
     if request.method == 'POST':

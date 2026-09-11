@@ -15,15 +15,25 @@
                 <span class="brand-mark"></span>DentiFlow
             </a>
             <nav class="nav">
+                {% if current_user.is_authenticated and current_user.role == 'patient' %}
+                <div class="nav-label">Patient Workspace</div>
+                <a href="{{ url_for('dashboard.index') }}" class="{% if request.path == '/dashboard' or request.path == '/' or '/patient-dashboard' in request.path %}active{% endif %}">
+                    <span>Book &amp; Wait Time</span>
+                </a>
+                <a href="{{ url_for('appointments.index') }}" class="{% if '/appointments' in request.path %}active{% endif %}">
+                    <span>My Appointments</span>
+                </a>
+                <div class="nav-label">Settings</div>
+                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/profile' in request.path %}active{% endif %}">
+                    <span>Profile</span>
+                </a>
+                {% else %}
                 <div class="nav-label">Workspace</div>
                 <a href="{{ url_for('dashboard.index') }}" class="{% if request.path == '/dashboard' or request.path == '/' %}active{% endif %}">
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ url_for('appointments.index') }}" class="{% if '/appointments' in request.path %}active{% endif %}">
                     <span>Appointments</span>
-                </a>
-                <a href="{{ url_for('queue.index') }}" class="{% if '/queue' in request.path %}active{% endif %}">
-                    <span>Live Queue</span>
                 </a>
                 <a href="{{ url_for('patients.index') }}" class="{% if '/patients' in request.path %}active{% endif %}">
                     <span>Patients</span>
@@ -37,34 +47,27 @@
                 <a href="{{ url_for('treatment_plans.index') }}" class="{% if '/treatment-plans' in request.path %}active{% endif %}">
                     <span>Treatment plans</span>
                 </a>
-
-                <div class="nav-label">Practice</div>
+                <div class="nav-label practice-label">Practice</div>
                 <a href="{{ url_for('billing.index') }}" class="{% if '/billing' in request.path %}active{% endif %}">
-                    <span>Billing & Invoicing</span>
+                    <span>Billing</span>
                 </a>
                 <a href="{{ url_for('inventory.index') }}" class="{% if '/inventory' in request.path %}active{% endif %}">
                     <span>Inventory</span>
                 </a>
-                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/doctor-profile' in request.path %}active{% endif %}">
-                    <span>Staff & Doctors</span>
-                </a>
-                <a href="{{ url_for('branches.index') }}" class="{% if '/branches' in request.path %}active{% endif %}">
-                    <span>Clinic Branches</span>
-                </a>
-                <a href="{{ url_for('operations.index') }}" class="{% if '/operations' in request.path %}active{% endif %}">
-                    <span>Operations & Lab</span>
-                </a>
                 <a href="{{ url_for('reports.index') }}" class="{% if '/reports' in request.path %}active{% endif %}">
-                    <span>Practice Reports</span>
+                    <span>Reports</span>
                 </a>
-                <a href="{{ url_for('settings.index') }}" class="{% if '/settings' in request.path %}active{% endif %}">
-                    <span>Clinic Settings</span>
+                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/profile' in request.path %}active{% endif %}">
+                    <span>Profile</span>
                 </a>
+                {% endif %}
             </nav>
             <div class="sidebar-bottom">
-                <a href="{{ url_for('public.patient_portal') if current_user.role != 'patient' else url_for('dashboard.index') }}">
+                {% if not current_user.is_authenticated or current_user.role != 'patient' %}
+                <a href="{{ url_for('public.patient_portal') }}">
                     <span>Patient view</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}">
                     <span>Sign out</span>
                 </a>
@@ -105,6 +108,7 @@
             email: {{ current_user.email | tojson }},
             role: {{ current_user.role | tojson }}
         };
+        try { localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER)); } catch (e) {}
         {% else %}
         window.CURRENT_USER = null;
         {% endif %}

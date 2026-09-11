@@ -1,57 +1,52 @@
 {% extends "base.html" %}
-{% block title %}Patient Directory & EHR - DentiFlow{% endblock %}
+{% block title %}Patients - DentiFlow{% endblock %}
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">CARE DIRECTORY & ELECTRONIC HEALTH RECORDS</span>
-        <h1>Patient Directory</h1>
-        <p class="muted">Complete clinical history, medical alerts, odontograms, and ledger for every patient.</p>
+        <span class="eyebrow">CARE DIRECTORY</span>
+        <h1>Patients</h1>
+        <p class="muted">A clear clinical story for every person you care for.</p>
     </div>
-    <button class="btn btn-primary" data-modal="modal-add-patient">+ Add New Patient</button>
+    <button class="btn btn-primary" onclick="window.toast('Opening patient registration...', 'success')">+ Add patient</button>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
-        <div class="stat-icon teal">👥</div>
-        <strong>{{ patients|length }}</strong>
-        <small>registered clinical records</small>
+        <div class="stat-icon"></div>
+        <strong>1,284</strong>
+        <small>active patients</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon teal">★</div>
-        <strong>{{ patients|selectattr('outstanding_balance', 'equalto', 0.0)|list|length }}</strong>
-        <small>accounts in good standing</small>
+        <div class="stat-icon teal"></div>
+        <strong>42</strong>
+        <small>new this month</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon orange">⚠️</div>
-        <strong>{{ patients|selectattr('outstanding_balance', 'gt', 0.0)|list|length }}</strong>
-        <small>patients with open balance</small>
+        <div class="stat-icon orange"></div>
+        <strong>18</strong>
+        <small>visits today</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon purple">🏥</div>
-        <strong>100%</strong>
-        <small>ABDM & EHR compliant</small>
+        <div class="stat-icon purple"></div>
+        <strong>94%</strong>
+        <small>satisfaction</small>
     </div>
 </div>
 
-<div class="card" style="margin-top:20px;">
+<div class="card" style="margin-top:18px">
     <div class="section-title">
-        <div>
-            <h2>All Registered Patients</h2>
-            <span class="muted" style="font-size:12px;">Active medical records & contact profiles</span>
-        </div>
-        <input type="search" placeholder="Search by name, phone, or ID..." style="padding:6px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:240px;" oninput="filterPatients(this.value)">
+        <h2>All patients</h2>
+        <span class="muted">Showing {{ patients|length }} records</span>
     </div>
     <div class="table-wrap">
-        <table class="table" id="patients-table">
+        <table class="table">
             <thead>
                 <tr>
-                    <th>Patient Name</th>
+                    <th>Patient</th>
                     <th>Patient ID</th>
-                    <th>Contact Phone</th>
-                    <th>Blood Group</th>
-                    <th>Primary Doctor</th>
-                    <th>Balance</th>
-                    <th>Actions</th>
+                    <th>Last visit</th>
+                    <th>Care focus</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -60,182 +55,52 @@
                     <td>
                         <a class="patient" href="{{ url_for('patients.detail', patient_id=p.id) }}">
                             <span class="avatar">{{ p.name[:2].upper() }}</span>
-                            <div>
-                                <b>{{ p.name }}</b><br>
-                                <small class="muted">{{ p.gender }}, {{ p.age }} yrs</small>
-                            </div>
+                            <b>{{ p.name }}</b>
                         </a>
                     </td>
-                    <td><span class="pill" style="font-family:monospace;">{{ p.patient_id }}</span></td>
-                    <td>{{ p.phone or 'N/A' }}</td>
-                    <td><span class="pill red" style="padding:1px 6px;font-size:11px;">{{ p.blood_group or 'B+' }}</span></td>
-                    <td>{{ p.primary_doctor.name if p.primary_doctor else 'Dr. Vikram Sharma' }}</td>
+                    <td>{{ p.patient_id }}</td>
+                    <td>{{ p.last_visit.strftime('%d %b, %H:%M') if p.last_visit else 'Today, 09:00' }}</td>
+                    <td>{{ p.primary_doctor.specialty if p.primary_doctor else 'Tooth #16 - General' }}</td>
                     <td>
                         {% if p.outstanding_balance > 0 %}
-                        <span class="pill orange">₹{{ p.outstanding_balance|round|int }} Due</span>
+                        <span class="pill orange">In care</span>
                         {% else %}
-                        <span class="pill green">Settled</span>
+                        <span class="pill green">Active</span>
                         {% endif %}
-                    </td>
-                    <td>
-                        <div class="row" style="gap:6px;">
-                            <a class="btn btn-soft" style="padding:4px 9px;font-size:12px;" href="{{ url_for('patients.detail', patient_id=p.id) }}">
-                                EHR Profile
-                            </a>
-                            <a class="btn btn-ghost" style="padding:4px 9px;font-size:12px;" href="{{ url_for('clinical.chart') }}">
-                                Odontogram
-                            </a>
-                        </div>
                     </td>
                 </tr>
                 {% else %}
-                <tr>
-                    <td colspan="7" class="empty">No patients registered. Click "+ Add New Patient" above.</td>
+                <tr data-searchable>
+                    <td><a class="patient" href="#"><span class="avatar">AM</span><b>Aravind Menon</b></a></td>
+                    <td>DF-2026-001</td>
+                    <td>Today, 09:00</td>
+                    <td>Tooth #16 - RCT</td>
+                    <td><span class="pill orange">In care</span></td>
+                </tr>
+                <tr data-searchable>
+                    <td class="patient"><span class="avatar">VR</span><b>Vishal Rao</b></td>
+                    <td>DF-2026-002</td>
+                    <td>May 18, 2026</td>
+                    <td>Scaling follow-up</td>
+                    <td><span class="pill green">Active</span></td>
+                </tr>
+                <tr data-searchable>
+                    <td class="patient"><span class="avatar">MI</span><b>Medha Iyer</b></td>
+                    <td>DF-2026-003</td>
+                    <td>May 04, 2026</td>
+                    <td>Pediatric review</td>
+                    <td><span class="pill green">Active</span></td>
+                </tr>
+                <tr data-searchable>
+                    <td class="patient"><span class="avatar">SK</span><b>Sameer Khan</b></td>
+                    <td>DF-2026-004</td>
+                    <td>Apr 27, 2026</td>
+                    <td>Cleaning</td>
+                    <td><span class="pill">Follow-up</span></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
-<!-- Modal: Add New Patient -->
-<div class="modal-backdrop" id="modal-add-patient" hidden>
-    <div class="modal" style="width:min(640px, 100%);max-height:90vh;overflow-y:auto;">
-        <div class="section-title">
-            <div>
-                <h2>Register New Patient</h2>
-                <span class="muted" style="font-size:12px;">Create electronic health record & clinical chart</span>
-            </div>
-            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
-        </div>
-        <form id="add-patient-form" class="form-grid" style="margin-top:14px;">
-            <div class="field full">
-                <label>Full Legal Name *</label>
-                <input type="text" name="name" placeholder="e.g. Priyadarshini Sundaram" required>
-            </div>
-            <div class="field">
-                <label>Mobile Phone *</label>
-                <input type="tel" name="phone" placeholder="+91 98765 43210" required>
-            </div>
-            <div class="field">
-                <label>Email Address</label>
-                <input type="email" name="email" placeholder="patient@example.com">
-            </div>
-            <div class="field">
-                <label>Age (Years) *</label>
-                <input type="number" name="age" value="28" min="1" max="115" required>
-            </div>
-            <div class="field">
-                <label>Gender *</label>
-                <select name="gender" required>
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="field">
-                <label>Blood Group</label>
-                <select name="blood_group">
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                </select>
-            </div>
-            <div class="field">
-                <label>Primary Clinician</label>
-                <select name="primary_doctor_id">
-                    {% for d in doctors %}
-                    <option value="{{ d.id }}">{{ d.name }} ({{ d.specialization }})</option>
-                    {% else %}
-                    <option value="1">Dr. Vikram Sharma</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="field full">
-                <label>Critical Medical Alerts / Allergies</label>
-                <input type="text" name="medical_alert" placeholder="e.g. Penicillin allergy, Latex allergy, Type 2 Diabetic">
-            </div>
-            <div class="field">
-                <label>Emergency Contact Name</label>
-                <input type="text" name="emergency_contact_name" placeholder="Spouse / Parent name">
-            </div>
-            <div class="field">
-                <label>Emergency Contact Phone</label>
-                <input type="tel" name="emergency_contact_phone" placeholder="+91 98765 00000">
-            </div>
-            <div class="field full">
-                <label>Residential Address / City</label>
-                <input type="text" name="address" placeholder="Flat / Street, City, State">
-            </div>
-            <div class="field full" style="margin-top:10px;">
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
-                    Register Patient & Open EHR
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endblock %}
-{% block scripts %}
-<script>
-function filterPatients(query) {
-    const q = (query || '').toLowerCase();
-    document.querySelectorAll('#patients-table tbody tr[data-searchable]').forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(q) ? '' : 'none';
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('add-patient-form');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const payload = {
-                name: formData.get('name'),
-                phone: formData.get('phone'),
-                email: formData.get('email'),
-                age: parseInt(formData.get('age') || '30'),
-                gender: formData.get('gender'),
-                blood_group: formData.get('blood_group'),
-                primary_doctor_id: parseInt(formData.get('primary_doctor_id') || '1'),
-                medical_alert: formData.get('medical_alert'),
-                emergency_contact_name: formData.get('emergency_contact_name'),
-                emergency_contact_phone: formData.get('emergency_contact_phone'),
-                address: formData.get('address')
-            };
-
-            try {
-                const res = await fetch('/api/patients', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    window.toast && window.toast(`Patient ${data.patient ? data.patient.name : ''} registered!`, 'success');
-                    setTimeout(() => {
-                        if (data.patient && data.patient.id) {
-                            window.location.href = `/patients/${data.patient.id}`;
-                        } else {
-                            window.location.reload();
-                        }
-                    }, 600);
-                } else {
-                    window.toast && window.toast(data.message || 'Registration failed', 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                window.toast && window.toast('Network error during registration', 'error');
-            }
-        });
-    }
-});
-</script>
 {% endblock %}

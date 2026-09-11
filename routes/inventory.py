@@ -10,10 +10,9 @@ inventory_bp = Blueprint('inventory', __name__)
 @inventory_bp.route('/inventory')
 @login_required
 def index():
-    items = InventoryItem.query.order_by(InventoryItem.name.asc()).all()
     suppliers = Supplier.query.all()
     categories = ['Dental Materials', 'Consumables', 'Lab Materials', 'Medicines', 'Equipment']
-    return render_template('inventory.html', items=items, suppliers=suppliers, categories=categories)
+    return render_template('inventory.html', suppliers=suppliers, categories=categories)
 
 @inventory_bp.route('/api/inventory', methods=['GET', 'POST'])
 @login_required
