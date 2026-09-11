@@ -278,7 +278,25 @@
     const form = document.querySelector("[data-login]");
     if (!form) return;
 
-    let currentMode = "signin";
+    // Seed default registered demo users if not present
+    try {
+      let registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
+      const defaults = [
+        { email: "doctor@dentiflow.com", name: "Dr. Ananya Sharma", role: "doctor" },
+        { email: "admin@dentiflow.com", name: "Dr. Rajesh Verma", role: "admin" },
+        { email: "budigeashwinigoud@gmail.com", name: "Ashwini Goud", role: "patient" },
+        { email: "patient@dentiflow.com", name: "Ashwini Goud", role: "patient" },
+        { email: "reception@dentiflow.com", name: "Pooja Hegde", role: "reception" }
+      ];
+      defaults.forEach(d => {
+        if (!registered.some(r => r.email.toLowerCase() === d.email.toLowerCase())) {
+          registered.push(d);
+        }
+      });
+      localStorage.setItem("dentiflowRegisteredUsers", JSON.stringify(registered));
+    } catch (e) {}
+
+    let currentMode = "signup"; // Default: FIRST ASK TO CREATE ACCOUNT
     const tabSignIn = document.getElementById("tab-btn-signin");
     const tabSignUp = document.getElementById("tab-btn-signup");
     const eyebrow = document.getElementById("auth-eyebrow");
@@ -304,27 +322,25 @@
       currentMode = mode;
       const isSignup = mode === "signup";
 
-      if (tabSignIn) {
-        tabSignIn.classList.toggle("active", !isSignup);
-        tabSignIn.setAttribute("aria-selected", !isSignup ? "true" : "false");
-      }
       if (tabSignUp) {
         tabSignUp.classList.toggle("active", isSignup);
         tabSignUp.setAttribute("aria-selected", isSignup ? "true" : "false");
       }
+      if (tabSignIn) {
+        tabSignIn.classList.toggle("active", !isSignup);
+        tabSignIn.setAttribute("aria-selected", !isSignup ? "true" : "false");
+      }
 
-      if (eyebrow) eyebrow.textContent = isSignup ? "JOIN DENTIFLOW" : "WELCOME BACK";
-      if (title) title.textContent = isSignup ? "Create an Account" : "DentiFlow";
+      if (eyebrow) eyebrow.textContent = isSignup ? "FIRST TIME USER?" : "WELCOME BACK";
+      if (title) title.textContent = isSignup ? "Create an Account" : "Sign in to DentiFlow";
       if (subtitle) subtitle.textContent = isSignup 
-        ? "Register your profile to access your dental workspace." 
-        : "Choose a demo role or enter your details to sign in.";
+        ? "Please create your account first to access your DentiFlow workspace." 
+        : "Enter your registered credentials to sign in.";
 
       if (nameLabel) nameLabel.textContent = isSignup ? "Full Name *" : "Your name";
       if (nameInput) {
         nameInput.required = isSignup;
-        if (isSignup && !nameInput.value) {
-          nameInput.placeholder = "Enter your full name";
-        }
+        nameInput.placeholder = isSignup ? "Enter your full name" : "Your name";
       }
 
       if (phoneField) phoneField.style.display = isSignup ? "block" : "none";
@@ -336,12 +352,12 @@
       if (termsField) termsField.style.display = isSignup ? "block" : "none";
       if (demoSection) demoSection.style.display = isSignup ? "none" : "block";
 
-      if (submitBtn) submitBtn.textContent = isSignup ? "Create Account & Sign In →" : "Sign in →";
+      if (submitBtn) submitBtn.textContent = isSignup ? "Create Account & Continue →" : "Sign in →";
 
       if (switchPrompt) {
         switchPrompt.innerHTML = isSignup
-          ? 'Already have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Sign in</a>'
-          : 'Don\'t have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Create an account</a>';
+          ? 'Already have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Sign in here</a>'
+          : 'First time user? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Create an account first</a>';
         const newLink = document.getElementById("auth-switch-link");
         if (newLink) {
           newLink.addEventListener("click", e => {
@@ -363,12 +379,12 @@
       });
     }
 
-    // Check URL query and hash (e.g. ?mode=signup or #signup)
+    // Check URL query and hash (e.g. ?mode=signin or #signin)
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("mode") === "signup" || window.location.hash === "#signup") {
-      setMode("signup");
-    } else {
+    if (urlParams.get("mode") === "signin" || window.location.hash === "#signin") {
       setMode("signin");
+    } else {
+      setMode("signup"); // Default to Create Account first!
     }
 
     function updateRoleHints() {
@@ -470,7 +486,12 @@
         // Save to registered users list in localStorage
         try {
           const registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
-          registered.push(newUser);
+          const existingIdx = registered.findIndex(u => u.email && u.email.toLowerCase() === emailVal.toLowerCase());
+          if (existingIdx >= 0) {
+            registered[existingIdx] = newUser;
+          } else {
+            registered.push(newUser);
+          }
           localStorage.setItem("dentiflowRegisteredUsers", JSON.stringify(registered));
         } catch (err) {
           // ignore
@@ -483,8 +504,19 @@
         return;
       }
 
-      // Sign In mode
-      let displayName = nameVal;
+      // Sign In mode: verify that account exists first!
+      const registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
+      const foundUser = registered.find(u => u.email && u.email.toLowerCase() === (emailVal || "").toLowerCase());
+
+      if (!foundUser && !emailVal.endsWith("@dentiflow.com")) {
+        toast("No account found for this email. Please create an account first!", "error");
+        setMode("signup");
+        if (emailInput) emailInput.value = emailVal;
+        if (nameInput) setTimeout(() => nameInput.focus(), 100);
+        return;
+      }
+
+      let displayName = foundUser?.name || nameVal;
       if (!displayName && emailVal) {
         displayName = formatNameFromEmail(emailVal);
       }
@@ -496,12 +528,15 @@
 
       const user = {
         name: displayName,
-        role: selectedRole,
-        email: emailVal || (selectedRole === "patient" ? "budigeashwinigoud@gmail.com" : (displayName.toLowerCase().replace(/[^a-z0-9]/g, "") + "@dentiflow.com"))
+        role: foundUser?.role || selectedRole,
+        email: emailVal
       };
 
       localStorage.setItem("dentiflowUser", JSON.stringify(user));
-      location.href = selectedRole === "patient" ? "./patient-dashboard.html" : (selectedRole === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
+      toast(`Welcome back, ${displayName}!`, "success");
+      setTimeout(() => {
+        location.href = user.role === "patient" ? "./patient-dashboard.html" : (user.role === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
+      }, 300);
     });
   }
 
