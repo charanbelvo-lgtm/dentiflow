@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Practice Operations - DentiFlow</title>
+    <title>Operations - DentiFlow</title>
     <link rel="icon" href="./favicon.ico" type="image/svg+xml">
     <link rel="stylesheet" href="./css/style.css">
 
@@ -17,15 +17,13 @@
                 <span class="brand-mark"></span>DentiFlow
             </a>
             <nav class="nav">
+                
                 <div class="nav-label">Workspace</div>
                 <a href="./dashboard.html" class="">
                     <span>Dashboard</span>
                 </a>
                 <a href="./appointments.html" class="">
                     <span>Appointments</span>
-                </a>
-                <a href="./queue.html" class="">
-                    <span>Live Queue</span>
                 </a>
                 <a href="./patients.html" class="">
                     <span>Patients</span>
@@ -39,34 +37,32 @@
                 <a href="./treatment-plans.html" class="">
                     <span>Treatment plans</span>
                 </a>
-
-                <div class="nav-label">Practice</div>
+                <div class="nav-label practice-label">Practice</div>
                 <a href="./billing.html" class="">
-                    <span>Billing & Invoicing</span>
+                    <span>Billing</span>
                 </a>
                 <a href="./inventory.html" class="">
                     <span>Inventory</span>
                 </a>
-                <a href="./staff.html" class="">
-                    <span>Staff & Doctors</span>
-                </a>
-                <a href="./branches.html" class="">
-                    <span>Clinic Branches</span>
-                </a>
-                <a href="./operations.html" class="active">
-                    <span>Operations & Lab</span>
-                </a>
                 <a href="./reports.html" class="">
-                    <span>Practice Reports</span>
+                    <span>Reports</span>
                 </a>
-                <a href="./settings.html" class="">
-                    <span>Clinic Settings</span>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
                 </a>
+                
             </nav>
             <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
                 <a href="./patient-portal.html">
                     <span>Patient view</span>
                 </a>
+                
                 <a href="./login.html">
                     <span>Sign out</span>
                 </a>
@@ -81,7 +77,9 @@
                     </label>
                 </div>
                 <div class="top-actions">
-                    <span class="pill green"> Demo mode</span>
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
                     <div class="user-chip">
                         <span data-user-name>Dr. Ananya Sharma</span>
                         <span class="avatar" data-avatar>DR</span>
@@ -90,627 +88,15 @@
             </header>
             <section class="content">
                 
-<div class="page-head">
-    <div>
-        <span class="eyebrow">PRACTICE BACK-OFFICE</span>
-        <h1>Operations & Dental Lab</h1>
-        <p class="muted">Digital lab workflow, equipment preventive maintenance, marketing campaigns, and NPS feedback.</p>
-    </div>
-    <div class="row">
-        <button class="btn btn-primary" data-modal="modal-new-lab">+ Send Lab Order</button>
-    </div>
+<div class="page-header">
+    <h1 class="page-title">Operations</h1>
 </div>
-
-<div class="grid grid-4">
-    <div class="card stat">
-        <div class="stat-icon teal">🔬</div>
-        <strong>3 Orders</strong>
-        <small>active lab fabrications</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon">⚙️</div>
-        <strong>4 Units</strong>
-        <small>medical equipment tracked</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon purple">★</div>
-        <strong>+78 NPS</strong>
-        <small>patient promoter score</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon orange">📢</div>
-        <strong>4 Campaigns</strong>
-        <small>automated recalls</small>
-    </div>
-</div>
-
-<!-- Operational Tabs -->
-<div class="card" style="margin-top:24px;padding:0;overflow:hidden;">
-    <div style="display:flex;gap:4px;background:#f8fafc;padding:12px 16px;border-bottom:1px solid var(--line);">
-        <button class="btn btn-primary op-tab-btn" onclick="showOpTab('lab', this)">Dental Lab Orders</button>
-        <button class="btn btn-ghost op-tab-btn" onclick="showOpTab('equip', this)">Equipment Maintenance</button>
-        <button class="btn btn-ghost op-tab-btn" onclick="showOpTab('campaigns', this)">Marketing Campaigns</button>
-        <button class="btn btn-ghost op-tab-btn" onclick="showOpTab('feedback', this)">NPS & Patient Feedback</button>
-    </div>
-
-    <!-- Tab 1: Dental Lab Orders -->
-    <div id="tab-lab" class="op-tab-pane" style="padding:20px;">
-        <div class="section-title">
-            <div>
-                <h2>Digital Dental Lab Orders</h2>
-                <span class="muted" style="font-size:12px;">Crowns, bridges, clear aligners & prosthesis tracking</span>
-            </div>
-            <button class="btn btn-soft" data-modal="modal-new-lab">+ New Lab Order</button>
-        </div>
-        <div class="table-wrap">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Order #</th>
-                        <th>Patient</th>
-                        <th>Restoration</th>
-                        <th>Lab Partner</th>
-                        <th>Tooth # / Shade</th>
-                        <th>Due Date</th>
-                        <th>Current Stage</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="lab-orders-tbody">
-                    
-                    <tr>
-                        <td><b>LAB-2026-107</b></td>
-                        <td>Aravind Kumar</td>
-                        <td><strong>Custom Titanium Abutment + Zirconia Crown</strong></td>
-                        <td class="muted">DentCraft Precision Digital CAD/CAM Lab</td>
-                        <td>Tooth #36 &bull; Shade A3.5</td>
-                        <td>16 Sep 2026</td>
-                        <td>
-                            <span class="pill ">
-                                Sent to Lab
-                            </span>
-                        </td>
-                        <td>
-                            <select onchange="updateLabStage(3, this.value)" style="padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid var(--line);">
-                                <option value="" disabled selected>Update Stage</option>
-                                <option value="Sent to Lab">Sent to Lab</option>
-                                <option value="In Production">In Production</option>
-                                <option value="Quality Check">Quality Check</option>
-                                <option value="Ready">Ready for Seating</option>
-                                <option value="Delivered">Delivered & Fitted</option>
-                            </select>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>LAB-2026-106</b></td>
-                        <td>Vishal</td>
-                        <td><strong>Clear Aligner Series (Trays 15-20)</strong></td>
-                        <td class="muted">Apex 3D Ortho Aligners Bangalore</td>
-                        <td>Tooth #Upper &amp; Lower Arch &bull; Shade Transparent Clear</td>
-                        <td>11 Sep 2026</td>
-                        <td>
-                            <span class="pill green">
-                                Ready
-                            </span>
-                        </td>
-                        <td>
-                            <select onchange="updateLabStage(2, this.value)" style="padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid var(--line);">
-                                <option value="" disabled selected>Update Stage</option>
-                                <option value="Sent to Lab">Sent to Lab</option>
-                                <option value="In Production">In Production</option>
-                                <option value="Quality Check">Quality Check</option>
-                                <option value="Ready">Ready for Seating</option>
-                                <option value="Delivered">Delivered & Fitted</option>
-                            </select>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>LAB-2026-105</b></td>
-                        <td>Aravind Menon</td>
-                        <td><strong>Zirconia Crown</strong></td>
-                        <td class="muted">DentCraft Precision Digital CAD/CAM Lab</td>
-                        <td>Tooth #16 &bull; Shade A2 / Multi-layer</td>
-                        <td>13 Sep 2026</td>
-                        <td>
-                            <span class="pill orange">
-                                In Production
-                            </span>
-                        </td>
-                        <td>
-                            <select onchange="updateLabStage(1, this.value)" style="padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid var(--line);">
-                                <option value="" disabled selected>Update Stage</option>
-                                <option value="Sent to Lab">Sent to Lab</option>
-                                <option value="In Production">In Production</option>
-                                <option value="Quality Check">Quality Check</option>
-                                <option value="Ready">Ready for Seating</option>
-                                <option value="Delivered">Delivered & Fitted</option>
-                            </select>
-                        </td>
-                    </tr>
-                    
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Tab 2: Equipment Maintenance -->
-    <div id="tab-equip" class="op-tab-pane" style="padding:20px;display:none;">
-        <div class="section-title">
-            <div>
-                <h2>Clinical Equipment & Unit Maintenance</h2>
-                <span class="muted" style="font-size:12px;">Preventive maintenance, autoclave validations & dental chair uptime</span>
-            </div>
-        </div>
-        <div class="table-wrap">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Equipment</th>
-                        <th>Model / Serial</th>
-                        <th>Operatory / Room</th>
-                        <th>Last Service</th>
-                        <th>Next Due</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <td><b>Dental Operatory Chair 01 (Anthos A3 Plus)</b></td>
-                        <td class="muted"> (ANT-A3-88219)</td>
-                        <td>Operatory Alpha</td>
-                        <td>13 Jul 2026</td>
-                        <td>
-                            <span style="color:var(--ink);font-weight:600;">
-                                11 Oct 2026
-                            </span>
-                        </td>
-                        <td>
-                            <span class="pill green">
-                                Operational
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="serviceEquipment(1, 'Dental Operatory Chair 01 (Anthos A3 Plus)')">
-                                Log Routine Service
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Euronda Class B Vacuum Autoclave (E9 Next 24L)</b></td>
-                        <td class="muted"> (EUR-E9-44120)</td>
-                        <td>Operatory Alpha</td>
-                        <td>18 Jun 2026</td>
-                        <td>
-                            <span style="color:var(--ink);font-weight:600;">
-                                16 Sep 2026
-                            </span>
-                        </td>
-                        <td>
-                            <span class="pill green">
-                                Operational
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="serviceEquipment(2, 'Euronda Class B Vacuum Autoclave (E9 Next 24L)')">
-                                Log Routine Service
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Sirona Heliodent Plus Digital RVG Unit</b></td>
-                        <td class="muted"> (SIR-XRY-99182)</td>
-                        <td>Operatory Alpha</td>
-                        <td>14 May 2026</td>
-                        <td>
-                            <span style="color:var(--ink);font-weight:600;">
-                                06 Sep 2026
-                            </span>
-                        </td>
-                        <td>
-                            <span class="pill orange">
-                                Maintenance Due
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="serviceEquipment(3, 'Sirona Heliodent Plus Digital RVG Unit')">
-                                Log Routine Service
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Cattani Oil-Free Turbo Dental Compressor</b></td>
-                        <td class="muted"> (CAT-TUR-11029)</td>
-                        <td>Operatory Alpha</td>
-                        <td>02 Aug 2026</td>
-                        <td>
-                            <span style="color:var(--ink);font-weight:600;">
-                                31 Oct 2026
-                            </span>
-                        </td>
-                        <td>
-                            <span class="pill green">
-                                Operational
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-soft" style="padding:4px 9px;font-size:12px;" onclick="serviceEquipment(4, 'Cattani Oil-Free Turbo Dental Compressor')">
-                                Log Routine Service
-                            </button>
-                        </td>
-                    </tr>
-                    
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Tab 3: Marketing Campaigns -->
-    <div id="tab-campaigns" class="op-tab-pane" style="padding:20px;display:none;">
-        <div class="section-title">
-            <div>
-                <h2>Automated Patient Recalls & Campaigns</h2>
-                <span class="muted" style="font-size:12px;">WhatsApp & SMS 6-month hygiene recall, teeth whitening, aligners</span>
-            </div>
-        </div>
-        <div class="grid grid-3">
-            
-            <div class="card" style="background:#f8fafc;">
-                <div class="section-title">
-                    <span class="pill orange">Ready to Launch</span>
-                    <small class="muted">WhatsApp + SMS</small>
-                </div>
-                <h3>6-Month Routine Cleaning Recall Drive</h3>
-                <p class="muted" style="font-size:12px;margin:8px 0;">Target: Patients overdue by &gt;180 days (48 patients)</p>
-                <div style="margin:12px 0;">
-                    <div class="row between" style="font-size:12px;margin-bottom:4px;">
-                        <span>Messages Dispatched</span>
-                        <b>0 / 48</b>
-                    </div>
-                    <div class="progress">
-                        <span style="width:0.0%;"></span>
-                    </div>
-                </div>
-                <div class="row between" style="margin-top:14px;">
-                    <span class="muted" style="font-size:12px;">0 Bookings</span>
-                    <button class="btn btn-teal" style="padding:6px 12px;font-size:12px;" onclick="launchCampaign(1, '6-Month Routine Cleaning Recall Drive')">
-                        Launch Dispatch &rarr;
-                    </button>
-                </div>
-            </div>
-            
-            <div class="card" style="background:#f8fafc;">
-                <div class="section-title">
-                    <span class="pill green">Active</span>
-                    <small class="muted">WhatsApp</small>
-                </div>
-                <h3>Birthday Smile Gift (₹1,000 Voucher)</h3>
-                <p class="muted" style="font-size:12px;margin:8px 0;">Target: Patients with birthdays this month (14 patients)</p>
-                <div style="margin:12px 0;">
-                    <div class="row between" style="font-size:12px;margin-bottom:4px;">
-                        <span>Messages Dispatched</span>
-                        <b>14 / 14</b>
-                    </div>
-                    <div class="progress">
-                        <span style="width:100.0%;"></span>
-                    </div>
-                </div>
-                <div class="row between" style="margin-top:14px;">
-                    <span class="muted" style="font-size:12px;">6 Bookings</span>
-                    <button class="btn btn-teal" style="padding:6px 12px;font-size:12px;" onclick="launchCampaign(2, 'Birthday Smile Gift (₹1,000 Voucher)')">
-                        Launch Dispatch &rarr;
-                    </button>
-                </div>
-            </div>
-            
-            <div class="card" style="background:#f8fafc;">
-                <div class="section-title">
-                    <span class="pill orange">Scheduled</span>
-                    <small class="muted">WhatsApp + SMS</small>
-                </div>
-                <h3>Lapsed Patient Win-Back Special</h3>
-                <p class="muted" style="font-size:12px;margin:8px 0;">Target: Patients with no visits in 12+ months (32 patients)</p>
-                <div style="margin:12px 0;">
-                    <div class="row between" style="font-size:12px;margin-bottom:4px;">
-                        <span>Messages Dispatched</span>
-                        <b>0 / 32</b>
-                    </div>
-                    <div class="progress">
-                        <span style="width:0.0%;"></span>
-                    </div>
-                </div>
-                <div class="row between" style="margin-top:14px;">
-                    <span class="muted" style="font-size:12px;">0 Bookings</span>
-                    <button class="btn btn-teal" style="padding:6px 12px;font-size:12px;" onclick="launchCampaign(3, 'Lapsed Patient Win-Back Special')">
-                        Launch Dispatch &rarr;
-                    </button>
-                </div>
-            </div>
-            
-            <div class="card" style="background:#f8fafc;">
-                <div class="section-title">
-                    <span class="pill green">Active</span>
-                    <small class="muted">WhatsApp</small>
-                </div>
-                <h3>Post-Procedure Google Review Request</h3>
-                <p class="muted" style="font-size:12px;margin:8px 0;">Target: Patients completed treatment in past 48 hours</p>
-                <div style="margin:12px 0;">
-                    <div class="row between" style="font-size:12px;margin-bottom:4px;">
-                        <span>Messages Dispatched</span>
-                        <b>26 / 26</b>
-                    </div>
-                    <div class="progress">
-                        <span style="width:100.0%;"></span>
-                    </div>
-                </div>
-                <div class="row between" style="margin-top:14px;">
-                    <span class="muted" style="font-size:12px;">0 Bookings</span>
-                    <button class="btn btn-teal" style="padding:6px 12px;font-size:12px;" onclick="launchCampaign(4, 'Post-Procedure Google Review Request')">
-                        Launch Dispatch &rarr;
-                    </button>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-
-    <!-- Tab 4: Patient Feedback & NPS -->
-    <div id="tab-feedback" class="op-tab-pane" style="padding:20px;display:none;">
-        <div class="section-title">
-            <div>
-                <h2>Net Promoter Score & Patient Reviews</h2>
-                <span class="muted" style="font-size:12px;">Real-time post-treatment feedback rating</span>
-            </div>
-            <button class="btn btn-soft" data-modal="modal-new-feedback">+ Record Feedback</button>
-        </div>
-        <div class="grid grid-3" style="margin-bottom:20px;">
-            <div class="card stat">
-                <div class="stat-icon green">★</div>
-                <strong>88%</strong>
-                <small>Promoters (Rating 9-10)</small>
-            </div>
-            <div class="card stat">
-                <div class="stat-icon orange">~</div>
-                <strong>9%</strong>
-                <small>Passives (Rating 7-8)</small>
-            </div>
-            <div class="card stat">
-                <div class="stat-icon red">!</div>
-                <strong>3%</strong>
-                <small>Detractors (Rating 1-6)</small>
-            </div>
-        </div>
-        <div class="table-wrap">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Patient</th>
-                        <th>Doctor</th>
-                        <th>Score</th>
-                        <th>Category</th>
-                        <th>Comments</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                    <tr>
-                        <td><b>Vishal Rao</b></td>
-                        <td class="muted">Dr. Ananya Sharma</td>
-                        <td><strong style="color:var(--teal);">10 / 10</strong></td>
-                        <td>
-                            <span class="pill green">
-                                Promoter
-                            </span>
-                        </td>
-                        <td>Zoom whitening gave instant 7 shade improvement for my wedding. Super happy!</td>
-                        <td class="muted">11 Sep 2026</td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Aravind Kumar</b></td>
-                        <td class="muted">Dr. Vikram Rao</td>
-                        <td><strong style="color:var(--teal);">9 / 10</strong></td>
-                        <td>
-                            <span class="pill green">
-                                Promoter
-                            </span>
-                        </td>
-                        <td>Emergency care was fast and painless. Highly professional setup.</td>
-                        <td class="muted">11 Sep 2026</td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Lokesh</b></td>
-                        <td class="muted">Dr. Meera Nair</td>
-                        <td><strong style="color:var(--orange);">8 / 10</strong></td>
-                        <td>
-                            <span class="pill orange">
-                                Passive
-                            </span>
-                        </td>
-                        <td>Treatment was great, but had to wait 20 minutes past my appointment time in the lounge.</td>
-                        <td class="muted">11 Sep 2026</td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Vishal</b></td>
-                        <td class="muted">Dr. Rohan Patel</td>
-                        <td><strong style="color:var(--teal);">10 / 10</strong></td>
-                        <td>
-                            <span class="pill green">
-                                Promoter
-                            </span>
-                        </td>
-                        <td>Best aligner treatment in Bangalore. My smile transformation is incredible and the 3D preview was spot on.</td>
-                        <td class="muted">11 Sep 2026</td>
-                    </tr>
-                    
-                    <tr>
-                        <td><b>Aravind Menon</b></td>
-                        <td class="muted">Dr. Ananya Sharma</td>
-                        <td><strong style="color:var(--teal);">10 / 10</strong></td>
-                        <td>
-                            <span class="pill green">
-                                Promoter
-                            </span>
-                        </td>
-                        <td>Dr. Ananya Sharma was extremely gentle and explained the root canal with digital X-rays step by step. Felt zero pain!</td>
-                        <td class="muted">11 Sep 2026</td>
-                    </tr>
-                    
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: New Lab Order -->
-<div class="modal-backdrop" id="modal-new-lab" hidden>
-    <div class="modal">
-        <div class="section-title">
-            <h2>Send Dental Lab Order</h2>
-            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
-        </div>
-        <form id="new-lab-form" class="form-grid" style="margin-top:14px;">
-            <div class="field full">
-                <label>Patient *</label>
-                <select name="patient_id" required>
-                    
-                    <option value="5">Aravind Kumar (DF-2026-005)</option>
-                    
-                    <option value="1">Aravind Menon (DF-2026-001)</option>
-                    
-                    <option value="4">Lokesh (DF-2026-004)</option>
-                    
-                    <option value="8">Lokesh Iyer (DF-2026-008)</option>
-                    
-                    <option value="3">Medha (DF-2026-003)</option>
-                    
-                    <option value="7">Medha Nair (DF-2026-007)</option>
-                    
-                    <option value="2">Vishal (DF-2026-002)</option>
-                    
-                    <option value="6">Vishal Rao (DF-2026-006)</option>
-                    
-                </select>
-            </div>
-            <div class="field">
-                <label>Dental Lab Partner</label>
-                <select name="lab_name">
-                    <option value="DentCraft Precision Digital Lab">DentCraft Precision Digital Lab</option>
-                    <option value="Aesthetic Smile CAD/CAM Center">Aesthetic Smile CAD/CAM Center</option>
-                    <option value="Apex Orthodontic Lab">Apex Orthodontic Lab</option>
-                </select>
-            </div>
-            <div class="field">
-                <label>Restoration Type</label>
-                <select name="restoration_type">
-                    <option value="Monolithic Zirconia Crown">Monolithic Zirconia Crown</option>
-                    <option value="E-Max Lithium Disilicate Crown">E-Max Lithium Disilicate Crown</option>
-                    <option value="Porcelain Fused to Metal (PFM)">Porcelain Fused to Metal (PFM)</option>
-                    <option value="Clear Aligners (Step 1-6)">Clear Aligners (Step 1-6)</option>
-                    <option value="Custom Cast Post & Core">Custom Cast Post & Core</option>
-                </select>
-            </div>
-            <div class="field">
-                <label>Tooth Numbers</label>
-                <input type="text" name="tooth_numbers" value="16" placeholder="e.g. 16, 21" required>
-            </div>
-            <div class="field">
-                <label>Shade (VITA Classical)</label>
-                <input type="text" name="shade" value="A2" placeholder="e.g. A2, B1, 3D Bleach">
-            </div>
-            <div class="field">
-                <label>Estimated Delivery (Days)</label>
-                <input type="number" name="delivery_days" value="4" min="1" max="14">
-            </div>
-            <div class="field">
-                <label>Lab Fabrication Cost (₹)</label>
-                <input type="number" name="cost" value="2500" min="500">
-            </div>
-            <div class="field full">
-                <label>Clinical Lab Instructions</label>
-                <textarea name="notes" rows="2" placeholder="Occlusal anatomy, margin finish, contact tightness..."></textarea>
-            </div>
-            <div class="field full" style="margin-top:12px;">
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Dispatch Lab Prescription</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal: Record Feedback -->
-<div class="modal-backdrop" id="modal-new-feedback" hidden>
-    <div class="modal">
-        <div class="section-title">
-            <h2>Record Patient Feedback</h2>
-            <button class="btn btn-ghost" data-close-modal style="padding:4px 8px;">✕</button>
-        </div>
-        <form id="new-feedback-form" class="form-grid" style="margin-top:14px;">
-            <div class="field full">
-                <label>Patient *</label>
-                <select name="patient_id" required>
-                    
-                    <option value="5">Aravind Kumar (DF-2026-005)</option>
-                    
-                    <option value="1">Aravind Menon (DF-2026-001)</option>
-                    
-                    <option value="4">Lokesh (DF-2026-004)</option>
-                    
-                    <option value="8">Lokesh Iyer (DF-2026-008)</option>
-                    
-                    <option value="3">Medha (DF-2026-003)</option>
-                    
-                    <option value="7">Medha Nair (DF-2026-007)</option>
-                    
-                    <option value="2">Vishal (DF-2026-002)</option>
-                    
-                    <option value="6">Vishal Rao (DF-2026-006)</option>
-                    
-                </select>
-            </div>
-            <div class="field">
-                <label>Attending Doctor</label>
-                <select name="doctor_id">
-                    
-                    <option value="1">Dr. Ananya Sharma</option>
-                    
-                    <option value="2">Dr. Rohan Patel</option>
-                    
-                    <option value="3">Dr. Meera Nair</option>
-                    
-                    <option value="4">Dr. Vikram Rao</option>
-                    
-                    <option value="5">Rashmitha</option>
-                    
-                </select>
-            </div>
-            <div class="field">
-                <label>Recommendation Score (0 - 10)</label>
-                <select name="score">
-                    <option value="10">10 - Extremely Likely (Promoter)</option>
-                    <option value="9">9 - Very Likely (Promoter)</option>
-                    <option value="8">8 - Good (Passive)</option>
-                    <option value="7">7 - Neutral (Passive)</option>
-                    <option value="6">6 - Needs Improvement (Detractor)</option>
-                    <option value="5">5 - Disappointed (Detractor)</option>
-                </select>
-            </div>
-            <div class="field full">
-                <label>Patient Comments & Review</label>
-                <textarea name="comments" rows="3" placeholder="How was the appointment, cleanliness, pain management..."></textarea>
-            </div>
-            <div class="field full" style="margin-top:12px;">
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Save Feedback</button>
-            </div>
-        </form>
+<div class="page-body" id="app-root">
+    <!-- Frontend JS will mount here or we render basic UI -->
+    <div class="card p-4 text-center">
+        <i class="fa-solid fa-gears fa-3x text-primary mb-3"></i>
+        <h3>Clinic operations</h3>
+        <p class="text-muted">Lab orders and equipment will appear here.</p>
     </div>
 </div>
 
@@ -729,6 +115,7 @@
             email: "doctor@dentiflow.com",
             role: "doctor"
         };
+        try { localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER)); } catch (e) {}
         
     </script>
     <script src="./js/firebase_config.js"></script>

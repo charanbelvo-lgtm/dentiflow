@@ -14,6 +14,8 @@ def landing_or_dashboard():
         if current_user.role == 'patient':
             patient = Patient.query.filter_by(email=current_user.email).first()
             return render_template('patient_dashboard.html', patient=patient)
+        elif current_user.role == 'admin':
+            return render_template('admin_dashboard.html')
         return render_template('dashboard.html')
     return render_template('landing.html')
 
@@ -23,7 +25,27 @@ def index():
     if current_user.role == 'patient':
         patient = Patient.query.filter_by(email=current_user.email).first()
         return render_template('patient_dashboard.html', patient=patient)
+    elif current_user.role == 'admin':
+        return render_template('admin_dashboard.html')
     return render_template('dashboard.html')
+
+@dashboard_bp.route('/admin-dashboard')
+@dashboard_bp.route('/admin-dashboard.html')
+@dashboard_bp.route('/admin')
+@login_required
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+@dashboard_bp.route('/dashboard.html')
+@login_required
+def dashboard_html_alias():
+    return index()
+
+@dashboard_bp.route('/patient-dashboard.html')
+@login_required
+def patient_dashboard_html_alias():
+    patient = Patient.query.filter_by(email=current_user.email).first()
+    return render_template('patient_dashboard.html', patient=patient)
 
 @dashboard_bp.route('/api/dashboard')
 @login_required

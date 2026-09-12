@@ -63,6 +63,11 @@
                 {% endif %}
             </nav>
             <div class="sidebar-bottom">
+                {% if not current_user.is_authenticated or current_user.role != 'admin' %}
+                <a href="{{ url_for('dashboard.admin_dashboard') }}">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                {% endif %}
                 {% if not current_user.is_authenticated or current_user.role != 'patient' %}
                 <a href="{{ url_for('public.patient_portal') }}">
                     <span>Patient view</span>
@@ -82,7 +87,9 @@
                     </label>
                 </div>
                 <div class="top-actions">
-                    <span class="pill green"> Demo mode</span>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="{{ url_for('dashboard.admin_dashboard') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">{% if current_user.role == 'admin' %}Admin workspace{% elif current_user.role == 'patient' %}Patient portal{% else %}Demo mode{% endif %}</span>
                     <div class="user-chip">
                         <span data-user-name>{{ current_user.name if current_user.name else 'Dr. Ananya Sharma' }}</span>
                         <span class="avatar" data-avatar>{{ current_user.name[:2].upper() if current_user.name else 'AS' }}</span>

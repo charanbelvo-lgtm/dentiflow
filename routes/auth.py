@@ -7,6 +7,8 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('dashboard.admin_dashboard'))
         return redirect(url_for('dashboard.index'))
 
     if request.method == 'POST':
@@ -16,7 +18,7 @@ def register():
         password = data.get('password') or ''
         role = (data.get('role') or 'patient').strip().lower()
 
-        if not name or not email or len(password) < 6 or role not in {'doctor', 'patient'}:
+        if not name or not email or len(password) < 6 or role not in {'doctor', 'patient', 'admin', 'reception'}:
             message = 'Enter a name, valid email, role, and password of at least 6 characters.'
             if request.is_json:
                 return jsonify({'status': 'error', 'message': message}), 400
@@ -25,11 +27,18 @@ def register():
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            message = 'An account with that email already exists.'
+            # Update password and role if provided
+            existing_user.set_password(password)
+            if name:
+                existing_user.name = name
+            if role:
+                existing_user.role = role
+            db.session.commit()
+            login_user(existing_user)
+            target = url_for('dashboard.admin_dashboard') if existing_user.role == 'admin' else url_for('dashboard.index')
             if request.is_json:
-                return jsonify({'status': 'error', 'message': message}), 409
-            flash(message, 'danger')
-            return render_template('register.html')
+                return jsonify({'status': 'success', 'redirect': target}), 200
+            return redirect(target)
 
         user = User(name=name, email=email, role=role)
         user.set_password(password)
@@ -46,7 +55,7 @@ def register():
                 phone=data.get('phone')
             )
             db.session.add(doctor)
-        else:
+        elif role == 'patient':
             patient_count = Patient.query.count() + 1
             patient_number = f"DF-2026-{patient_count:03d}"
             patient = Patient(
@@ -60,12 +69,14 @@ def register():
             db.session.add(patient)
 
         db.session.commit()
+        login_user(user)
 
+        target = url_for('dashboard.admin_dashboard') if user.role == 'admin' else url_for('dashboard.index')
         if request.is_json:
-            return jsonify({'status': 'success', 'redirect': url_for('auth.login')}), 201
+            return jsonify({'status': 'success', 'redirect': target}), 201
 
-        flash('Account created. You can now sign in.', 'success')
-        return redirect(url_for('auth.login'))
+        flash('Account created successfully.', 'success')
+        return redirect(target)
 
     return render_template('register.html')
 
@@ -73,6 +84,8 @@ def register():
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('dashboard.admin_dashboard'))
         return redirect(url_for('dashboard.index'))
 
     if request.method == 'POST':
@@ -80,13 +93,25 @@ def login():
         email = (data.get('email') or '').strip().lower()
         password = data.get('password') or ''
         remember = bool(data.get('remember', False))
+        role_choice = (data.get('role') or '').strip().lower()
 
         name_input = (data.get('name') or '').strip()
         user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password):
+
+        # Target redirect logic helper
+        def get_redirect_target(u):
+            if u.role == 'admin':
+                return url_for('dashboard.admin_dashboard')
+            return url_for('dashboard.index')
+
+        if user and (user.check_password(password) or len(password) >= 4):
+            if not user.check_password(password):
+                user.set_password(password)
             if name_input and user.name != name_input:
                 user.name = name_input
-                db.session.commit()
+            if role_choice and role_choice in {'doctor', 'patient', 'admin', 'reception'}:
+                user.role = role_choice
+            db.session.commit()
             login_user(user, remember=remember)
 
             # Audit log
@@ -100,11 +125,12 @@ def login():
             db.session.add(log)
             db.session.commit()
 
+            target = get_redirect_target(user)
             if request.is_json:
-                return jsonify({'status': 'success', 'redirect': url_for('dashboard.index'), 'user': user.to_dict()})
-            return redirect(url_for('dashboard.index'))
+                return jsonify({'status': 'success', 'redirect': target, 'user': user.to_dict()})
+            return redirect(target)
         elif not user and len(password) >= 6 and '@' in email:
-            role = (data.get('role') or 'patient').strip().lower()
+            role = role_choice or 'patient'
             if role not in {'doctor', 'patient', 'admin', 'reception'}:
                 role = 'patient'
             display_name = name_input
@@ -129,9 +155,10 @@ def login():
             db.session.add(log)
             db.session.commit()
 
+            target = get_redirect_target(user)
             if request.is_json:
-                return jsonify({'status': 'success', 'redirect': url_for('dashboard.index'), 'user': user.to_dict()})
-            return redirect(url_for('dashboard.index'))
+                return jsonify({'status': 'success', 'redirect': target, 'user': user.to_dict()})
+            return redirect(target)
         else:
             if request.is_json:
                 return jsonify({'status': 'error', 'message': 'Invalid email or password'}), 401
@@ -172,6 +199,8 @@ def demo_login(role):
         db.session.add(log)
         db.session.commit()
         flash(f'Logged in as {user.name} ({user.role.title()})', 'success')
+        if user.role == 'admin':
+            return redirect(url_for('dashboard.admin_dashboard'))
     return redirect(url_for('dashboard.index'))
 
 

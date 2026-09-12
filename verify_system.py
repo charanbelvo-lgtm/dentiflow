@@ -35,6 +35,16 @@ for path in pat_routes:
     results.append((path, r.status_code, status))
     print(f'  [PATIENT] {path:20} -> Status {r.status_code} [{status}]')
 
+# Admin session routes (Inventory, Stock, Profits)
+s_adm = requests.Session()
+s_adm.get(BASE_URL + '/demo-login/admin')
+adm_routes = ['/admin-dashboard', '/admin', '/inventory', '/billing', '/reports']
+for path in adm_routes:
+    r = s_adm.get(BASE_URL + path)
+    status = 'PASS' if r.status_code == 200 else 'FAIL'
+    results.append((path, r.status_code, status))
+    print(f'  [ADMIN]   {path:20} -> Status {r.status_code} [{status}]')
+
 print('\n=== 2. VERIFYING DESIGN SYSTEM TOKENS IN RENDERED HTML ===')
 dashboard_html = s_doc.get(BASE_URL + '/dashboard').text
 patient_dash_html = s_pat.get(BASE_URL + '/dashboard').text
@@ -63,6 +73,6 @@ for name, passed in checks:
 print('\n=== 3. VERIFICATION SUMMARY ===')
 failed_routes = [r for r in results if r[2] != 'PASS']
 if not failed_routes and all_passed:
-    print('  [SUCCESS] All 19 routes and 12 design tokens verified 100% PASS!')
+    print(f'  [SUCCESS] All {len(results)} routes and {len(checks)} design tokens verified 100% PASS!')
 else:
     print('  [FAIL] Issues detected in routes or tokens.')

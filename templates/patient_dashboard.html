@@ -7,7 +7,11 @@
         <h1>Hello, <span data-user-name>{{ current_user.name }}</span></h1>
         <p class="muted">Your care journey, in one calm place.</p>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ Request appointment</a>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-soft" style="font-weight:600;color:var(--purple);" href="{{ url_for('dashboard.admin_dashboard') }}">Admin Suite (Profits &amp; Inventory) &rarr;</a>
+        <a class="btn btn-soft" href="{{ url_for('auth.login') }}">Switch Role / Login</a>
+        <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ Request appointment</a>
+    </div>
 </div>
 
 <div class="hero">
