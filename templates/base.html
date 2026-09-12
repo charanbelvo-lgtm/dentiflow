@@ -115,9 +115,24 @@
             email: {{ current_user.email | tojson }},
             role: {{ current_user.role | tojson }}
         };
-        try { localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER)); } catch (e) {}
+        try {
+            if (window.CURRENT_USER && window.CURRENT_USER.name) {
+                localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER));
+            }
+        } catch (e) {}
         {% else %}
-        window.CURRENT_USER = null;
+        (function() {
+            try {
+                var stored = localStorage.getItem("dentiflowUser");
+                if (stored) {
+                    window.CURRENT_USER = JSON.parse(stored);
+                } else {
+                    window.CURRENT_USER = null;
+                }
+            } catch (e) {
+                window.CURRENT_USER = null;
+            }
+        })();
         {% endif %}
     </script>
     <script src="{{ url_for('static', filename='js/firebase_config.js') }}"></script>

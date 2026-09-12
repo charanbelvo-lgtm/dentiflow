@@ -67,8 +67,19 @@
             <script>
                 document.getElementById('auth-form').addEventListener('submit', function(e) {
                     const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
-                    const email = document.getElementById('login-email')?.value || '';
-                    const name = document.getElementById('login-name')?.value || (role === 'admin' ? 'Dr. Rajesh Verma' : 'User');
+                    const email = (document.getElementById('login-email')?.value || '').trim();
+                    let name = (document.getElementById('login-name')?.value || '').trim();
+                    if (!name && email) {
+                        if (email.toLowerCase().includes('ashmitha') || email.toLowerCase().includes('lingala')) {
+                            name = 'Lingala Ashmitha Reddy';
+                        } else {
+                            var prefix = email.split('@')[0];
+                            name = prefix.split(/[._-]+/).filter(Boolean).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}).join(' ');
+                        }
+                    }
+                    if (!name) {
+                        name = role === 'admin' ? 'Dr. Rajesh Verma' : (role === 'patient' ? 'Ashwini Goud' : 'Dr. Ananya Sharma');
+                    }
                     try {
                         localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
                     } catch(err) {}
@@ -87,7 +98,7 @@
             <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
             <div class="grid grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="demo-login-section">
                 <a class="btn btn-soft" data-demo-role="doctor" style="justify-content:center;text-decoration:none;" href="./dashboard.html">Doctor</a>
-                <a class="btn btn-soft" data-demo-role="patient" style="justify-content:center;text-decoration:none;" href="./patient-portal.html">Patient</a>
+                <a class="btn btn-soft" data-demo-role="patient" style="justify-content:center;text-decoration:none;" href="./patient-dashboard.html">Patient</a>
                 <a class="btn btn-soft" data-demo-role="admin" style="justify-content:center;text-decoration:none;" href="./admin-dashboard.html">Admin</a>
                 <a class="btn btn-soft" data-demo-role="reception" style="justify-content:center;text-decoration:none;" href="./dashboard.html">Reception</a>
             </div>
@@ -101,12 +112,15 @@
 
     
 
-    <!-- Firebase Client Integration -->
+    <!-- Firebase & Client User Integration -->
     <script>
         window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
-        
-        window.CURRENT_USER = null;
-        
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
     </script>
     <script src="./js/firebase_config.js"></script>
     <script src="./js/app.js"></script>

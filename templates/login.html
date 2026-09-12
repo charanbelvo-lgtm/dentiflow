@@ -60,8 +60,19 @@
             <script>
                 document.getElementById('auth-form').addEventListener('submit', function(e) {
                     const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
-                    const email = document.getElementById('login-email')?.value || '';
-                    const name = document.getElementById('login-name')?.value || (role === 'admin' ? 'Dr. Rajesh Verma' : 'User');
+                    const email = (document.getElementById('login-email')?.value || '').trim();
+                    let name = (document.getElementById('login-name')?.value || '').trim();
+                    if (!name && email) {
+                        if (email.toLowerCase().includes('ashmitha') || email.toLowerCase().includes('lingala')) {
+                            name = 'Lingala Ashmitha Reddy';
+                        } else {
+                            var prefix = email.split('@')[0];
+                            name = prefix.split(/[._-]+/).filter(Boolean).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();}).join(' ');
+                        }
+                    }
+                    if (!name) {
+                        name = role === 'admin' ? 'Dr. Rajesh Verma' : (role === 'patient' ? 'Ashwini Goud' : 'Dr. Ananya Sharma');
+                    }
                     try {
                         localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
                     } catch(err) {}

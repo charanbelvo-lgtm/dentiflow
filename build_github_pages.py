@@ -79,7 +79,7 @@ URL_REPLACEMENTS = [
     (r'href="/admin-dashboard"', r'href="./admin-dashboard.html"'),
     (r'href="/admin"', r'href="./admin-dashboard.html"'),
     (r'href="/demo-login/reception\w*"', r'href="./dashboard.html"'),
-    (r'href="/demo-login/patient"', r'href="./patient-portal.html"'),
+    (r'href="/demo-login/patient"', r'href="./patient-dashboard.html"'),
     (r'href="/doctor-profile/\d+"', r'href="./staff.html"'),
     (r'href="/invoices/\d+/print"', r'href="./print-invoice.html"'),
     (r'href="/receipts/\d+/print"', r'href="./print-receipt.html"'),
@@ -97,6 +97,17 @@ MOCK_API_SCRIPT = """
 <script src="./js/mock_api.js"></script>
 """
 
+STATIC_USER_SCRIPT = """<!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>"""
+
 with app.test_client() as client:
     # 1. Render patient-dashboard separately
     client.get('/demo-login/patient', follow_redirects=True)
@@ -105,6 +116,7 @@ with app.test_client() as client:
         html = res.data.decode('utf-8')
         for pattern, repl in URL_REPLACEMENTS:
             html = re.sub(pattern, repl, html)
+        html = re.sub(r'<!-- Firebase Client Integration -->\s*<script>[\s\S]*?</script>', STATIC_USER_SCRIPT, html)
         if '</head>' in html:
             html = html.replace('</head>', f'{MOCK_API_SCRIPT}</head>')
         with open(os.path.join(DOCS_DIR, 'patient-dashboard.html'), 'w', encoding='utf-8') as f:
@@ -123,6 +135,10 @@ with app.test_client() as client:
             client.get('/logout', follow_redirects=True)
             res = client.get('/')
             client.get('/demo-login/doctor', follow_redirects=True)
+        elif route == '/portal':
+            client.get('/demo-login/patient', follow_redirects=True)
+            res = client.get('/portal')
+            client.get('/demo-login/doctor', follow_redirects=True)
         else:
             res = client.get(route)
 
@@ -135,6 +151,9 @@ with app.test_client() as client:
         # Replace URLs
         for pattern, repl in URL_REPLACEMENTS:
             html = re.sub(pattern, repl, html)
+
+        # Replace hardcoded CURRENT_USER block
+        html = re.sub(r'<!-- Firebase Client Integration -->\s*<script>[\s\S]*?</script>', STATIC_USER_SCRIPT, html)
 
         # Inject mock_api.js before </head> or </body>
         if '</head>' in html:
