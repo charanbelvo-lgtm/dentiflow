@@ -44,9 +44,13 @@
         <h1>Welcome, <span data-user-name>{{ current_user.name }}</span></h1>
         <p class="muted">Book appointments with available doctors and check your live waiting time.</p>
     </div>
-    <button class="btn btn-primary" id="btn-open-top-booking" style="font-size:15px;padding:12px 20px;">
-        + Book Appointment
-    </button>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-soft" style="font-weight:600;color:var(--purple);" href="{{ url_for('dashboard.admin_dashboard') }}">Admin Suite (Profits &amp; Inventory) &rarr;</a>
+        <a class="btn btn-soft" href="{{ url_for('auth.login') }}">Switch Role / Login</a>
+        <button class="btn btn-primary" id="btn-open-top-booking" style="font-size:15px;padding:12px 20px;">
+            + Book Appointment
+        </button>
+    </div>
 </div>
 
 <!-- 1. Top Section: Live Waiting Time & Direct Book Action -->

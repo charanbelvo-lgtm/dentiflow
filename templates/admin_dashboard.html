@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Admin Workspace &middot; DentiFlow</title>
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="/static/css/style.css">
   <style>
     .admin-stat-card {
       position: relative;
@@ -110,13 +110,11 @@
       } catch (e) {}
     })();
   </script>
-
-<script src="./js/mock_api.js"></script>
 </head>
 <body class="role-admin">
   <div class="site-shell">
     <aside class="sidebar">
-      <a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a>
+      <a class="brand" href="/"><span class="brand-mark"></span>DentiFlow</a>
       <nav class="nav">
         <div class="nav-label">Administration</div>
         <a href="#overview" class="active" data-admin-tab="overview"><span>Admin Dashboard</span></a>
@@ -126,11 +124,11 @@
         <div class="nav-label">Settings</div>
         <a href="#profile" data-admin-tab="profile"><span>Practice Profile</span></a>
         <div class="nav-label" style="margin-top:14px;">Clinical Switcher</div>
-        <a href="./dashboard.html" title="Switch to Doctor clinical queue"><span>Doctor Workspace &rarr;</span></a>
-        <a href="./patient-portal.html" title="Switch to Patient booking portal"><span>Patient Portal &rarr;</span></a>
+        <a href="/dashboard" title="Switch to Doctor clinical queue"><span>Doctor Workspace &rarr;</span></a>
+        <a href="/portal" title="Switch to Patient booking portal"><span>Patient Portal &rarr;</span></a>
       </nav>
       <div class="sidebar-bottom">
-        <a href="./login.html" data-logout><span>Sign out / Login</span></a>
+        <a href="/login" data-logout><span>Sign out / Login</span></a>
       </div>
     </aside>
 
@@ -141,10 +139,10 @@
           <label class="search"><input data-search placeholder="Search inventory, profits, invoices..."></label>
         </div>
         <div class="top-actions">
-          <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+          <a href="/login" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
           <span class="pill purple" data-user-role>Admin workspace</span>
           <div class="user-chip">
-            <span data-user-name>Dr. Ananya Sharma</span>
+            <span data-user-name>{{ current_user.name if current_user.is_authenticated and current_user.name else "Dr. Rajesh Verma" }}</span>
             <span class="avatar" data-avatar style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">RV</span>
           </div>
         </div>
@@ -977,7 +975,7 @@
     </div>
   </div>
 
-  <script src="./js/app.js"></script>
+  <script src="/static/js/app.js"></script>
   <script>
     // In-page admin tab router that prevents navigation to doctor pages
     function switchAdminTab(tabName) {

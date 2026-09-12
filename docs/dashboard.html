@@ -1,296 +1,214 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Dashboard - DentiFlow</title>
-  <link rel="stylesheet" href="./css/style.css">
-  <script>
-    (function () {
-      try {
-        var raw = localStorage.getItem("dentiflowUser");
-        var u = raw ? JSON.parse(raw) : null;
-        if (u && u.role === "patient") {
-          location.replace("./patient-dashboard.html");
-          return;
-        }
-        if (!u) {
-          u = { name: "Dr. Ananya Sharma", role: "doctor", email: "doctor@dentiflow.com" };
-          localStorage.setItem("dentiflowUser", JSON.stringify(u));
-        }
-        document.documentElement.className = "role-" + (u.role || "doctor");
-      } catch (e) {}
-    })();
-  </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+
+<script src="./js/mock_api.js"></script>
 </head>
 <body>
-  <div class="site-shell">
-    <aside class="sidebar">
-      <a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a>
-      <nav class="nav">
-        <div class="nav-label">Workspace</div>
-        <a href="./dashboard.html" class="active"><span>Dashboard</span></a>
-        <a href="./appointments.html"><span>Appointments</span></a>
-        <a href="./patients.html"><span>Patients</span></a>
-        <a href="./clinical.html"><span>Clinical notes</span></a>
-        <a href="./dental-chart.html"><span>Dental chart</span></a>
-        <a href="./treatment-plans.html"><span>Treatment plans</span></a>
-        <div class="nav-label">Practice</div>
-        <a href="./billing.html"><span>Billing</span></a>
-        <a href="./inventory.html"><span>Inventory</span></a>
-        <a href="./reports.html"><span>Reports</span></a>
-        <a href="./profile.html"><span>Profile</span></a>
-      </nav>
-      <div class="sidebar-bottom">
-        <a href="./admin-dashboard.html"><span>Admin workspace</span></a>
-        <a href="./patient-dashboard.html"><span>Patient view</span></a>
-        <a href="./login.html" data-logout><span>Sign out / Login</span></a>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="menu-toggle" data-menu aria-label="Open menu"></button>
-          <label class="search"><input data-search placeholder="Search this demo..."></label>
-        </div>
-        <div class="top-actions">
-          <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
-          <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Admin Suite</a>
-          <span class="pill green" data-user-role>Clinical workspace</span>
-          <div class="user-chip">
-            <span data-user-name>Dr. Ananya Sharma</span>
-            <span class="avatar" data-avatar>AS</span>
-          </div>
-        </div>
-      </header>
-
-      <section class="content">
-        <div class="page-head">
-          <div>
-            <span class="eyebrow">LIVE CARE OVERVIEW</span>
-            <h1>Good morning, <span data-user-name>Dr. Ananya Sharma</span></h1>
-            <p class="muted">Here is what is moving through your clinic today.</p>
-          </div>
-          <div class="row">
-            <span class="pill green">● Clinic live</span>
-            <a class="btn btn-primary" href="./appointments.html?book=1">+ Schedule visit</a>
-          </div>
-        </div>
-
-        <!-- DOCTOR'S "NOW TREATING" CALLOUT -->
-        <div class="now-treating-banner">
-          <div>
-            <span class="eyebrow" style="color:#a7f3d0;">💺 CLINICAL CHAIR 01 &bull; CURRENTLY TREATING</span>
-            <h2 id="dash-now-treating-patient">Aravind Menon &bull; Root Canal Review</h2>
-            <p style="color:#d1fae5;margin:4px 0 0;" id="dash-now-treating-sub">Patient is in chair with Dr. Ananya Sharma. 35 mins elapsed &bull; Status: In Progress.</p>
-            <div class="queue-strip">
-              <span class="queue-member-chip" style="background:rgba(255,255,255,.28);font-weight:700;">Now in Chair: Aravind Menon</span>
-              <span class="queue-member-chip">Next Up: Vishal Rao (12m wait)</span>
-              <span class="queue-member-chip" id="dash-queue-count-chip">4 total members in queue</span>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="active">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                <div class="nav-label practice-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Reports</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
             </div>
-          </div>
-          <div class="row">
-            <a class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" href="./appointments.html">Manage Queue &rarr;</a>
-            <a class="btn" style="background:rgba(255,255,255,.2);color:#fff;" href="./clinical.html">Clinical Notes</a>
-          </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">LIVE CARE OVERVIEW</span>
+        <h1>Good morning, <span data-user-name>Dr. Ananya Sharma</span></h1>
+        <p class="muted">Here is what is moving through your clinic today.</p>
+    </div>
+    <div class="row">
+        <span class="pill green">Clinic live</span>
+        <a class="btn btn-primary" href="./dental-chart.html">Open dental chart</a>
+    </div>
+</div>
+
+<div class="hero">
+    <div>
+        <span class="eyebrow">PATIENT CARE, IN MOTION</span>
+        <h2>Every visit, beautifully coordinated.</h2>
+        <p>See who has arrived, who is with the doctor, and what needs attention next.</p>
+        <div class="quick-links">
+            <a class="btn" href="./patients.html">View patients</a>
+            <a class="btn" href="./dental-chart.html">Open chart</a>
         </div>
+    </div>
+    <div class="hero-art"><span>✦</span></div>
+</div>
 
-        <!-- Clinic Appointment Breakdown -->
-        <div class="grid grid-4" style="margin-top:18px">
-          <div class="card stat">
-            <div class="stat-icon" style="background:#eff6ff;color:var(--blue);">📅</div>
-            <strong>18 Visits</strong>
-            <small>Total appointments today</small>
-          </div>
-          <div class="card stat">
-            <div class="stat-icon teal">⏱</div>
-            <strong id="dash-waiting-count" style="color:#047857;">4 In Queue</strong>
-            <small>Waiting &amp; in-chair patients</small>
-          </div>
-          <div class="card stat">
-            <div class="stat-icon" style="background:#ecfdf5;color:#059669;">✓</div>
-            <strong style="color:#059669;">12 Completed</strong>
-            <small>Visits treated today</small>
-          </div>
-          <div class="card stat">
-            <div class="stat-icon orange">⟲</div>
-            <strong style="color:#ea580c;">2 Rescheduled</strong>
-            <small>Moved to upcoming days</small>
-          </div>
+<div class="grid grid-4" style="margin-top:18px">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong id="kpi-visits">18</strong>
+        <small>visits today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong id="kpi-waiting">4</strong>
+        <small>waiting now</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong id="kpi-revenue">42.8k</strong>
+        <small>collected this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong id="kpi-acceptance">86%</strong>
+        <small>plan acceptance</small>
+    </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+        <div class="section-title">
+            <h2>Todays journey</h2>
+            <a href="./appointments.html">See calendar</a>
         </div>
-
-        <!-- PATIENTS AVAILABLE TO CREATE CLINICAL NOTES -->
-        <div class="card" style="margin-top:22px;">
-          <div class="section-title">
-            <div>
-              <span class="eyebrow" style="color:var(--teal);">DOCUMENTATION QUEUE</span>
-              <h2 style="margin:4px 0 0;">Patients Available for Clinical Notes</h2>
-              <small class="muted">Patients currently in clinic or recently treated ready for immediate clinical charting</small>
-            </div>
-            <a class="btn btn-primary" href="./clinical.html">+ Blank Progress Note &rarr;</a>
-          </div>
-
-          <div class="table-wrap" style="margin-top:12px;">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Token &amp; Patient</th>
-                  <th>Procedure / Category</th>
-                  <th>Chair &amp; Time</th>
-                  <th>Status</th>
-                  <th>Clinical Documentation Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <div class="patient">
-                      <span class="avatar" style="background:linear-gradient(135deg,#2563eb,#06b6d4);">AM</span>
-                      <div>
-                        <b>Aravind Menon</b><br>
-                        <small class="muted">Token #01 &bull; DF-2026-001</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>Root Canal Review &bull; Tooth #16</td>
-                  <td><b>Chair 01</b> &bull; 09:00 AM</td>
-                  <td><span class="pill green">● In Chair (Now Treating)</span></td>
-                  <td>
-                    <a class="btn btn-primary" href="./clinical.html?patient=Aravind%20Menon" style="padding:7px 14px;font-size:12px;">
-                      + Create Clinical Note
-                    </a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <div class="patient">
-                      <span class="avatar" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">VR</span>
-                      <div>
-                        <b>Vishal Rao</b><br>
-                        <small class="muted">Token #02 &bull; DF-2026-002</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>Scaling &amp; Teeth Cleaning</td>
-                  <td><b>Chair 02</b> &bull; 10:30 AM</td>
-                  <td><span class="pill orange">● Next in Chair (12m wait)</span></td>
-                  <td>
-                    <a class="btn btn-teal" href="./clinical.html?patient=Vishal%20Rao" style="padding:7px 14px;font-size:12px;">
-                      + Create Clinical Note
-                    </a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <div class="patient">
-                      <span class="avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">MI</span>
-                      <div>
-                        <b>Medha Iyer</b><br>
-                        <small class="muted">Token #03 &bull; DF-2026-003</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>Pediatric Dental Consultation</td>
-                  <td><b>Chair 03</b> &bull; 12:00 PM</td>
-                  <td><span class="pill">● In Waiting Lounge (30m wait)</span></td>
-                  <td>
-                    <a class="btn btn-soft" href="./clinical.html?patient=Medha%20Iyer" style="padding:7px 14px;font-size:12px;">
-                      + Create Clinical Note
-                    </a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td>
-                    <div class="patient">
-                      <span class="avatar" style="background:linear-gradient(135deg,#ea580c,#f59e0b);">SK</span>
-                      <div>
-                        <b>Sameer Khan</b><br>
-                        <small class="muted">Token #04 &bull; DF-2026-004</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>Dental Implants Evaluation</td>
-                  <td><b>Chair 01</b> &bull; 02:15 PM</td>
-                  <td><span class="pill">● Checked In (50m wait)</span></td>
-                  <td>
-                    <a class="btn btn-soft" href="./clinical.html?patient=Sameer%20Khan" style="padding:7px 14px;font-size:12px;">
-                      + Create Clinical Note
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="grid grid-2" style="margin-top:22px">
-          <div class="card">
-            <div class="section-title">
-              <h2>Todays journey</h2>
-              <a href="./appointments.html">See calendar &rarr;</a>
-            </div>
-            <div class="timeline" id="dash-timeline">
-              <div class="timeline-item">
+        <div class="timeline" id="dashboard-journey-list">
+            <div class="timeline-item">
                 <span class="timeline-dot"></span>
                 <div>
-                  <b>09:00 - Aravind Menon</b>
-                  <div class="muted">Root canal review - Chair 01 (Now Treating)</div>
+                    <b>09:00 - Aravind Menon</b>
+                    <div class="muted">Root canal review - Chair 01</div>
                 </div>
                 <span class="pill green">In progress</span>
-              </div>
-              <div class="timeline-item">
+            </div>
+            <div class="timeline-item">
                 <span class="timeline-dot" style="background:var(--orange)"></span>
                 <div>
-                  <b>10:30 - Vishal Rao</b>
-                  <div class="muted">Scaling follow-up - Chair 02 (Next in line)</div>
+                    <b>10:30 - Vishal Rao</b>
+                    <div class="muted">Scaling follow-up - Chair 02</div>
                 </div>
                 <span class="pill orange">Checked in</span>
-              </div>
-              <div class="timeline-item">
+            </div>
+            <div class="timeline-item">
                 <span class="timeline-dot" style="background:var(--blue)"></span>
                 <div>
-                  <b>12:00 - Medha Iyer</b>
-                  <div class="muted">Pediatric consultation - Chair 03</div>
+                    <b>12:00 - Medha Iyer</b>
+                    <div class="muted">Pediatric consultation</div>
                 </div>
                 <span class="pill">Upcoming</span>
-              </div>
             </div>
-          </div>
-
-          <div class="card">
-            <div class="section-title">
-              <h2>Live queue</h2>
-              <span class="pill green" id="dash-live-queue-pill">4 waiting</span>
-            </div>
-            <div id="dash-live-queue-list">
-              <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
-                <span><b>01</b> - Aravind Menon<br><small class="muted">Now in Chair 01 with Dr. Sharma</small></span>
-                <span class="pill green">Now Treating</span>
-              </div>
-              <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
-                <span><b>02</b> - Vishal Rao<br><small class="muted">12 min wait &bull; Chair 02</small></span>
-                <span class="pill orange">Next</span>
-              </div>
-              <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
-                <span><b>03</b> - Medha Iyer<br><small class="muted">30 min wait &bull; Chair 03</small></span>
-                <span class="pill">Waiting</span>
-              </div>
-              <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
-                <span><b>04</b> - Sameer Khan<br><small class="muted">50 min wait &bull; Chair 01</small></span>
-                <span class="pill">Waiting</span>
-              </div>
-            </div>
-            <a class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px" href="./appointments.html">Open Full Queue</a>
-          </div>
         </div>
-      </section>
-    </main>
-  </div>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Live queue</h2>
+            <span class="pill green" id="queue-live-count">4 waiting</span>
+        </div>
+        <div id="dashboard-queue-tokens">
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>01</b> - Aravind Menon<br><small class="muted">Chair 01 &bull; In chair</small></span>
+                <span class="pill green">Now</span>
+            </div>
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>02</b> - Vishal Rao<br><small class="muted">12 min wait</small></span>
+                <span class="pill orange">Next</span>
+            </div>
+            <div class="row between" style="padding:12px 0;border-bottom:1px solid var(--line)">
+                <span><b>03</b> - Medha Iyer<br><small class="muted">25 min wait</small></span>
+                <span class="pill">Waiting</span>
+            </div>
+        </div>
+        <a class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px" href="./queue.html">Open queue</a>
+    </div>
+</div>
 
-  <script src="./js/app.js"></script>
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
 </body>
 </html>

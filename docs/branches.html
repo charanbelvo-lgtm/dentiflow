@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Clinic Branches - DentiFlow</title>
+    <title>Branches - DentiFlow</title>
     <link rel="icon" href="./favicon.ico" type="image/svg+xml">
     <link rel="stylesheet" href="./css/style.css">
 
@@ -17,15 +17,13 @@
                 <span class="brand-mark"></span>DentiFlow
             </a>
             <nav class="nav">
+                
                 <div class="nav-label">Workspace</div>
                 <a href="./dashboard.html" class="">
                     <span>Dashboard</span>
                 </a>
                 <a href="./appointments.html" class="">
                     <span>Appointments</span>
-                </a>
-                <a href="./queue.html" class="">
-                    <span>Live Queue</span>
                 </a>
                 <a href="./patients.html" class="">
                     <span>Patients</span>
@@ -39,34 +37,32 @@
                 <a href="./treatment-plans.html" class="">
                     <span>Treatment plans</span>
                 </a>
-
-                <div class="nav-label">Practice</div>
+                <div class="nav-label practice-label">Practice</div>
                 <a href="./billing.html" class="">
-                    <span>Billing & Invoicing</span>
+                    <span>Billing</span>
                 </a>
                 <a href="./inventory.html" class="">
                     <span>Inventory</span>
                 </a>
-                <a href="./staff.html" class="">
-                    <span>Staff & Doctors</span>
-                </a>
-                <a href="./branches.html" class="active">
-                    <span>Clinic Branches</span>
-                </a>
-                <a href="./operations.html" class="">
-                    <span>Operations & Lab</span>
-                </a>
                 <a href="./reports.html" class="">
-                    <span>Practice Reports</span>
+                    <span>Reports</span>
                 </a>
-                <a href="./settings.html" class="">
-                    <span>Clinic Settings</span>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
                 </a>
+                
             </nav>
             <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
                 <a href="./patient-portal.html">
                     <span>Patient view</span>
                 </a>
+                
                 <a href="./login.html">
                     <span>Sign out</span>
                 </a>
@@ -81,7 +77,9 @@
                     </label>
                 </div>
                 <div class="top-actions">
-                    <span class="pill green"> Demo mode</span>
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
                     <div class="user-chip">
                         <span data-user-name>Dr. Ananya Sharma</span>
                         <span class="avatar" data-avatar>DR</span>
@@ -90,195 +88,16 @@
             </header>
             <section class="content">
                 
-<div class="page-head">
-    <div>
-        <span class="eyebrow">MULTI-LOCATION NETWORK</span>
-        <h1>Clinic Branches & Centers</h1>
-        <p class="muted">Unified oversight of operatories, staffing, and revenue across all clinical locations.</p>
-    </div>
-    <div class="row">
-        <span class="pill green">4 Active Centers</span>
-        <button class="btn btn-ghost" onclick="window.toast('Branch sync verified across cloud', 'success')">↻ Sync</button>
-    </div>
+<div class="page-header">
+    <h1 class="page-title">Branches</h1>
 </div>
-
-<div class="grid grid-4">
-    <div class="card stat">
-        <div class="stat-icon teal">🏢</div>
-        <strong>4</strong>
-        <small>operational branches</small>
+<div class="page-body" id="app-root">
+    <!-- Frontend JS will mount here or we render basic UI -->
+    <div class="card p-4 text-center">
+        <i class="fa-solid fa-building fa-3x text-primary mb-3"></i>
+        <h3>Clinic branches</h3>
+        <p class="text-muted">Branch information will appear here.</p>
     </div>
-    <div class="card stat">
-        <div class="stat-icon">💺</div>
-        <strong>12 Chairs</strong>
-        <small>total operatory capacity</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon orange">👥</div>
-        <strong>955</strong>
-        <small>active patients / mo</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon purple">₹</div>
-        <strong>₹12.2L</strong>
-        <small>network monthly revenue</small>
-    </div>
-</div>
-
-<div class="grid grid-2" style="margin-top: 24px;" id="branches-grid">
-    
-    <div class="card" style="border-top: 4px solid var(--blue);">
-        <div class="section-title">
-            <div>
-                <h3>Downtown Dental Flagship</h3>
-                <span class="muted" style="font-size:12px;">Branch Code: DT-01</span>
-            </div>
-            
-            <span class="pill green">HQ Flagship</span>
-            
-        </div>
-        <p class="muted" style="font-size:13px;margin:10px 0;">
-            📍 100 Feet Rd, Indiranagar, Bengaluru, KA 560038<br>
-            📞 +91 80 4123 4567 &bull; ✉️ indiranagar@dentiflow.com
-        </p>
-        <div class="grid grid-3" style="gap:10px;margin:16px 0;background:#f8fafc;padding:12px;border-radius:8px;">
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Chairs</small>
-                <div style="font-size:15px;font-weight:700;">4 Units</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Doctors</small>
-                <div style="font-size:15px;font-weight:700;">4 Clinicians</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Est. Mo. Rev</small>
-                <div style="font-size:15px;font-weight:700;color:var(--teal);">₹4.28L</div>
-            </div>
-        </div>
-        <div class="row between" style="margin-top:14px;">
-            <span class="muted" style="font-size:12px;">
-                Status: <strong style="color:var(--teal);">Fully Operational</strong>
-            </span>
-            <button class="btn btn-soft" onclick="switchActiveBranch(1, 'Downtown Dental Flagship')">
-                Set as Active Center &rarr;
-            </button>
-        </div>
-    </div>
-    
-    <div class="card" style="border-top: 4px solid var(--teal);">
-        <div class="section-title">
-            <div>
-                <h3>Koramangala Specialty Clinic</h3>
-                <span class="muted" style="font-size:12px;">Branch Code: KM-02</span>
-            </div>
-            
-            <span class="pill">Specialty Clinic</span>
-            
-        </div>
-        <p class="muted" style="font-size:13px;margin:10px 0;">
-            📍 80 Feet Rd, 4th Block, Koramangala, Bengaluru, KA 560034<br>
-            📞 +91 80 4123 4568 &bull; ✉️ koramangala@dentiflow.com
-        </p>
-        <div class="grid grid-3" style="gap:10px;margin:16px 0;background:#f8fafc;padding:12px;border-radius:8px;">
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Chairs</small>
-                <div style="font-size:15px;font-weight:700;">3 Units</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Doctors</small>
-                <div style="font-size:15px;font-weight:700;">2 Clinicians</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Est. Mo. Rev</small>
-                <div style="font-size:15px;font-weight:700;color:var(--teal);">₹3.12L</div>
-            </div>
-        </div>
-        <div class="row between" style="margin-top:14px;">
-            <span class="muted" style="font-size:12px;">
-                Status: <strong style="color:var(--teal);">Fully Operational</strong>
-            </span>
-            <button class="btn btn-soft" onclick="switchActiveBranch(2, 'Koramangala Specialty Clinic')">
-                Set as Active Center &rarr;
-            </button>
-        </div>
-    </div>
-    
-    <div class="card" style="border-top: 4px solid var(--teal);">
-        <div class="section-title">
-            <div>
-                <h3>Whitefield TechPark Hub</h3>
-                <span class="muted" style="font-size:12px;">Branch Code: WF-03</span>
-            </div>
-            
-            <span class="pill">Specialty Clinic</span>
-            
-        </div>
-        <p class="muted" style="font-size:13px;margin:10px 0;">
-            📍 ITPB Main Rd, Whitefield, Bengaluru, KA 560066<br>
-            📞 +91 80 4123 4569 &bull; ✉️ whitefield@dentiflow.com
-        </p>
-        <div class="grid grid-3" style="gap:10px;margin:16px 0;background:#f8fafc;padding:12px;border-radius:8px;">
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Chairs</small>
-                <div style="font-size:15px;font-weight:700;">3 Units</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Doctors</small>
-                <div style="font-size:15px;font-weight:700;">2 Clinicians</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Est. Mo. Rev</small>
-                <div style="font-size:15px;font-weight:700;color:var(--teal);">₹2.85L</div>
-            </div>
-        </div>
-        <div class="row between" style="margin-top:14px;">
-            <span class="muted" style="font-size:12px;">
-                Status: <strong style="color:var(--teal);">Fully Operational</strong>
-            </span>
-            <button class="btn btn-soft" onclick="switchActiveBranch(3, 'Whitefield TechPark Hub')">
-                Set as Active Center &rarr;
-            </button>
-        </div>
-    </div>
-    
-    <div class="card" style="border-top: 4px solid var(--teal);">
-        <div class="section-title">
-            <div>
-                <h3>Jayanagar Family Practice</h3>
-                <span class="muted" style="font-size:12px;">Branch Code: JN-04</span>
-            </div>
-            
-            <span class="pill">Specialty Clinic</span>
-            
-        </div>
-        <p class="muted" style="font-size:13px;margin:10px 0;">
-            📍 9th Main, 4th Block, Jayanagar, Bengaluru, KA 560011<br>
-            📞 +91 80 4123 4570 &bull; ✉️ jayanagar@dentiflow.com
-        </p>
-        <div class="grid grid-3" style="gap:10px;margin:16px 0;background:#f8fafc;padding:12px;border-radius:8px;">
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Chairs</small>
-                <div style="font-size:15px;font-weight:700;">3 Units</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Doctors</small>
-                <div style="font-size:15px;font-weight:700;">2 Clinicians</div>
-            </div>
-            <div>
-                <small class="muted" style="font-size:10px;text-transform:uppercase;font-weight:700;">Est. Mo. Rev</small>
-                <div style="font-size:15px;font-weight:700;color:var(--teal);">₹1.95L</div>
-            </div>
-        </div>
-        <div class="row between" style="margin-top:14px;">
-            <span class="muted" style="font-size:12px;">
-                Status: <strong style="color:var(--teal);">Fully Operational</strong>
-            </span>
-            <button class="btn btn-soft" onclick="switchActiveBranch(4, 'Jayanagar Family Practice')">
-                Set as Active Center &rarr;
-            </button>
-        </div>
-    </div>
-    
 </div>
 
             </section>
@@ -286,17 +105,15 @@
     </div>
     
 
-    <!-- Firebase Client Integration -->
+    <!-- Firebase & Client User Integration -->
     <script>
         window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
-        
-        window.CURRENT_USER = {
-            id: 2,
-            name: "Dr. Ananya Sharma",
-            email: "doctor@dentiflow.com",
-            role: "doctor"
-        };
-        
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
     </script>
     <script src="./js/firebase_config.js"></script>
     <script src="./js/app.js"></script>

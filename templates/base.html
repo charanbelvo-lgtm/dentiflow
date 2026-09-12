@@ -77,9 +77,11 @@
                 {% endif %}
             </nav>
             <div class="sidebar-bottom">
-                <a href="{{ url_for('dashboard.landing_or_dashboard') }}">
-                    <span>✦ Landing / Sign In</span>
+                {% if not current_user.is_authenticated or current_user.role == 'admin' %}
+                <a href="{{ url_for('dashboard.admin_dashboard') }}">
+                    <span>Admin Suite &rarr;</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}">
                     <span>Sign out</span>
                 </a>
@@ -94,6 +96,10 @@
                     </label>
                 </div>
                 <div class="top-actions">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('dashboard.admin_dashboard') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    {% endif %}
                     <span class="pill green">{{ current_user.role|title }} portal</span>
                     <a href="{{ url_for('dashboard.profile') }}" class="user-chip" style="text-decoration:none;color:inherit;cursor:pointer;">
                         <span data-user-name>{{ current_user.name if current_user.name else 'User' }}</span>
@@ -120,9 +126,24 @@
             email: {{ current_user.email | tojson }},
             role: {{ current_user.role | tojson }}
         };
-        try { localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER)); } catch (e) {}
+        try {
+            if (window.CURRENT_USER && window.CURRENT_USER.name) {
+                localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER));
+            }
+        } catch (e) {}
         {% else %}
-        window.CURRENT_USER = null;
+        (function() {
+            try {
+                var stored = localStorage.getItem("dentiflowUser");
+                if (stored) {
+                    window.CURRENT_USER = JSON.parse(stored);
+                } else {
+                    window.CURRENT_USER = null;
+                }
+            } catch (e) {
+                window.CURRENT_USER = null;
+            }
+        })();
         {% endif %}
     </script>
     <script src="{{ url_for('static', filename='js/firebase_config.js') }}"></script>

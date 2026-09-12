@@ -1,456 +1,320 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Appointments - DentiFlow</title>
-  <link rel="stylesheet" href="./css/style.css">
-  <script>
-    (function () {
-      try {
-        var raw = localStorage.getItem("dentiflowUser");
-        var u = raw ? JSON.parse(raw) : null;
-        var role = (u && u.role) ? u.role : "patient";
-        document.documentElement.className = "role-" + role;
-      } catch (e) {}
-    })();
-  </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Appointments - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+
+<script src="./js/mock_api.js"></script>
 </head>
 <body>
-  <div class="site-shell">
-    <aside class="sidebar">
-      <a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a>
-      <nav class="nav">
-        <!-- Patient Workspace (Shown ONLY when logged in as patient) -->
-        <div class="nav-label" data-role="patient">Patient Workspace</div>
-        <a href="./patient-dashboard.html" data-role="patient"><span>Book &amp; Wait Time</span></a>
-        <a href="./appointments.html" class="active" data-role="patient"><span>My Appointments</span></a>
-        <div class="nav-label" data-role="patient">Settings</div>
-        <a href="./profile.html" data-role="patient"><span>Profile</span></a>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="active">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                <div class="nav-label practice-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Reports</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<!-- Page Header -->
+<div class="page-head">
+    <div>
+        <span class="eyebrow" id="page-eyebrow">SCHEDULE &amp; QUEUE</span>
+        <h1 id="page-title">Appointments</h1>
+        <p class="muted" id="page-subtitle">Coordinate every chair, clinician, and patient.</p>
+    </div>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-primary doctor-only" href="./dental-chart.html" >Open Dental Chart</a>
+        <button class="btn btn-primary patient-only" onclick="if(window.openBookingModal){window.openBookingModal();}else{window.toast('Opening appointment request form...', 'info');}" style="display:none;">+ Request Appointment</button>
+    </div>
+</div>
 
-        <!-- Doctor / Clinical Workspace (Strictly hidden in patient login) -->
-        <div class="nav-label doctor-only" data-role="doctor admin">Workspace</div>
-        <a href="./dashboard.html" class="doctor-only" data-role="doctor admin"><span>Dashboard</span></a>
-        <a href="./appointments.html" class="doctor-only active" data-role="doctor admin"><span>Appointments</span></a>
-        <a href="./patients.html" class="doctor-only" data-role="doctor admin"><span>Patients</span></a>
-        <a href="./clinical.html" class="doctor-only" data-role="doctor admin"><span>Clinical notes</span></a>
-        <a href="./dental-chart.html" class="doctor-only" data-role="doctor admin"><span>Dental chart</span></a>
-        <a href="./treatment-plans.html" class="doctor-only" data-role="doctor admin"><span>Treatment plans</span></a>
-        <div class="nav-label doctor-only practice-label" data-role="doctor admin">Practice</div>
-        <a href="./billing.html" class="doctor-only" data-role="doctor admin"><span>Billing</span></a>
-        <a href="./inventory.html" class="doctor-only" data-role="doctor admin"><span>Inventory</span></a>
-        <a href="./reports.html" class="doctor-only" data-role="doctor admin"><span>Reports</span></a>
-        <a href="./profile.html" class="doctor-only" data-role="doctor admin"><span>Profile</span></a>
-      </nav>
-      <div class="sidebar-bottom">
-        <a href="./patient-dashboard.html" class="doctor-only" data-role="doctor admin"><span>Patient view</span></a>
-        <a href="./login.html" data-logout><span>Sign out / Login</span></a>
-      </div>
-    </aside>
-
-    <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button class="menu-toggle" data-menu aria-label="Open menu"></button>
-          <label class="search"><input data-search placeholder="Search appointments..."></label>
-        </div>
-        <div class="top-actions">
-          <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
-          <span class="pill green" data-user-role>Clinical workspace</span>
-          <div class="user-chip">
-            <span data-user-name>Dr. Ananya Sharma</span>
-            <span class="avatar" data-avatar>AS</span>
-          </div>
-        </div>
-      </header>
-
-      <section class="content">
-        <!-- Page Header -->
-        <div class="page-head">
-          <div>
-            <span class="eyebrow" id="page-eyebrow">SCHEDULE & QUEUE</span>
-            <h1 id="page-title">Appointments</h1>
-            <p class="muted" id="page-subtitle">Coordinate every chair, clinician, and patient.</p>
-          </div>
-          <button class="btn btn-primary" data-modal="app-modal" id="book-btn">+ Book appointment</button>
-        </div>
-
-        <!-- PATIENT SPECIFIC VIEW: Only visible when patient logs in -->
-        <div id="patient-view-container" style="display:none;">
-          <!-- Wait Time & Queue Status Banner -->
-          <div class="wait-banner">
-            <span class="eyebrow" style="color:#67e8f9;">LIVE CLINIC QUEUE STATUS</span>
-            <h2 id="patient-wait-title">Estimated Wait Time: 15 mins</h2>
-            <p style="color:#bae6fd;margin:4px 0 0;" id="patient-wait-subtitle">Your appointment is scheduled with Dr. Ananya Sharma. 1 patient is currently in chair ahead of you.</p>
-            <div class="wait-grid">
-              <div class="wait-item">
+<!-- PATIENT SPECIFIC VIEW: Only visible when patient logs in -->
+<div id="patient-view-container" class="patient-only-view" style="display:none;">
+    <!-- Wait Time & Queue Status Banner -->
+    <div class="wait-banner">
+        <span class="eyebrow" style="color:#67e8f9;">LIVE CLINIC QUEUE STATUS</span>
+        <h2 id="patient-wait-title">Estimated Wait Time: ~12 mins</h2>
+        <p style="color:#bae6fd;margin:4px 0 0;" id="patient-wait-subtitle">Your appointment is scheduled with Dr. Ananya Sharma. 1 patient is currently in chair ahead of you.</p>
+        <div class="wait-grid">
+            <div class="wait-item">
                 <small>Queue Token</small>
                 <strong id="patient-token">#02</strong>
-              </div>
-              <div class="wait-item">
+            </div>
+            <div class="wait-item">
                 <small>Est. Wait Time</small>
-                <strong id="patient-wait-time">~15 mins</strong>
-              </div>
-              <div class="wait-item">
+                <strong id="patient-wait-time">~12 mins</strong>
+            </div>
+            <div class="wait-item">
                 <small>Clinician</small>
                 <strong id="patient-doc-name">Dr. Ananya Sharma</strong>
-              </div>
-              <div class="wait-item">
+            </div>
+            <div class="wait-item">
                 <small>Assigned Chair</small>
                 <strong id="patient-chair">Chair 01</strong>
-              </div>
             </div>
-            <div style="margin-top:16px;font-size:13px;color:#e0f2fe;display:flex;align-items:center;gap:8px;">
-              <span class="pill green" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;">✓ Checked In</span>
-              <span>Please relax in our patient lounge. Refreshments and complimentary Wi-Fi are available.</span>
-            </div>
-          </div>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:#e0f2fe;display:flex;align-items:center;gap:8px;">
+            <span class="pill green" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;">✓ Checked In</span>
+            <span>Please relax in our patient lounge. Refreshments and complimentary Wi-Fi are available.</span>
+        </div>
+    </div>
 
-          <!-- My Appointments List -->
-          <div class="card">
-            <div class="section-title">
-              <h2>My Appointments</h2>
-              <span class="pill green" id="patient-apt-count">1 Scheduled</span>
-            </div>
-            <div class="table-wrap">
-              <table class="table">
+    <!-- My Appointments List -->
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>My Appointments</h2>
+            <span class="pill green" id="patient-apt-count">1 Scheduled</span>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
                 <thead>
-                  <tr>
-                    <th>Date & Time</th>
-                    <th>Procedure / Category</th>
-                    <th>Doctor</th>
-                    <th>Chair</th>
-                    <th>Payment Status</th>
-                    <th>Queue Status</th>
-                    <th>Action</th>
-                  </tr>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Procedure / Category</th>
+                        <th>Doctor</th>
+                        <th>Chair</th>
+                        <th>Payment Status</th>
+                        <th>Queue Status</th>
+                        <th>Action</th>
+                    </tr>
                 </thead>
                 <tbody id="patient-appointments-tbody">
-                  <!-- Dynamically populated with ONLY the logged-in patient's appointments -->
+                    <tr>
+                        <td><b>10:30</b> &bull; 2026-05-27</td>
+                        <td><b>Root canal review</b></td>
+                        <td>Dr. Ananya Sharma</td>
+                        <td><span class="pill">Chair 01</span></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td><span class="pill orange">Checked in (#02)</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Reschedule request sent to clinic desk', 'success')">Reschedule</button></td>
+                    </tr>
                 </tbody>
-              </table>
-            </div>
-          </div>
+            </table>
         </div>
+    </div>
 
-        <!-- DOCTOR SPECIFIC VIEW: Visible for Doctors / Admin / Staff -->
-        <div id="doctor-view-container">
-          <!-- Now Treating Patient Banner -->
-          <div class="now-treating-banner">
-            <div>
-              <span class="eyebrow" style="color:#a7f3d0;">💺 CLINICAL CHAIR 01 &bull; NOW TREATING</span>
-              <h2 id="now-treating-name">Aravind Menon &bull; Root Canal Review</h2>
-              <p style="color:#d1fae5;margin:4px 0 0;" id="now-treating-details">Patient is currently in chair with Dr. Ananya Sharma. Procedure in progress (started 09:00 AM &bull; 35 mins elapsed).</p>
-              <div class="queue-strip" id="queue-strip-container">
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>Care &amp; Preparation Notice</h2>
+            <span class="pill green">Helpful info</span>
+        </div>
+        <div class="notice">
+            <b>Important Clinic Guidance:</b><br>
+            Please arrive 10 minutes before your appointment time. If you are delayed or need urgent emergency assistance before your visit, contact our care desk directly at <b>+91 98450 11223</b>.
+        </div>
+    </div>
+</div>
+
+<!-- DOCTOR SPECIFIC VIEW: Visible for Doctors / Admin / Staff -->
+<div id="doctor-view-container" class="doctor-only-view" >
+    <!-- Now Treating Patient Banner -->
+    <div class="now-treating-banner">
+        <div>
+            <span class="eyebrow" style="color:#a7f3d0;">💺 CLINICAL CHAIR 01 &bull; NOW TREATING</span>
+            <h2 id="now-treating-name">Aravind Menon &bull; Root Canal Review</h2>
+            <p style="color:#d1fae5;margin:4px 0 0;" id="now-treating-details">Patient is currently in chair with Dr. Ananya Sharma. Procedure in progress (started 09:00 AM &bull; 35 mins elapsed).</p>
+            <div class="queue-strip" id="queue-strip-container">
                 <span class="queue-member-chip" style="background:rgba(255,255,255,.25);font-weight:700;">Now: Aravind Menon</span>
                 <span class="queue-member-chip">Next: Vishal Rao (#02 &bull; 12m)</span>
                 <span class="queue-member-chip">Queued: Medha Iyer (#03 &bull; 30m)</span>
                 <span class="queue-member-chip" id="more-queue-chip">+1 more in queue</span>
-              </div>
             </div>
-            <div class="row">
-              <button class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" data-action="complete-current-treating">✓ Mark Complete</button>
-              <a class="btn" style="background:rgba(255,255,255,.2);color:#fff;" href="./dental-chart.html">Open Chart</a>
-            </div>
-          </div>
+        </div>
+        <div class="row">
+            <button class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" data-action="complete-current-treating" onclick="window.toast('Procedure marked complete', 'success')">✓ Mark Complete</button>
+            <a class="btn" style="background:rgba(255,255,255,.2);color:#fff;" href="./dental-chart.html">Open Chart</a>
+        </div>
+    </div>
 
-          <!-- Clinic Stats Grid -->
-          <div class="grid grid-4">
-            <div class="card stat">
-              <div class="stat-icon"></div>
-              <strong>18</strong>
-              <small>todays visits</small>
-            </div>
-            <div class="card stat">
-              <div class="stat-icon teal"></div>
-              <strong>12</strong>
-              <small>completed</small>
-            </div>
-            <div class="card stat">
-              <div class="stat-icon orange"></div>
-              <strong id="doc-queue-count">4</strong>
-              <small>in queue / waiting now</small>
-            </div>
-            <div class="card stat">
-              <div class="stat-icon purple"></div>
-              <strong>2</strong>
-              <small>rescheduled</small>
-            </div>
-          </div>
+    <!-- Clinic Stats Grid -->
+    <div class="grid grid-4" style="margin-top:18px;">
+        <div class="card stat">
+            <div class="stat-icon"></div>
+            <strong>18</strong>
+            <small>todays visits</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon teal"></div>
+            <strong>12</strong>
+            <small>completed</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon orange"></div>
+            <strong id="doc-queue-count">4</strong>
+            <small>in queue / waiting now</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon purple"></div>
+            <strong>2</strong>
+            <small>rescheduled</small>
+        </div>
+    </div>
 
-          <!-- All Clinic Appointments Table -->
-          <div class="card" style="margin-top:18px">
-            <div class="section-title">
-              <div>
+    <!-- All Clinic Appointments Table -->
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <div>
                 <h2>Wednesday - 27 May 2026</h2>
                 <span class="muted" id="doctor-queue-headline">Showing all scheduled and queue patients</span>
-              </div>
-              <div class="row">
-                <span class="pill green" id="live-members-badge">4 members in queue</span>
-                <button class="btn btn-ghost" data-action="refresh-queue">Refresh</button>
-              </div>
             </div>
-            <div class="table-wrap">
-              <table class="table">
+            <div class="row">
+                <span class="pill green" id="live-members-badge">4 members in queue</span>
+                <button class="btn btn-ghost" data-action="refresh-queue" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
                 <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Patient</th>
-                    <th>Visit / Category</th>
-                    <th>Doctor</th>
-                    <th>Chair</th>
-                    <th>Payment</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
+                    <tr>
+                        <th>Time</th>
+                        <th>Patient</th>
+                        <th>Visit / Category</th>
+                        <th>Doctor</th>
+                        <th>Chair</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
                 </thead>
                 <tbody id="doctor-appointments-tbody">
-                  <!-- Dynamically populated or rendered -->
+                    
+                    <tr data-apt-id="APT-001">
+                        <td><b>09:00</b></td>
+                        <td class="patient"><span class="avatar">AM</span>Aravind Menon</td>
+                        <td>Root canal review</td>
+                        <td>Dr. Ananya Sharma</td>
+                        <td><b>Chair 01</b></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td><span class="pill green">In progress</span></td>
+                        <td><button class="btn btn-primary" onclick="window.toast('Patient marked complete', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;">✓ Complete</button></td>
+                    </tr>
+                    <tr data-apt-id="APT-002">
+                        <td><b>10:30</b></td>
+                        <td class="patient"><span class="avatar">VR</span>Vishal Rao</td>
+                        <td>Scaling follow-up</td>
+                        <td>Dr. Rohan Patel</td>
+                        <td><b>Chair 02</b></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td><span class="pill orange">Checked in</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button></td>
+                    </tr>
+                    <tr data-apt-id="APT-003">
+                        <td><b>12:00</b></td>
+                        <td class="patient"><span class="avatar">MI</span>Medha Iyer</td>
+                        <td>Pediatric consultation</td>
+                        <td>Dr. Meera Nair</td>
+                        <td><b>Chair 03</b></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td><span class="pill">Waiting</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button></td>
+                    </tr>
+                    <tr data-apt-id="APT-004">
+                        <td><b>14:15</b></td>
+                        <td class="patient"><span class="avatar">SK</span>Sameer Khan</td>
+                        <td>Dental Implants Evaluation</td>
+                        <td>Dr. Vikram Rao</td>
+                        <td><b>Chair 01</b></td>
+                        <td><span class="pill orange">Pay at clinic</span></td>
+                        <td><span class="pill">Waiting</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
+                    </tr>
+                    
                 </tbody>
-              </table>
-            </div>
-          </div>
+            </table>
         </div>
-
-      </section>
-    </main>
-  </div>
-
-  <!-- BOOKING & PAYMENT MODAL -->
-  <div class="modal-backdrop" id="app-modal" hidden style="display:none;">
-    <div class="modal modal-lg">
-      <div class="modal-header">
-        <div>
-          <span class="eyebrow" style="color:var(--blue);">DENTIFLOW BOOKING DESK</span>
-          <h2>Book Dental Appointment</h2>
-        </div>
-        <button class="modal-close" data-close-modal aria-label="Close modal">&times;</button>
-      </div>
-
-      <form id="booking-form">
-        <!-- Patient Information -->
-        <div class="form-grid">
-          <div class="field">
-            <label for="book-patient-name">Patient Full Name *</label>
-            <input type="text" id="book-patient-name" name="patientName" placeholder="Enter patient name" required>
-          </div>
-          <div class="field">
-            <label for="book-patient-phone">Mobile / Email *</label>
-            <input type="text" id="book-patient-phone" name="patientContact" placeholder="+91 98765 43210 or email" required>
-          </div>
-        </div>
-
-        <!-- 1. Available Doctors Selection -->
-        <div class="field full" style="margin-top:14px;">
-          <label>Select Available Doctor *</label>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;" id="doctor-options-container">
-            <label class="doc-card selected">
-              <input type="radio" name="doctor" value="Dr. Ananya Sharma" data-spec="Chief Dental Surgeon" checked>
-              <span class="doc-avatar">AS</span>
-              <div class="doc-info">
-                <div class="doc-name">Dr. Ananya Sharma</div>
-                <div class="doc-spec">Chief Dental Surgeon &bull; MDS</div>
-              </div>
-              <span class="avail-pill avail-today">🟢 Available Today</span>
-            </label>
-
-            <label class="doc-card">
-              <input type="radio" name="doctor" value="Dr. Rohan Patel" data-spec="Senior Orthodontist">
-              <span class="doc-avatar" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">RP</span>
-              <div class="doc-info">
-                <div class="doc-name">Dr. Rohan Patel</div>
-                <div class="doc-spec">Orthodontist &bull; Braces & Aligners</div>
-              </div>
-              <span class="avail-pill avail-slots">🟢 Today 2:00 PM</span>
-            </label>
-
-            <label class="doc-card">
-              <input type="radio" name="doctor" value="Dr. Meera Nair" data-spec="Pediatric Dental Specialist">
-              <span class="doc-avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">MN</span>
-              <div class="doc-info">
-                <div class="doc-name">Dr. Meera Nair</div>
-                <div class="doc-spec">Pediatric Specialist &bull; Child Care</div>
-              </div>
-              <span class="avail-pill avail-today">🟢 Available Today</span>
-            </label>
-
-            <label class="doc-card">
-              <input type="radio" name="doctor" value="Dr. Vikram Rao" data-spec="Oral & Maxillofacial Surgeon">
-              <span class="doc-avatar" style="background:linear-gradient(135deg,#ea580c,#f59e0b);">VR</span>
-              <div class="doc-info">
-                <div class="doc-name">Dr. Vikram Rao</div>
-                <div class="doc-spec">Oral & Maxillofacial Surgeon</div>
-              </div>
-              <span class="avail-pill avail-tomorrow">🟡 Available Tomorrow</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 2. Appointment Booking Category -->
-        <div class="field full" style="margin-top:14px;">
-          <label>Appointment Category / Procedure *</label>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;" id="category-options-container">
-            <label class="category-card selected">
-              <input type="radio" name="category" value="Consultation & Diagnosis" data-price="500" style="position:absolute;opacity:0;" checked>
-              <div>
-                <b style="font-size:13px;display:block;">Consultation & Diagnosis</b>
-                <small class="muted">Oral examination & X-Ray (~20m)</small>
-              </div>
-              <span class="cat-price">₹500</span>
-            </label>
-
-            <label class="category-card">
-              <input type="radio" name="category" value="Dental Scaling & Cleaning" data-price="1500" style="position:absolute;opacity:0;">
-              <div>
-                <b style="font-size:13px;display:block;">Scaling & Teeth Cleaning</b>
-                <small class="muted">Plaque removal & polishing (~30m)</small>
-              </div>
-              <span class="cat-price">₹1,500</span>
-            </label>
-
-            <label class="category-card">
-              <input type="radio" name="category" value="Root Canal Treatment (RCT)" data-price="6500" style="position:absolute;opacity:0;">
-              <div>
-                <b style="font-size:13px;display:block;">Root Canal Treatment</b>
-                <small class="muted">Single/Multi-visit RCT (~45m)</small>
-              </div>
-              <span class="cat-price">₹6,500</span>
-            </label>
-
-            <label class="category-card">
-              <input type="radio" name="category" value="Laser Teeth Whitening" data-price="8000" style="position:absolute;opacity:0;">
-              <div>
-                <b style="font-size:13px;display:block;">Laser Teeth Whitening</b>
-                <small class="muted">Professional instant shade lift (~40m)</small>
-              </div>
-              <span class="cat-price">₹8,000</span>
-            </label>
-
-            <label class="category-card">
-              <input type="radio" name="category" value="Invisible Aligners Assessment" data-price="1200" style="position:absolute;opacity:0;">
-              <div>
-                <b style="font-size:13px;display:block;">Aligners & Braces Consult</b>
-                <small class="muted">3D digital smile simulation (~30m)</small>
-              </div>
-              <span class="cat-price">₹1,200</span>
-            </label>
-
-            <label class="category-card">
-              <input type="radio" name="category" value="Emergency Pain Relief" data-price="1000" style="position:absolute;opacity:0;">
-              <div>
-                <b style="font-size:13px;display:block;">Emergency Toothache</b>
-                <small class="muted">Immediate chair relief (~25m)</small>
-              </div>
-              <span class="cat-price">₹1,000</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 3. Preferred Date & Time -->
-        <div class="form-grid" style="margin-top:14px;">
-          <div class="field">
-            <label for="book-date">Preferred Date *</label>
-            <input type="date" id="book-date" name="date" value="2026-05-27" required>
-          </div>
-          <div class="field">
-            <label for="book-time">Time Slot *</label>
-            <select id="book-time" name="time" required>
-              <option value="09:30">09:30 AM (Available)</option>
-              <option value="11:00">11:00 AM (Available)</option>
-              <option value="14:30">02:30 PM (Available)</option>
-              <option value="16:00">04:00 PM (Available)</option>
-              <option value="17:30">05:30 PM (Available)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 4. Payment Section -->
-        <div class="field full" style="margin-top:16px;">
-          <label>Payment & Confirmation *</label>
-
-          <!-- Price Calculation -->
-          <div class="bill-summary">
-            <div class="bill-row">
-              <span id="bill-procedure-name">Consultation & Diagnosis</span>
-              <strong id="bill-procedure-price">₹500</strong>
-            </div>
-            <div class="bill-row">
-              <span>Clinic Sanitization & Disposable Kit</span>
-              <span>₹100</span>
-            </div>
-            <div class="bill-row">
-              <span>GST / Healthcare Service Tax (5%)</span>
-              <span id="bill-tax">₹30</span>
-            </div>
-            <div class="bill-row total">
-              <span>Total Payable Amount</span>
-              <span id="bill-total-price" style="color:var(--blue);font-size:18px;">₹630</span>
-            </div>
-          </div>
-
-          <!-- Payment Methods -->
-          <div class="payment-grid">
-            <label class="pay-opt">
-              <input type="radio" name="paymentMethod" value="UPI" checked>
-              <span class="pay-icon">📱</span>
-              <div>
-                <div>UPI / QR Code</div>
-                <small class="muted" style="font-size:11px;">GPay, PhonePe, Paytm</small>
-              </div>
-            </label>
-
-            <label class="pay-opt">
-              <input type="radio" name="paymentMethod" value="Card">
-              <span class="pay-icon">💳</span>
-              <div>
-                <div>Debit / Credit Card</div>
-                <small class="muted" style="font-size:11px;">Visa, Mastercard, RuPay</small>
-              </div>
-            </label>
-
-            <label class="pay-opt">
-              <input type="radio" name="paymentMethod" value="NetBanking">
-              <span class="pay-icon">🏦</span>
-              <div>
-                <div>Net Banking</div>
-                <small class="muted" style="font-size:11px;">HDFC, ICICI, SBI, Axis</small>
-              </div>
-            </label>
-
-            <label class="pay-opt">
-              <input type="radio" name="paymentMethod" value="Clinic">
-              <span class="pay-icon">🏥</span>
-              <div>
-                <div>Pay at Clinic</div>
-                <small class="muted" style="font-size:11px;">Cash or Card upon visit</small>
-              </div>
-            </label>
-          </div>
-
-          <!-- Simulated UPI/Card Input -->
-          <div id="payment-input-container" style="margin-top:12px;">
-            <div id="upi-input-group" class="field">
-              <label style="font-size:11px;">Enter UPI ID / VPA</label>
-              <input type="text" id="upi-id" placeholder="e.g. mobile@upi or username@okhdfcbank" value="ashwini@okaxis">
-            </div>
-            <div id="card-input-group" class="field" style="display:none;">
-              <label style="font-size:11px;">Card Number & Expiry</label>
-              <input type="text" id="card-number" placeholder="4111 2222 3333 4444 (12/28)">
-            </div>
-          </div>
-        </div>
-
-        <!-- Submit & Actions -->
-        <div style="display:flex;gap:12px;margin-top:20px;">
-          <button type="submit" class="btn btn-primary" id="btn-confirm-booking" style="flex:1;justify-content:center;padding:13px 18px;font-size:15px;">
-            Pay ₹630 & Confirm Appointment
-          </button>
-          <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
-        </div>
-      </form>
     </div>
-  </div>
+</div>
 
-  <script src="./js/app.js"></script>
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
 </body>
 </html>

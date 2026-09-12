@@ -117,16 +117,16 @@ def create_app(config_class=Config):
     def health_check():
         try:
             db.session.execute(db.text('SELECT 1'))
+            db_type = 'mysql' if 'mysql' in str(db.engine.url) else 'sqlite'
             return jsonify({
                 "status": "ok",
-                "database": "mysql",
+                "database": db_type,
                 "database_connected": True
             })
         except Exception as e:
             app.logger.exception('Database health check failed')
             return jsonify({
                 "status": "error",
-                "database": "mysql",
                 "database_connected": False,
                 "error": "Database connection is unavailable."
             }), 500

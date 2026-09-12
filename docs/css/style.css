@@ -78,3 +78,23 @@ body:not(.role-patient) [data-role="patient"] {
   display: none !important;
 }
 
+/* Role-based appointments display: doctor schedule only shows for doctor/admin, patient schedule for patient */
+html.role-patient .doctor-only-view,
+body.role-patient .doctor-only-view,
+html.role-patient .doctor-only,
+body.role-patient .doctor-only {
+  display: none !important;
+}
+
+html:not(.role-patient) .patient-only-view,
+body:not(.role-patient) .patient-only-view,
+html:not(.role-patient) .patient-only,
+body:not(.role-patient) .patient-only {
+  display: none !important;
+}
+
+html.role-patient .patient-only-view,
+body.role-patient .patient-only-view {
+  display: block !important;
+}
+

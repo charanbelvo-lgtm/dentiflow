@@ -88,13 +88,33 @@
                     </button>
                 </form>
 
-                <!-- One-click Demo Preset Fillers -->
+                <script>
+                    document.getElementById('signin-form')?.addEventListener('submit', function(e) {
+                        const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
+                        const email = (document.getElementById('signin-email')?.value || '').trim();
+                        let name = role === 'admin' ? 'Dr. Rajesh Verma' : (role === 'patient' ? 'Ashwini Goud' : 'Dr. Ananya Sharma');
+                        try {
+                            localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
+                        } catch(err) {}
+
+                        // If hosted on GitHub Pages or static host (no Flask backend)
+                        const isStatic = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+                        if (isStatic) {
+                            e.preventDefault();
+                            const target = role === 'admin' ? './admin-dashboard.html' : (role === 'patient' ? './patient-dashboard.html' : './dashboard.html');
+                            window.location.href = target;
+                            return false;
+                        }
+                    });
+                </script>
+
+                <!-- One-click Demo Preset Fillers & Quick Demo Links -->
                 <div style="margin-top:18px;border-top:1px solid #edf2f7;padding-top:14px;">
-                    <p class="muted" style="text-align:center;font-size:12px;margin:0 0 8px;">Fill demo credentials into form:</p>
-                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
-                        <button type="button" class="btn btn-soft" data-fill="doctor" style="justify-content:center;padding:7px 4px;font-size:12px;">Doctor</button>
-                        <button type="button" class="btn btn-soft" data-fill="patient" style="justify-content:center;padding:7px 4px;font-size:12px;">Patient</button>
-                        <button type="button" class="btn btn-soft" data-fill="admin" style="justify-content:center;padding:7px 4px;font-size:12px;">Admin</button>
+                    <p class="muted" style="text-align:center;font-size:12px;margin:0 0 8px;">Quick demo login:</p>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;" id="demo-login-section">
+                        <a class="btn btn-soft" data-demo-role="doctor" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="{{ url_for('auth.demo_login', role='doctor') }}">Doctor</a>
+                        <a class="btn btn-soft" data-demo-role="patient" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="{{ url_for('auth.demo_login', role='patient') }}">Patient</a>
+                        <a class="btn btn-soft" data-demo-role="admin" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="{{ url_for('auth.demo_login', role='admin') }}">Admin</a>
                     </div>
                 </div>
             </div>

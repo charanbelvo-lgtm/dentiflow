@@ -1,14 +1,301 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Patients  -  DentiFlow</title><link rel="stylesheet" href="./css/style.css">  <script>
-    (function () {
-      try {
-        var raw = localStorage.getItem("dentiflowUser");
-        var u = raw ? JSON.parse(raw) : null;
-        if (u && u.role === "patient") {
-          location.replace("./patient-dashboard.html");
-        }
-      } catch (e) {}
-    })();
-  </script>
-</head><body><div class="site-shell"><aside class="sidebar"><a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a><nav class="nav"><div class="nav-label">Workspace</div><a href="./dashboard.html"> <span>Dashboard</span></a><a href="./appointments.html"> <span>Appointments</span></a><a href="./patients.html"> <span>Patients</span></a><a href="./clinical.html"> <span>Clinical notes</span></a><a href="./dental-chart.html"> <span>Dental chart</span></a><a href="./treatment-plans.html"> -  <span>Treatment plans</span></a><div class="nav-label">Practice</div><a href="./billing.html"> <span>Billing</span></a><a href="./inventory.html"> <span>Inventory</span></a><a href="./reports.html"> <span>Reports</span></a><a href="./profile.html"> <span>Profile</span></a></nav><div class="sidebar-bottom"><a href="./patient-dashboard.html"> <span>Patient view</span></a><a href="#" data-logout> <span>Sign out</span></a></div></aside><main class="main"><header class="topbar"><div class="topbar-left"><button class="menu-toggle" data-menu aria-label="Open menu"></button><label class="search"> <input data-search placeholder="Search this demo..."></label></div><div class="top-actions"><span class="pill green"> Demo mode</span><div class="user-chip"><span data-user-name>Dr. Ananya Sharma</span><span class="avatar" data-avatar>AS</span></div></div></header><section class="content"><div class="page-head"><div><span class="eyebrow">CARE DIRECTORY</span><h1>Patients</h1><p class="muted">A clear clinical story for every person you care for.</p></div><button class="btn btn-primary" data-modal="app-modal">+ Add patient</button></div><div class="grid grid-4"><div class="card stat"><div class="stat-icon"></div><strong>1,284</strong><small>active patients</small></div><div class="card stat"><div class="stat-icon teal"></div><strong>42</strong><small>new this month</small></div><div class="card stat"><div class="stat-icon orange"></div><strong>18</strong><small>visits today</small></div><div class="card stat"><div class="stat-icon purple"></div><strong>94%</strong><small>satisfaction</small></div></div><div class="card" style="margin-top:18px"><div class="section-title"><h2>All patients</h2><span class="muted">Showing 4 of 1,284</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Patient</th><th>Patient ID</th><th>Last visit</th><th>Care focus</th><th>Status</th></tr></thead><tbody><tr data-searchable><td><a class="patient" href="./patient-detail.html"><span class="avatar">AM</span><b>Aravind Menon</b></a></td><td>DF-2026-001</td><td>Today, 09:00</td><td>Tooth #16  -  RCT</td><td><span class="pill orange">In care</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">VR</span><b>Vishal Rao</b></td><td>DF-2026-002</td><td>May 18, 2026</td><td>Scaling follow-up</td><td><span class="pill green">Active</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">MI</span><b>Medha Iyer</b></td><td>DF-2026-003</td><td>May 04, 2026</td><td>Pediatric review</td><td><span class="pill green">Active</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">SK</span><b>Sameer Khan</b></td><td>DF-2026-004</td><td>Apr 27, 2026</td><td>Cleaning</td><td><span class="pill">Follow-up</span></td></tr></tbody></table></div></div></section></main></div><script src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Patients - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
 
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="active">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                <div class="nav-label practice-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Reports</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CARE DIRECTORY</span>
+        <h1>Patients</h1>
+        <p class="muted">A clear clinical story for every person you care for.</p>
+    </div>
+    <button class="btn btn-primary" onclick="window.toast('Opening patient registration...', 'success')">+ Add patient</button>
+</div>
 
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong>1,284</strong>
+        <small>active patients</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong>42</strong>
+        <small>new this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong>18</strong>
+        <small>visits today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong>94%</strong>
+        <small>satisfaction</small>
+    </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+    <div class="section-title">
+        <h2>All patients</h2>
+        <span class="muted">Showing 8 records</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Patient ID</th>
+                    <th>Last visit</th>
+                    <th>Care focus</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">LO</span>
+                            <b>Lokesh Iyer</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-008</td>
+                    <td>04 Sep, 03:04</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">ME</span>
+                            <b>Medha Nair</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-007</td>
+                    <td>11 Sep, 03:04</td>
+                    <td>Periodontist &amp; Implantologist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">VI</span>
+                            <b>Vishal Rao</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-006</td>
+                    <td>28 Aug, 03:04</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">AR</span>
+                            <b>Aravind Kumar</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-005</td>
+                    <td>10 Sep, 03:04</td>
+                    <td>Oral &amp; Maxillofacial Surgeon</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">LO</span>
+                            <b>Lokesh</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-004</td>
+                    <td>09 Sep, 03:04</td>
+                    <td>Periodontist &amp; Implantologist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">ME</span>
+                            <b>Medha</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-003</td>
+                    <td>23 Aug, 03:04</td>
+                    <td>Consultant Orthodontist (Invisalign Platinum)</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">VI</span>
+                            <b>Vishal</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-002</td>
+                    <td>07 Sep, 03:04</td>
+                    <td>Consultant Orthodontist (Invisalign Platinum)</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">AS</span>
+                            <b>Ashwini Goud</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-001</td>
+                    <td>31 Aug, 03:04</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+</body>
+</html>

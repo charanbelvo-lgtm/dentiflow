@@ -45,11 +45,11 @@
       try {
         var raw = localStorage.getItem("dentiflowUser");
         var u = raw ? JSON.parse(raw) : null;
-        if (!u || u.role !== "patient") {
+        if (!u) {
           u = { name: "Ashwini Goud", role: "patient", email: "budigeashwinigoud@gmail.com" };
           localStorage.setItem("dentiflowUser", JSON.stringify(u));
         }
-        document.documentElement.className = "role-patient";
+        document.documentElement.className = "role-" + (u.role || "patient");
       } catch (e) {}
     })();
   </script>
@@ -66,6 +66,8 @@
         <a href="./profile.html" data-role="patient"><span>Profile</span></a>
       </nav>
       <div class="sidebar-bottom">
+        <a href="./admin-dashboard.html"><span>Admin Workspace &rarr;</span></a>
+        <a href="./dashboard.html"><span>Doctor Workspace &rarr;</span></a>
         <a href="./login.html" data-logout><span>Sign out / Login</span></a>
       </div>
     </aside>
@@ -77,6 +79,7 @@
           <label class="search"><input data-search placeholder="Search doctors, procedures..."></label>
         </div>
         <div class="top-actions">
+          <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);border:1px solid rgba(99,102,241,0.3);">Admin Suite (Profits &amp; Inventory) &rarr;</a>
           <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
           <span class="pill green" data-user-role>Patient portal</span>
           <div class="user-chip">
@@ -92,14 +95,11 @@
           <div>
             <span class="eyebrow">PATIENT APPOINTMENTS &amp; QUEUE</span>
             <h1>Welcome, <span data-user-name>Ashwini Goud</span></h1>
-            <p class="muted">Book appointments with available doctors and check your live waiting time.</p>
+            <p class="muted">Check your live waiting time and track your scheduled care visits.</p>
           </div>
-          <button class="btn btn-primary" data-modal="app-modal" style="font-size:15px;padding:12px 20px;">
-            + Book Appointment
-          </button>
         </div>
 
-        <!-- 1. Top Section: Live Waiting Time & Book Action -->
+        <!-- 1. Top Section: Live Waiting Time & Status -->
         <div class="grid grid-2">
           <!-- Waiting Time Card -->
           <div class="wait-stat-card">
@@ -109,136 +109,32 @@
             </div>
             <h2 id="patient-hero-title" style="color:#fff;font-size:26px;margin:0 0 8px;">Estimated Wait: 15 mins</h2>
             <p id="patient-hero-desc" style="color:#dbeafe;font-size:14px;margin:0 0 16px;">
-              Root canal review with <b>Dr. Ananya Sharma</b> &bull; Token <b>#02</b> &bull; Chair 01
+              Root canal review &bull; Token <b>#02</b> &bull; Chair 01
             </p>
             <div class="row wrap" style="gap:10px;">
               <span class="pill green">🟢 Confirmed &amp; In Queue</span>
               <button class="btn btn-ghost" style="background:#fff;color:#1e3a8a;font-weight:700;" data-toast="Live queue status refreshed">
                 ↻ Refresh Live Queue
               </button>
-              <button class="btn" style="background:rgba(255,255,255,0.18);color:#fff;" data-toast="Reschedule request sent to clinic">
-                Reschedule Visit
-              </button>
             </div>
           </div>
 
-          <!-- Direct Book Appointment Card -->
+          <!-- Treatment Overview Card -->
           <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
             <div>
               <div class="row between" style="margin-bottom:10px;">
-                <span class="eyebrow" style="color:var(--blue);">INSTANT SCHEDULING</span>
-                <span class="pill green">Doctors on duty</span>
+                <span class="eyebrow" style="color:var(--blue);">CLINICAL SUMMARY</span>
+                <span class="pill green">Active Patient</span>
               </div>
-              <h2 style="font-size:22px;margin:0 0 8px;">Book an Appointment</h2>
+              <h2 style="font-size:22px;margin:0 0 8px;">Care Journey Status</h2>
               <p class="muted" style="margin:0 0 16px;font-size:14px;">
-                Choose your specialist, pick your required procedure, select your preferred time slot, and confirm securely.
+                Your ongoing treatment plan is actively tracked by the clinical team with chair reservations and digital health records.
               </p>
               <div class="quick-links" style="margin:0 0 18px;">
-                <span class="pill">Oral Consultation ₹500</span>
-                <span class="pill">Teeth Cleaning ₹1,500</span>
-                <span class="pill">Root Canal ₹6,500</span>
-                <span class="pill">Aligners ₹1,200</span>
+                <span class="pill">Oral Consultation</span>
+                <span class="pill">Teeth Cleaning</span>
+                <span class="pill">Root Canal Stage 2</span>
               </div>
-            </div>
-            <button class="btn btn-primary" data-modal="app-modal" style="width:100%;justify-content:center;padding:13px;font-size:15px;">
-              + Book New Appointment Now &rarr;
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Which Doctor is Available Section -->
-        <div style="margin-top:28px;">
-          <div class="section-title">
-            <div>
-              <h2>Available Doctors &amp; Specialists</h2>
-              <small class="muted">Check which doctors are in clinic today and book directly</small>
-            </div>
-            <button class="btn btn-soft" data-modal="app-modal">View All Doctors &rarr;</button>
-          </div>
-
-          <div class="grid grid-4" style="margin-top:14px;">
-            <!-- Doctor 1 -->
-            <div class="doc-avail-card">
-              <div>
-                <div class="row" style="gap:12px;margin-bottom:10px;">
-                  <span class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#2563eb,#14b8a6);">AS</span>
-                  <div>
-                    <b style="font-size:15px;display:block;">Dr. Ananya Sharma</b>
-                    <small class="muted">Chief Dental Surgeon &bull; MDS</small>
-                  </div>
-                </div>
-                <div style="margin:10px 0;">
-                  <span class="pill green" style="font-size:11px;">🟢 Available Today</span>
-                  <div class="muted" style="font-size:12px;margin-top:6px;">Next slot: <b>10:30 AM</b> &bull; Chair 01</div>
-                  <div class="muted" style="font-size:12px;">Estimated wait: <b>~15 mins</b></div>
-                </div>
-              </div>
-              <button class="btn btn-primary" data-book-doctor="Dr. Ananya Sharma" style="width:100%;justify-content:center;margin-top:12px;">
-                + Book with Dr. Sharma
-              </button>
-            </div>
-
-            <!-- Doctor 2 -->
-            <div class="doc-avail-card">
-              <div>
-                <div class="row" style="gap:12px;margin-bottom:10px;">
-                  <span class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#0284c7,#38bdf8);">RP</span>
-                  <div>
-                    <b style="font-size:15px;display:block;">Dr. Rohan Patel</b>
-                    <small class="muted">Senior Orthodontist &bull; Braces</small>
-                  </div>
-                </div>
-                <div style="margin:10px 0;">
-                  <span class="pill green" style="font-size:11px;">🟢 Available Today (2 PM)</span>
-                  <div class="muted" style="font-size:12px;margin-top:6px;">Next slot: <b>02:00 PM</b> &bull; Chair 02</div>
-                  <div class="muted" style="font-size:12px;">Estimated wait: <b>~25 mins</b></div>
-                </div>
-              </div>
-              <button class="btn btn-primary" data-book-doctor="Dr. Rohan Patel" style="width:100%;justify-content:center;margin-top:12px;">
-                + Book with Dr. Patel
-              </button>
-            </div>
-
-            <!-- Doctor 3 -->
-            <div class="doc-avail-card">
-              <div>
-                <div class="row" style="gap:12px;margin-bottom:10px;">
-                  <span class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);">MN</span>
-                  <div>
-                    <b style="font-size:15px;display:block;">Dr. Meera Nair</b>
-                    <small class="muted">Pediatric &amp; Cosmetic Dentist</small>
-                  </div>
-                </div>
-                <div style="margin:10px 0;">
-                  <span class="pill green" style="font-size:11px;">🟢 Available Today</span>
-                  <div class="muted" style="font-size:12px;margin-top:6px;">Next slot: <b>11:15 AM</b> &bull; Chair 03</div>
-                  <div class="muted" style="font-size:12px;">Estimated wait: <b>~10 mins</b></div>
-                </div>
-              </div>
-              <button class="btn btn-primary" data-book-doctor="Dr. Meera Nair" style="width:100%;justify-content:center;margin-top:12px;">
-                + Book with Dr. Nair
-              </button>
-            </div>
-
-            <!-- Doctor 4 -->
-            <div class="doc-avail-card">
-              <div>
-                <div class="row" style="gap:12px;margin-bottom:10px;">
-                  <span class="avatar" style="width:42px;height:42px;font-size:14px;background:linear-gradient(135deg,#ea580c,#f59e0b);">VR</span>
-                  <div>
-                    <b style="font-size:15px;display:block;">Dr. Vikram Rao</b>
-                    <small class="muted">Oral &amp; Maxillofacial Surgeon</small>
-                  </div>
-                </div>
-                <div style="margin:10px 0;">
-                  <span class="pill orange" style="font-size:11px;">🟡 Available Tomorrow</span>
-                  <div class="muted" style="font-size:12px;margin-top:6px;">Next slot: <b>Tomorrow 09:30 AM</b></div>
-                  <div class="muted" style="font-size:12px;">Implant &amp; surgical specialist</div>
-                </div>
-              </div>
-              <button class="btn btn-primary" data-book-doctor="Dr. Vikram Rao" style="width:100%;justify-content:center;margin-top:12px;">
-                + Book with Dr. Rao
-              </button>
             </div>
           </div>
         </div>

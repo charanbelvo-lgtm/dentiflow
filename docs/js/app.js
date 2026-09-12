@@ -3,12 +3,17 @@
   const demoUser = () => {
     try {
       const path = (location.pathname.split("/").pop() || "").toLowerCase();
+      if (window.CURRENT_USER && window.CURRENT_USER.name && window.CURRENT_USER.name !== "Dr. Ananya Sharma") {
+        return window.CURRENT_USER;
+      }
       const raw = localStorage.getItem("dentiflowUser");
       if (raw) {
         const u = JSON.parse(raw);
-        if (u && u.role) return u;
+        if (u && u.name) {
+          return u;
+        }
       }
-      if (path.includes("patient-dashboard")) {
+      if (path.includes("patient-dashboard") || path.includes("patient-portal")) {
         const pat = { name: "Ashwini Goud", role: "patient", email: "budigeashwinigoud@gmail.com" };
         localStorage.setItem("dentiflowUser", JSON.stringify(pat));
         return pat;
@@ -163,8 +168,17 @@
       return;
     }
 
+    // Role-based visibility for appointments and clinical elements
+    if (role === "patient") {
+      document.querySelectorAll(".doctor-only-view, .doctor-only").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".patient-only-view, .patient-only").forEach(el => el.style.display = "");
+    } else {
+      document.querySelectorAll(".doctor-only-view, .doctor-only").forEach(el => el.style.display = "");
+      document.querySelectorAll(".patient-only-view, .patient-only").forEach(el => el.style.display = "none");
+    }
+
     document.querySelectorAll("[data-user-name]").forEach(x => {
-      if (x !== document.body) x.textContent = user.name;
+      if (x !== document.body && user.name) x.textContent = user.name;
     });
     document.querySelectorAll("span[data-user-role], div[data-user-role], [data-role-label]").forEach(x => {
       if (x !== document.body) {
@@ -172,7 +186,13 @@
       }
     });
     document.querySelectorAll("[data-avatar]").forEach(x => {
-      if (x !== document.body) x.textContent = initials(user.name);
+      if (x !== document.body && user.name) x.textContent = initials(user.name);
+    });
+    document.querySelectorAll(".top-actions .pill").forEach(p => {
+      if (role === "patient") p.textContent = "Patient portal";
+      else if (role === "admin") p.textContent = "Admin workspace";
+      else if (role === "reception") p.textContent = "Reception desk";
+      else p.textContent = "Clinical workspace";
     });
 
     filterSidebarByRole(role);
@@ -251,6 +271,15 @@
           }
         }
       }
+
+      // Ensure Appointments link is labeled "My Appointments"
+      document.querySelectorAll('.sidebar .nav a[href*="appointments"]').forEach(aptLink => {
+        aptLink.innerHTML = "<span>My Appointments</span>";
+        aptLink.setAttribute("data-role", "patient");
+        if (location.pathname.includes("appointments")) {
+          aptLink.classList.add("active");
+        }
+      });
     }
   }
 
@@ -362,7 +391,7 @@
       if (confirmInput) confirmInput.required = isSignup;
 
       if (termsField) termsField.style.display = isSignup ? "block" : "none";
-      if (demoSection) demoSection.style.display = isSignup ? "none" : "block";
+      if (demoSection) demoSection.style.display = "block"; // Always visible for 1-click role switching
 
       if (submitBtn) submitBtn.textContent = isSignup ? "Create Account & Continue →" : "Sign in →";
 
@@ -426,19 +455,27 @@
 
     document.querySelectorAll("[data-demo-role]").forEach(btn => btn.addEventListener("click", () => {
       const chosen = btn.dataset.demoRole;
+      let existing = null;
+      try {
+        const raw = localStorage.getItem("dentiflowUser");
+        existing = raw ? JSON.parse(raw) : null;
+      } catch (e) {}
+
+      const hasCustomName = existing && existing.name && !["Ashwini Goud", "Dr. Rajesh Verma", "Dr. Ananya Sharma", "Pooja Hegde"].includes(existing.name);
+
       let user = { role: chosen };
       if (chosen === "patient") {
-        user.name = "Ashwini Goud";
-        user.email = "budigeashwinigoud@gmail.com";
+        user.name = hasCustomName ? existing.name : "Ashwini Goud";
+        user.email = existing?.email || "budigeashwinigoud@gmail.com";
       } else if (chosen === "admin") {
-        user.name = "Dr. Rajesh Verma";
-        user.email = "admin@dentiflow.com";
+        user.name = hasCustomName ? existing.name : "Dr. Rajesh Verma";
+        user.email = existing?.email || "admin@dentiflow.com";
       } else if (chosen === "reception") {
-        user.name = "Pooja Hegde";
-        user.email = "reception@dentiflow.com";
+        user.name = hasCustomName ? existing.name : "Pooja Hegde";
+        user.email = existing?.email || "reception@dentiflow.com";
       } else {
-        user.name = "Dr. Ananya Sharma";
-        user.email = "doctor@dentiflow.com";
+        user.name = hasCustomName ? existing.name : "Dr. Ananya Sharma";
+        user.email = existing?.email || "doctor@dentiflow.com";
       }
       localStorage.setItem("dentiflowUser", JSON.stringify(user));
       location.href = chosen === "patient" ? "./patient-dashboard.html" : (chosen === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
@@ -528,9 +565,13 @@
         return;
       }
 
-      let displayName = foundUser?.name || nameVal;
+      let displayName = nameVal || foundUser?.name;
       if (!displayName && emailVal) {
-        displayName = formatNameFromEmail(emailVal);
+        if (emailVal.toLowerCase().includes("lingala") || emailVal.toLowerCase().includes("ashmitha")) {
+          displayName = "Lingala Ashmitha Reddy";
+        } else {
+          displayName = formatNameFromEmail(emailVal);
+        }
       }
       if (!displayName) {
         displayName = selectedRole === "patient" ? "Ashwini Goud" : (selectedRole === "admin" ? "Dr. Rajesh Verma" : "Dr. Ananya Sharma");
@@ -538,16 +579,17 @@
         displayName = "Dr. " + displayName;
       }
 
+      const activeRole = selectedRole || foundUser?.role || "doctor";
       const user = {
         name: displayName,
-        role: foundUser?.role || selectedRole,
+        role: activeRole,
         email: emailVal
       };
 
       localStorage.setItem("dentiflowUser", JSON.stringify(user));
       toast(`Welcome back, ${displayName}!`, "success");
       setTimeout(() => {
-        location.href = user.role === "patient" ? "./patient-dashboard.html" : (user.role === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
+        location.href = activeRole === "patient" ? "./patient-dashboard.html" : (activeRole === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
       }, 300);
     });
   }

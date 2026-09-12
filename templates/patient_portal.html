@@ -64,3 +64,61 @@
     </div>
 </main>
 {% endblock %}
+
+{% block content %}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">PATIENT PORTAL</span>
+        <h1>Hello, <span data-user-name>{{ current_user.name if current_user.is_authenticated and current_user.name else 'Ashwini Goud' }}</span></h1>
+        <p class="muted">Your personalized dental care journey, treatments, and appointments.</p>
+    </div>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-soft" href="{{ url_for('auth.login') }}">Switch Role / Login</a>
+        <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ My Appointments</a>
+    </div>
+</div>
+
+<div class="hero">
+    <div>
+        <span class="eyebrow">NEXT SCHEDULED VISIT</span>
+        <h2>Your next visit is confirmed.</h2>
+        <p>Root canal treatment review with Dr. Ananya Sharma - Thursday, 29 May at 10:30 AM.</p>
+        <div class="quick-links">
+            <a class="btn" href="{{ url_for('appointments.index') }}">View appointment details</a>
+            <button class="btn" onclick="window.toast('Appointment synced to calendar', 'success')">Add to calendar</button>
+        </div>
+    </div>
+    <div class="hero-art"><span>🦷</span></div>
+</div>
+
+<div class="grid grid-3" style="margin-top: 18px;">
+    <div class="card">
+        <div class="section-title">
+            <h2>Appointments</h2>
+            <span class="pill green">Confirmed</span>
+        </div>
+        <h3>Next: 29 May, 10:30 AM</h3>
+        <p class="muted">Root canal review - Chair 01<br>Dr. Ananya Sharma</p>
+        <a class="btn btn-soft" href="{{ url_for('appointments.index') }}">Manage appointments &rarr;</a>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Treatment Plan</h2>
+            <span class="pill orange">50% complete</span>
+        </div>
+        <h3>Endodontic Therapy</h3>
+        <div class="progress" style="margin:12px 0"><span style="width:50%"></span></div>
+        <p class="muted">2 of 4 appointments completed</p>
+        <a class="btn btn-soft" href="{{ url_for('treatment_plans.index') }}">Review plan &rarr;</a>
+    </div>
+    <div class="card">
+        <div class="section-title">
+            <h2>Account Balance</h2>
+            <span class="pill">INR</span>
+        </div>
+        <h3>INR 8,550 due</h3>
+        <p class="muted">Invoice INV-2026-1029<br>Due 29 May 2026</p>
+        <a class="btn btn-primary" href="{{ url_for('billing.index') }}">View invoice &rarr;</a>
+    </div>
+</div>
+{% endblock %}

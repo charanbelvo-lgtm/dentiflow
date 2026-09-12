@@ -97,14 +97,15 @@
       try {
         var raw = localStorage.getItem("dentiflowUser");
         var u = raw ? JSON.parse(raw) : null;
-        if (u && u.role === "patient") {
-          location.replace("./patient-dashboard.html");
-          return;
-        }
-        if (!u || u.role !== "admin") {
+        if (!u) {
           u = { name: "Dr. Rajesh Verma", role: "admin", email: "admin@dentiflow.com" };
-          localStorage.setItem("dentiflowUser", JSON.stringify(u));
+        } else {
+          u.role = "admin";
+          if (!u.name || u.name === "Ashwini Goud") {
+            u.name = "Dr. Rajesh Verma";
+          }
         }
+        localStorage.setItem("dentiflowUser", JSON.stringify(u));
         document.documentElement.className = "role-admin";
       } catch (e) {}
     })();

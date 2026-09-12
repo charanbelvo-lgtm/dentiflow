@@ -1,14 +1,169 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dental chart  -  DentiFlow</title><link rel="stylesheet" href="./css/style.css">  <script>
-    (function () {
-      try {
-        var raw = localStorage.getItem("dentiflowUser");
-        var u = raw ? JSON.parse(raw) : null;
-        if (u && u.role === "patient") {
-          location.replace("./patient-dashboard.html");
-        }
-      } catch (e) {}
-    })();
-  </script>
-</head><body><div class="site-shell"><aside class="sidebar"><a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a><nav class="nav"><div class="nav-label">Workspace</div><a href="./dashboard.html"> <span>Dashboard</span></a><a href="./appointments.html"> <span>Appointments</span></a><a href="./patients.html"> <span>Patients</span></a><a href="./clinical.html"> <span>Clinical notes</span></a><a href="./dental-chart.html"> <span>Dental chart</span></a><a href="./treatment-plans.html"> -  <span>Treatment plans</span></a><div class="nav-label">Practice</div><a href="./billing.html"> <span>Billing</span></a><a href="./inventory.html"> <span>Inventory</span></a><a href="./reports.html"> <span>Reports</span></a><a href="./profile.html"> <span>Profile</span></a></nav><div class="sidebar-bottom"><a href="./patient-dashboard.html"> <span>Patient view</span></a><a href="#" data-logout> <span>Sign out</span></a></div></aside><main class="main"><header class="topbar"><div class="topbar-left"><button class="menu-toggle" data-menu aria-label="Open menu"></button><label class="search"> <input data-search placeholder="Search this demo..."></label></div><div class="top-actions"><span class="pill green"> Demo mode</span><div class="user-chip"><span data-user-name>Dr. Ananya Sharma</span><span class="avatar" data-avatar>AS</span></div></div></header><section class="content"><div class="page-head"><div><span class="eyebrow">ODONTOGRAM</span><h1>Dental chart</h1><p class="muted">Click a tooth to inspect it. Right-click cycles its clinical state.</p></div><button class="btn btn-ghost" data-reset-chart>Reset demo chart</button></div><div class="chart"><div class="mouth"><div class="section-title"><h2>Adult dentition  -  FDI notation</h2><span class="pill green">Saved locally</span></div><div class="chart-key"><span class="legend"><i></i>Healthy</span><span class="legend"><i class="watch"></i>Watch</span><span class="legend"><i class="cavity"></i>Cavity</span><span class="legend"><i class="filling"></i>Filling</span><span class="legend"><i class="crown"></i>Crown</span><span class="legend"><i class="missing"></i>Missing</span></div><div data-dental-chart class="svg-chart"><svg viewBox="0 0 760 300" role="img" aria-label="Interactive dental chart" style="width:100%;margin-top:20px"><text x="380" y="22" text-anchor="middle" fill="#6b7c93" font-size="12">UPPER ARCH</text><g class="tooth" data-tooth="18"><rect x="35" y="38" width="60" height="58" rx="20"/><text x="65" y="72" text-anchor="middle">18</text></g><g class="tooth" data-tooth="17"><rect x="110" y="38" width="60" height="58" rx="20"/><text x="140" y="72" text-anchor="middle">17</text></g><g class="tooth" data-tooth="16"><rect x="185" y="38" width="60" height="58" rx="20"/><text x="215" y="72" text-anchor="middle">16</text></g><g class="tooth" data-tooth="15"><rect x="260" y="38" width="60" height="58" rx="20"/><text x="290" y="72" text-anchor="middle">15</text></g><g class="tooth" data-tooth="14"><rect x="335" y="38" width="60" height="58" rx="20"/><text x="365" y="72" text-anchor="middle">14</text></g><g class="tooth" data-tooth="13"><rect x="410" y="38" width="60" height="58" rx="20"/><text x="440" y="72" text-anchor="middle">13</text></g><g class="tooth" data-tooth="12"><rect x="485" y="38" width="60" height="58" rx="20"/><text x="515" y="72" text-anchor="middle">12</text></g><g class="tooth" data-tooth="11"><rect x="560" y="38" width="60" height="58" rx="20"/><text x="590" y="72" text-anchor="middle">11</text></g><text x="380" y="147" text-anchor="middle" fill="#6b7c93" font-size="12">LOWER ARCH</text><g class="tooth" data-tooth="48"><rect x="35" y="170" width="60" height="58" rx="20"/><text x="65" y="204" text-anchor="middle">48</text></g><g class="tooth" data-tooth="47"><rect x="110" y="170" width="60" height="58" rx="20"/><text x="140" y="204" text-anchor="middle">47</text></g><g class="tooth" data-tooth="46"><rect x="185" y="170" width="60" height="58" rx="20"/><text x="215" y="204" text-anchor="middle">46</text></g><g class="tooth" data-tooth="45"><rect x="260" y="170" width="60" height="58" rx="20"/><text x="290" y="204" text-anchor="middle">45</text></g><g class="tooth" data-tooth="44"><rect x="335" y="170" width="60" height="58" rx="20"/><text x="365" y="204" text-anchor="middle">44</text></g><g class="tooth" data-tooth="43"><rect x="410" y="170" width="60" height="58" rx="20"/><text x="440" y="204" text-anchor="middle">43</text></g><g class="tooth" data-tooth="42"><rect x="485" y="170" width="60" height="58" rx="20"/><text x="515" y="204" text-anchor="middle">42</text></g><g class="tooth" data-tooth="41"><rect x="560" y="170" width="60" height="58" rx="20"/><text x="590" y="204" text-anchor="middle">41</text></g></svg></div></div><aside class="card" data-tooth-detail data-selected="16"><span class="eyebrow">SELECTED TOOTH</span><h2 data-detail-number>Tooth #16</h2><span class="pill orange" data-detail-state>Cavity</span><p class="muted" style="margin-top:18px">First molar  -  Upper right quadrant</p><div class="notice"><b>Clinical detail</b><br>Deep occlusal caries with percussion sensitivity. Recommend endodontic consultation.</div><a class="btn btn-primary" style="margin-top:15px;width:100%;justify-content:center" href="./treatment-plans.html">Add to treatment plan</a></aside></div></section></main></div><script src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dental Chart - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
 
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="active">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                <div class="nav-label practice-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Reports</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">ODONTOGRAM</span>
+        <h1>Dental chart</h1>
+        <p class="muted">Click a tooth to inspect it. Right-click cycles its clinical state.</p>
+    </div>
+    <button class="btn btn-ghost" data-reset-chart>Reset demo chart</button>
+</div>
 
+<div class="chart">
+    <div class="mouth">
+        <div class="section-title">
+            <h2>Adult dentition - FDI notation</h2>
+            <span class="pill green">Saved locally</span>
+        </div>
+        <div class="chart-key">
+            <span class="legend"><i></i>Healthy</span>
+            <span class="legend"><i class="watch"></i>Watch</span>
+            <span class="legend"><i class="cavity"></i>Cavity</span>
+            <span class="legend"><i class="filling"></i>Filling</span>
+            <span class="legend"><i class="crown"></i>Crown</span>
+            <span class="legend"><i class="missing"></i>Missing</span>
+        </div>
+        <div data-dental-chart class="svg-chart">
+            <svg viewBox="0 0 760 300" role="img" aria-label="Interactive dental chart" style="width:100%;margin-top:20px">
+                <text x="380" y="22" text-anchor="middle" fill="#6b7c93" font-size="12">UPPER ARCH</text>
+                <g class="tooth" data-tooth="18"><rect x="35" y="38" width="60" height="58" rx="20"/><text x="65" y="72" text-anchor="middle">18</text></g>
+                <g class="tooth" data-tooth="17"><rect x="110" y="38" width="60" height="58" rx="20"/><text x="140" y="72" text-anchor="middle">17</text></g>
+                <g class="tooth" data-tooth="16"><rect x="185" y="38" width="60" height="58" rx="20"/><text x="215" y="72" text-anchor="middle">16</text></g>
+                <g class="tooth" data-tooth="15"><rect x="260" y="38" width="60" height="58" rx="20"/><text x="290" y="72" text-anchor="middle">15</text></g>
+                <g class="tooth" data-tooth="14"><rect x="335" y="38" width="60" height="58" rx="20"/><text x="365" y="72" text-anchor="middle">14</text></g>
+                <g class="tooth" data-tooth="13"><rect x="410" y="38" width="60" height="58" rx="20"/><text x="440" y="72" text-anchor="middle">13</text></g>
+                <g class="tooth" data-tooth="12"><rect x="485" y="38" width="60" height="58" rx="20"/><text x="515" y="72" text-anchor="middle">12</text></g>
+                <g class="tooth" data-tooth="11"><rect x="560" y="38" width="60" height="58" rx="20"/><text x="590" y="72" text-anchor="middle">11</text></g>
+                <text x="380" y="147" text-anchor="middle" fill="#6b7c93" font-size="12">LOWER ARCH</text>
+                <g class="tooth" data-tooth="48"><rect x="35" y="170" width="60" height="58" rx="20"/><text x="65" y="204" text-anchor="middle">48</text></g>
+                <g class="tooth" data-tooth="47"><rect x="110" y="170" width="60" height="58" rx="20"/><text x="140" y="204" text-anchor="middle">47</text></g>
+                <g class="tooth" data-tooth="46"><rect x="185" y="170" width="60" height="58" rx="20"/><text x="215" y="204" text-anchor="middle">46</text></g>
+                <g class="tooth" data-tooth="45"><rect x="260" y="170" width="60" height="58" rx="20"/><text x="290" y="204" text-anchor="middle">45</text></g>
+                <g class="tooth" data-tooth="44"><rect x="335" y="170" width="60" height="58" rx="20"/><text x="365" y="204" text-anchor="middle">44</text></g>
+                <g class="tooth" data-tooth="43"><rect x="410" y="170" width="60" height="58" rx="20"/><text x="440" y="204" text-anchor="middle">43</text></g>
+                <g class="tooth" data-tooth="42"><rect x="485" y="170" width="60" height="58" rx="20"/><text x="515" y="204" text-anchor="middle">42</text></g>
+                <g class="tooth" data-tooth="41"><rect x="560" y="170" width="60" height="58" rx="20"/><text x="590" y="204" text-anchor="middle">41</text></g>
+            </svg>
+        </div>
+    </div>
+    <aside class="card" data-tooth-detail data-selected="16">
+        <span class="eyebrow">SELECTED TOOTH</span>
+        <h2 data-detail-number>Tooth #16</h2>
+        <span class="pill orange" data-detail-state>Cavity</span>
+        <p class="muted" style="margin-top:18px">First molar - Upper right quadrant</p>
+        <div class="notice">
+            <b>Clinical detail</b><br>
+            Deep occlusal caries with percussion sensitivity. Recommend endodontic consultation.
+        </div>
+        <a class="btn btn-primary" style="margin-top:15px;width:100%;justify-content:center" href="./treatment-plans.html">Add to treatment plan</a>
+    </aside>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+</body>
+</html>

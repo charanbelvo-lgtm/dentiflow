@@ -13,11 +13,17 @@ dashboard_bp = Blueprint('dashboard', __name__)
 
 @dashboard_bp.route('/')
 def landing_or_dashboard():
+    if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('dashboard.admin_dashboard'))
+        return redirect(url_for('dashboard.index'))
     return render_template('login.html')
 
 @dashboard_bp.route('/dashboard')
 @login_required
 def index():
+    if current_user.role == 'admin':
+        return render_template('admin_dashboard.html')
     if current_user.role == 'patient':
         patient = Patient.query.filter_by(email=current_user.email).first()
         if not patient:
@@ -177,6 +183,22 @@ def send_message():
         }
     })
 
+@dashboard_bp.route('/admin-dashboard')
+@dashboard_bp.route('/admin-dashboard.html')
+@dashboard_bp.route('/admin')
+@login_required
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+@dashboard_bp.route('/dashboard.html')
+@login_required
+def dashboard_html_alias():
+    return index()
+
+@dashboard_bp.route('/patient-dashboard.html')
+@login_required
+def patient_dashboard_html_alias():
+    return index()
 
 @dashboard_bp.route('/api/dashboard')
 @login_required
