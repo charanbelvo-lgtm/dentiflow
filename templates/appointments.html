@@ -48,7 +48,7 @@
     <div class="card" style="margin-top:18px;">
         <div class="section-title">
             <h2>My Appointments</h2>
-            <span class="pill green" id="patient-apt-count">1 Scheduled</span>
+            <span class="pill green" id="patient-apt-count">{{ appointments|length }} Scheduled</span>
         </div>
         <div class="table-wrap">
             <table class="table">
@@ -64,15 +64,21 @@
                     </tr>
                 </thead>
                 <tbody id="patient-appointments-tbody">
+                    {% for apt in appointments %}
                     <tr>
-                        <td><b>10:30</b> &bull; 2026-05-27</td>
-                        <td><b>Root canal review</b></td>
-                        <td>Dr. Ananya Sharma</td>
-                        <td><span class="pill">Chair 01</span></td>
+                        <td><b>{{ apt.start_time }}</b> &bull; {{ apt.appointment_date.strftime('%d %b %Y') if apt.appointment_date else '' }}</td>
+                        <td><b>{{ apt.procedure_name or 'Dental Consultation' }}</b></td>
+                        <td>{{ apt.doctor.name if apt.doctor else 'Dr. Ananya Sharma' }}</td>
+                        <td><span class="pill">{{ apt.chair.name if apt.chair else 'Chair 01' }}</span></td>
                         <td><span class="pill green">Paid (Online)</span></td>
-                        <td><span class="pill orange">Checked in (#02)</span></td>
+                        <td><span class="pill orange">{{ apt.status }}</span></td>
                         <td><button class="btn btn-soft" onclick="window.toast('Reschedule request sent to clinic desk', 'success')">Reschedule</button></td>
                     </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:24px;" class="muted">No scheduled appointments found.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -115,22 +121,22 @@
     <div class="grid grid-4" style="margin-top:18px;">
         <div class="card stat">
             <div class="stat-icon"></div>
-            <strong>18</strong>
+            <strong>{{ stats.todays_visits if stats else appointments|length }}</strong>
             <small>todays visits</small>
         </div>
         <div class="card stat">
             <div class="stat-icon teal"></div>
-            <strong>12</strong>
+            <strong>{{ stats.completed if stats else 0 }}</strong>
             <small>completed</small>
         </div>
         <div class="card stat">
             <div class="stat-icon orange"></div>
-            <strong id="doc-queue-count">4</strong>
+            <strong id="doc-queue-count">{{ stats.in_queue if stats else 0 }}</strong>
             <small>in queue / waiting now</small>
         </div>
         <div class="card stat">
             <div class="stat-icon purple"></div>
-            <strong>2</strong>
+            <strong>{{ stats.rescheduled if stats else 0 }}</strong>
             <small>rescheduled</small>
         </div>
     </div>
@@ -139,11 +145,11 @@
     <div class="card" style="margin-top:18px;">
         <div class="section-title">
             <div>
-                <h2>Wednesday - 27 May 2026</h2>
+                <h2>Appointment Schedule &amp; Queue</h2>
                 <span class="muted" id="doctor-queue-headline">Showing all scheduled and queue patients</span>
             </div>
             <div class="row">
-                <span class="pill green" id="live-members-badge">4 members in queue</span>
+                <span class="pill green" id="live-members-badge">{{ appointments|length }} records</span>
                 <button class="btn btn-ghost" data-action="refresh-queue" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
             </div>
         </div>
@@ -151,7 +157,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Time</th>
+                        <th>Date &amp; Time</th>
                         <th>Patient</th>
                         <th>Visit / Category</th>
                         <th>Doctor</th>
@@ -164,7 +170,7 @@
                 <tbody id="doctor-appointments-tbody">
                     {% for apt in appointments %}
                     <tr data-apt-id="{{ apt.id }}">
-                        <td><b>{{ apt.start_time }}</b></td>
+                        <td><b>{{ apt.start_time }}</b><br><small class="muted">{{ apt.appointment_date.strftime('%d %b %Y') if apt.appointment_date else '' }}</small></td>
                         <td class="patient">
                             <span class="avatar">{{ apt.patient.name[:2].upper() if apt.patient else 'PT' }}</span>
                             <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
@@ -195,45 +201,8 @@
                         </td>
                     </tr>
                     {% else %}
-                    <tr data-apt-id="APT-001">
-                        <td><b>09:00</b></td>
-                        <td class="patient"><span class="avatar">AM</span>Aravind Menon</td>
-                        <td>Root canal review</td>
-                        <td>Dr. Ananya Sharma</td>
-                        <td><b>Chair 01</b></td>
-                        <td><span class="pill green">Paid (Online)</span></td>
-                        <td><span class="pill green">In progress</span></td>
-                        <td><button class="btn btn-primary" onclick="window.toast('Patient marked complete', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;">✓ Complete</button></td>
-                    </tr>
-                    <tr data-apt-id="APT-002">
-                        <td><b>10:30</b></td>
-                        <td class="patient"><span class="avatar">VR</span>Vishal Rao</td>
-                        <td>Scaling follow-up</td>
-                        <td>Dr. Rohan Patel</td>
-                        <td><b>Chair 02</b></td>
-                        <td><span class="pill green">Paid (Online)</span></td>
-                        <td><span class="pill orange">Checked in</span></td>
-                        <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button></td>
-                    </tr>
-                    <tr data-apt-id="APT-003">
-                        <td><b>12:00</b></td>
-                        <td class="patient"><span class="avatar">MI</span>Medha Iyer</td>
-                        <td>Pediatric consultation</td>
-                        <td>Dr. Meera Nair</td>
-                        <td><b>Chair 03</b></td>
-                        <td><span class="pill green">Paid (Online)</span></td>
-                        <td><span class="pill">Waiting</span></td>
-                        <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button></td>
-                    </tr>
-                    <tr data-apt-id="APT-004">
-                        <td><b>14:15</b></td>
-                        <td class="patient"><span class="avatar">SK</span>Sameer Khan</td>
-                        <td>Dental Implants Evaluation</td>
-                        <td>Dr. Vikram Rao</td>
-                        <td><b>Chair 01</b></td>
-                        <td><span class="pill orange">Pay at clinic</span></td>
-                        <td><span class="pill">Waiting</span></td>
-                        <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:24px;" class="muted">No appointments recorded.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
