@@ -7,11 +7,6 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        if current_user.role == 'admin':
-            return redirect(url_for('dashboard.admin_dashboard'))
-        return redirect(url_for('dashboard.index'))
-
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
         name = (data.get('name') or '').strip()
@@ -63,7 +58,6 @@ def register():
             db.session.add(patient)
 
         db.session.commit()
-        login_user(user)
 
         log_audit_event(
             action=f"User account created for {user.name} ({user.email}) with role '{user.role}'",
@@ -72,23 +66,20 @@ def register():
             user_role=user.role
         )
 
-        target = url_for('dashboard.admin_dashboard') if user.role == 'admin' else url_for('dashboard.index')
         if request.is_json:
-            return jsonify({'status': 'success', 'redirect': target}), 201
+            return jsonify({'status': 'success', 'redirect': url_for('auth.login')}), 201
 
-        flash('Account created successfully.', 'success')
-        return redirect(target)
+        flash('Account created. You can now sign in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
 
     return render_template('register.html')
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        if current_user.role == 'admin':
-            return redirect(url_for('dashboard.admin_dashboard'))
-        return redirect(url_for('dashboard.index'))
-
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
         email = (data.get('email') or '').strip().lower()
@@ -175,13 +166,14 @@ def login():
         target_redirect = request.args.get('next')
         if not target_redirect and isinstance(data, dict):
             target_redirect = data.get('next')
-        if not target_redirect:
-            target_redirect = url_for('dashboard.admin_dashboard') if user.role == 'admin' else url_for('dashboard.index')
         safe_url = get_safe_redirect_url(target_redirect, default=url_for('dashboard.index'))
 
         if request.is_json:
             return jsonify({'status': 'success', 'redirect': safe_url, 'user': user.to_dict()})
         return redirect(safe_url)
+
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard.index'))
 
     return render_template('login.html')
 
@@ -189,7 +181,8 @@ def login():
 @auth_bp.route('/demo-login/<role>')
 def demo_login(role):
     """
-    Demo login endpoint: Enables fast demo switching while maintaining security audits.
+    Demo login endpoint: Directs users to sign in with credentials while
+    blocking deprecated roles.
     """
     normalized_role = (role or '').strip().lower()
     if normalized_role in ('reception', 'receptionist'):
@@ -202,23 +195,7 @@ def demo_login(role):
         'patient': 'patient@gmail.com'
     }
     email = role_email_map.get(normalized_role, 'doctor@gmail.com')
-    user = User.query.filter_by(email=email).first()
-    if not user and normalized_role == 'patient':
-        user = User.query.filter_by(email='budigeashwinigoud@gmail.com').first()
-    if user:
-        login_user(user, remember=True)
-        log_audit_event(
-            action=f"DEMO_LOGIN: Demo fast-login as {user.role.upper()}",
-            module="Authentication",
-            user_name=user.name,
-            user_role=user.role
-        )
-        flash(f'Logged in as {user.name} ({user.role.title()})', 'success')
-        if user.role == 'admin':
-            return redirect(url_for('dashboard.admin_dashboard'))
-        return redirect(url_for('dashboard.index'))
-
-    flash(f"Demo user for {normalized_role} not found. Please log in with your credentials.", "warning")
+    flash(f"Please sign in with password to access the {normalized_role.title()} account ({email}).", "info")
     return redirect(url_for('auth.login', role=normalized_role, email=email))
 
 
