@@ -1,31 +1,67 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import login_required, current_user
 from models import (
     db, Patient, Doctor, ToothFinding, PeriodontalRecord,
     Prescription, PrescriptionItem, XRayImage, ClinicalNote, AuditLog
 )
+from security import clinical_required, staff_required, log_audit_event, normalize_role
 
 clinical_bp = Blueprint('clinical', __name__)
 
 @clinical_bp.route('/clinical')
 @login_required
+@staff_required
 def index():
     patients = Patient.query.order_by(Patient.name.asc()).all()
     doctors = Doctor.query.all()
-    return render_template('clinical.html', patients=patients, doctors=doctors)
+    notes = ClinicalNote.query.order_by(ClinicalNote.id.desc()).limit(15).all()
+    return render_template('clinical.html', patients=patients, doctors=doctors, notes=notes)
 
 @clinical_bp.route('/dental-chart')
 @clinical_bp.route('/chart')
 @login_required
+@staff_required
 def chart():
     patients = Patient.query.order_by(Patient.name.asc()).all()
-    return render_template('dental_chart.html', patients=patients)
+    selected_patient_id = request.args.get('patient_id')
+    selected_patient = None
+    if selected_patient_id:
+        try:
+            selected_patient = Patient.query.get(int(selected_patient_id))
+        except (ValueError, TypeError):
+            selected_patient = None
+    if not selected_patient and patients:
+        selected_patient = patients[0]
+
+    findings = []
+    if selected_patient:
+        findings = ToothFinding.query.filter_by(patient_id=selected_patient.id).all()
+    findings_data = [f.to_dict() for f in findings]
+
+    return render_template(
+        'dental_chart.html',
+        patients=patients,
+        selected_patient=selected_patient,
+        findings=findings,
+        findings_data=findings_data
+    )
 
 # 1. Tooth Chart Findings
 @clinical_bp.route('/api/patients/<int:patient_id>/teeth', methods=['GET', 'POST'])
 @login_required
 def patient_teeth(patient_id):
+    if request.method == 'GET':
+        if current_user.role == 'patient':
+            patient = Patient.query.filter_by(email=current_user.email).first()
+            if not patient or patient.id != patient_id:
+                abort(403)
+        findings = ToothFinding.query.filter_by(patient_id=patient_id).all()
+        return jsonify({'findings': [f.to_dict() for f in findings]})
+
+    if current_user.role not in {'admin', 'doctor'}:
+        abort(403)
+
     if request.method == 'POST':
         data = request.get_json()
         tooth_num = int(data.get('tooth_number'))
@@ -47,15 +83,11 @@ def patient_teeth(patient_id):
         db.session.commit()
 
         # Audit log
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Updated Tooth #{tooth_num} to '{finding.status}' for Patient #{patient_id}",
             module="Clinical",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Tooth: {tooth_num}, Diagnosis: {finding.diagnosis}, Treatment: {finding.recommended_treatment}"
         )
-        db.session.add(log)
-        db.session.commit()
 
         return jsonify({'status': 'success', 'message': f'Tooth #{tooth_num} updated', 'finding': finding.to_dict()})
 
@@ -65,6 +97,7 @@ def patient_teeth(patient_id):
 # 2. Periodontal Charting
 @clinical_bp.route('/api/patients/<int:patient_id>/perio', methods=['GET', 'POST'])
 @login_required
+@clinical_required
 def patient_perio(patient_id):
     if request.method == 'POST':
         data = request.get_json()
@@ -97,6 +130,7 @@ def patient_perio(patient_id):
 # 3. AI Voice-to-Notes SOAP Generator & Saver
 @clinical_bp.route('/api/patients/<int:patient_id>/voice-notes', methods=['POST'])
 @login_required
+@clinical_required
 def save_voice_notes(patient_id):
     data = request.get_json()
     raw_transcript = data.get('raw_transcript', '')
@@ -125,6 +159,7 @@ def save_voice_notes(patient_id):
 # 4. Digital Prescriptions
 @clinical_bp.route('/api/patients/<int:patient_id>/prescriptions', methods=['GET', 'POST'])
 @login_required
+@clinical_required
 def patient_prescriptions(patient_id):
     if request.method == 'POST':
         data = request.get_json()
@@ -157,15 +192,11 @@ def patient_prescriptions(patient_id):
         db.session.commit()
 
         # Audit log
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Created Prescription {prescription.rx_number} for Patient #{patient_id}",
             module="Clinical",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Rx Number: {prescription.rx_number}, Diagnosis: {prescription.diagnosis}"
         )
-        db.session.add(log)
-        db.session.commit()
 
         return jsonify({'status': 'success', 'message': 'Prescription issued', 'prescription': prescription.to_dict()})
 
@@ -176,5 +207,10 @@ def patient_prescriptions(patient_id):
 @clinical_bp.route('/prescriptions/<int:rx_id>/print')
 @login_required
 def print_prescription(rx_id):
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role not in {'admin', 'doctor', 'patient'}:
+        abort(403)
     rx = Prescription.query.get_or_404(rx_id)
+    if user_role == 'patient' and (not rx.patient or rx.patient.email != current_user.email):
+        abort(403)
     return render_template('print_prescription.html', prescription=rx)

@@ -3,11 +3,13 @@ from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 from models import db, QueueToken, Patient, Doctor, Chair, Appointment, AuditLog
 from firebase_service import sync_queue_token_to_firestore
+from security import staff_required, log_audit_event
 
 queue_bp = Blueprint('queue', __name__)
 
 @queue_bp.route('/queue')
 @login_required
+@staff_required
 def index():
     doctors = Doctor.query.all()
     chairs = Chair.query.all()
@@ -29,6 +31,7 @@ def get_queue():
 
 @queue_bp.route('/api/queue/add', methods=['POST'])
 @login_required
+@staff_required
 def add_token():
     data = request.get_json()
     token_count = QueueToken.query.count() + 14
@@ -50,10 +53,16 @@ def add_token():
     token_dict = token.to_dict()
     sync_queue_token_to_firestore(token_dict)
 
+    log_audit_event(
+        action=f"Generated {token.token_number} for Patient #{token.patient_id}",
+        module="Queue Management"
+    )
+
     return jsonify({'status': 'success', 'message': f'{token.token_number} generated', 'token': token_dict})
 
 @queue_bp.route('/api/queue/<int:token_id>/action', methods=['POST'])
 @login_required
+@staff_required
 def token_action(token_id):
     token = QueueToken.query.get_or_404(token_id)
     data = request.get_json()

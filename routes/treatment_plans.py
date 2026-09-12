@@ -1,43 +1,86 @@
 from datetime import datetime, date, timedelta
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import login_required, current_user
 from models import (
     db, TreatmentPlan, TreatmentPlanPhase, TreatmentPlanItem,
     Patient, Doctor, Invoice, InvoiceItem, AuditLog
 )
+from security import clinical_required, staff_required, admin_required, log_audit_event, normalize_role
 
 treatment_plans_bp = Blueprint('treatment_plans', __name__)
 
 @treatment_plans_bp.route('/treatment-plans')
 @login_required
+@staff_required
 def index():
-    plans = TreatmentPlan.query.order_by(TreatmentPlan.id.desc()).all()
-    patients = Patient.query.order_by(Patient.name.asc()).all()
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        plans = TreatmentPlan.query.filter_by(patient_id=patient.id).order_by(TreatmentPlan.id.desc()).all() if patient else []
+        patients = [patient] if patient else []
+    else:
+        plans = TreatmentPlan.query.order_by(TreatmentPlan.id.desc()).all()
+        patients = Patient.query.order_by(Patient.name.asc()).all()
     doctors = Doctor.query.all()
     return render_template('treatment_plans.html', plans=plans, patients=patients, doctors=doctors)
 
 @treatment_plans_bp.route('/api/treatment-plans', methods=['GET', 'POST'])
 @login_required
 def api_treatment_plans():
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+
+
     if request.method == 'POST':
-        data = request.get_json()
+        if user_role not in {'admin', 'doctor'}:
+            log_audit_event(
+                action=f"ACCESS_DENIED: {current_user.name} ({user_role}) denied creating treatment plan",
+                module="Authorization"
+            )
+            return jsonify({'status': 'error', 'message': 'Access forbidden: insufficient permissions.'}), 403
+        data = request.get_json() or {}
+        patient_id = data.get('patient_id')
+        if not patient_id:
+            return jsonify({'status': 'error', 'message': 'Please select a patient for the treatment plan.'}), 400
+        try:
+            patient_id = int(patient_id)
+        except (ValueError, TypeError):
+            return jsonify({'status': 'error', 'message': 'Invalid patient selected.'}), 400
+
+        doctor_id = data.get('doctor_id')
+        if not doctor_id and user_role == 'doctor':
+            doc = Doctor.query.filter((Doctor.user_id == current_user.id) | (Doctor.email == current_user.email)).first()
+            if doc:
+                doctor_id = doc.id
+        try:
+            doctor_id = int(doctor_id) if doctor_id else 1
+        except (ValueError, TypeError):
+            doctor_id = 1
+
         count = TreatmentPlan.query.count() + 43
         plan_no = f"TP-2026-{str(count).zfill(3)}"
 
-        total_cost = float(data.get('total_cost', 0.0))
-        discount_amount = float(data.get('discount_amount', 0.0))
+        try:
+            total_cost = float(data.get('total_cost') or 0.0)
+        except (ValueError, TypeError):
+            total_cost = 0.0
+
+        try:
+            discount_amount = float(data.get('discount_amount') or 0.0)
+        except (ValueError, TypeError):
+            discount_amount = 0.0
+
         net_cost = max(0.0, total_cost - discount_amount)
 
         plan = TreatmentPlan(
             plan_number=plan_no,
-            patient_id=int(data.get('patient_id')),
-            doctor_id=int(data.get('doctor_id', 1)),
-            title=data.get('title', 'Comprehensive Treatment Plan'),
-            status=data.get('status', 'Proposed'),
+            patient_id=patient_id,
+            doctor_id=doctor_id,
+            title=data.get('title') or 'Comprehensive Treatment Plan',
+            status=data.get('status') or 'Proposed',
             total_cost=total_cost,
             discount_amount=discount_amount,
             net_cost=net_cost,
-            accepted_amount=float(data.get('accepted_amount', 0.0)),
+            accepted_amount=float(data.get('accepted_amount') or 0.0),
             notes=data.get('notes')
         )
         db.session.add(plan)
@@ -45,26 +88,56 @@ def api_treatment_plans():
 
         # Phases
         phases_data = data.get('phases', [])
+        if not phases_data and (data.get('procedure_name') or data.get('title')):
+            proc_name = data.get('procedure_name') or data.get('title') or 'General Dental Procedure'
+            tooth_no = str(data.get('tooth_number') or 'General')
+            try:
+                duration = int(data.get('estimated_duration_weeks') or 2)
+            except (ValueError, TypeError):
+                duration = 2
+            phases_data = [{
+                'title': f"Phase 1: {proc_name}",
+                'status': 'Pending',
+                'estimated_duration_weeks': duration,
+                'items': [{
+                    'tooth_number': tooth_no,
+                    'procedure_name': proc_name,
+                    'unit_cost': total_cost,
+                    'discount': discount_amount
+                }]
+            }]
+
         for p_idx, phase_item in enumerate(phases_data, 1):
+            try:
+                dur_weeks = int(phase_item.get('estimated_duration_weeks') or 2)
+            except (ValueError, TypeError):
+                dur_weeks = 2
+
             phase = TreatmentPlanPhase(
                 plan_id=plan.id,
                 phase_number=p_idx,
                 title=phase_item.get('title', f'Phase {p_idx}'),
                 status=phase_item.get('status', 'Pending'),
-                estimated_duration_weeks=int(phase_item.get('estimated_duration_weeks', 2))
+                estimated_duration_weeks=dur_weeks
             )
             db.session.add(phase)
             db.session.commit()
 
             # Items inside phase
             for itm in phase_item.get('items', []):
-                u_cost = float(itm.get('unit_cost', 0.0))
-                disc = float(itm.get('discount', 0.0))
+                try:
+                    u_cost = float(itm.get('unit_cost') or 0.0)
+                except (ValueError, TypeError):
+                    u_cost = 0.0
+                try:
+                    disc = float(itm.get('discount') or 0.0)
+                except (ValueError, TypeError):
+                    disc = 0.0
                 n_cost = max(0.0, u_cost - disc)
                 plan_item = TreatmentPlanItem(
                     phase_id=phase.id,
-                    tooth_number=itm.get('tooth_number', 'General'),
-                    procedure_name=itm.get('procedure_name'),
+                    tooth_number=str(itm.get('tooth_number') or 'General'),
+                    procedure_name=itm.get('procedure_name', 'Dental Procedure'),
                     unit_cost=u_cost,
                     discount=disc,
                     net_cost=n_cost,
@@ -76,17 +149,20 @@ def api_treatment_plans():
 
         # Log audit
         patient = Patient.query.get(plan.patient_id)
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Created Treatment Plan {plan.plan_number} (₹{plan.net_cost:,.0f}) for {patient.name if patient else ''}",
             module="Clinical",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Plan Number: {plan.plan_number}, Patient: {plan.patient_id}, Total: {plan.total_cost}"
         )
-        db.session.add(log)
-        db.session.commit()
 
-        return jsonify({'status': 'success', 'message': 'Treatment plan saved', 'plan': plan.to_dict()}), 201
+        return jsonify({'status': 'success', 'message': f'Treatment plan {plan.plan_number} created successfully!', 'plan': plan.to_dict()}), 201
+
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient:
+            return jsonify({'plans': []})
+        plans = TreatmentPlan.query.filter_by(patient_id=patient.id).order_by(TreatmentPlan.id.desc()).all()
+        return jsonify({'plans': [p.to_dict() for p in plans]})
 
     patient_id = request.args.get('patient_id')
     query = TreatmentPlan.query
@@ -97,6 +173,7 @@ def api_treatment_plans():
 
 @treatment_plans_bp.route('/api/treatment-plans/<int:plan_id>/status', methods=['POST'])
 @login_required
+@clinical_required
 def update_plan_status(plan_id):
     plan = TreatmentPlan.query.get_or_404(plan_id)
     data = request.get_json()
@@ -105,10 +182,15 @@ def update_plan_status(plan_id):
     if new_status == 'Accepted':
         plan.accepted_amount = plan.net_cost
     db.session.commit()
+    log_audit_event(
+        action=f"Updated Treatment Plan #{plan.id} status to '{new_status}'",
+        module="Clinical"
+    )
     return jsonify({'status': 'success', 'message': f'Plan marked as {new_status}', 'plan': plan.to_dict()})
 
 @treatment_plans_bp.route('/api/treatment-plans/<int:plan_id>/convert-to-invoice', methods=['POST'])
 @login_required
+@admin_required
 def convert_to_invoice(plan_id):
     plan = TreatmentPlan.query.get_or_404(plan_id)
     

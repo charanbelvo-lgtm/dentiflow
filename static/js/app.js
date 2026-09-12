@@ -2,6 +2,9 @@
 (function () {
   const demoUser = () => {
     try {
+      if (window.CURRENT_USER && window.CURRENT_USER.role) {
+        return window.CURRENT_USER;
+      }
       const path = (location.pathname.split("/").pop() || "").toLowerCase();
       const raw = localStorage.getItem("dentiflowUser");
       if (raw) {
@@ -148,17 +151,16 @@
     const user = demoUser();
     const role = user.role || "doctor";
     document.documentElement.className = "role-" + role;
-    document.body.classList.remove("role-doctor", "role-patient", "role-admin", "role-reception");
+    document.body.classList.remove("role-doctor", "role-patient", "role-admin");
     document.body.classList.add("role-" + role);
     document.body.setAttribute("data-active-role", role);
 
     const path = (location.pathname.split("/").pop() || "index.html").toLowerCase();
     const doctorPages = [
-      "dashboard.html", "admin-dashboard.html", "clinical.html", "dental-chart.html",
-      "treatment-plans.html", "patients.html", "patient-detail.html",
-      "billing.html", "inventory.html", "reports.html"
+      "dashboard.html", "clinical.html", "dental-chart.html",
+      "treatment-plans.html", "patients.html", "patient-detail.html"
     ];
-    if (role === "patient" && doctorPages.includes(path)) {
+    if (!window.CURRENT_USER && role === "patient" && doctorPages.includes(path)) {
       location.replace("./patient-dashboard.html");
       return;
     }
@@ -168,7 +170,7 @@
     });
     document.querySelectorAll("span[data-user-role], div[data-user-role], [data-role-label]").forEach(x => {
       if (x !== document.body) {
-        x.textContent = role === "patient" ? "Patient portal" : (role === "admin" ? "Admin workspace" : (role === "reception" ? "Reception desk" : "Clinical workspace"));
+        x.textContent = role === "patient" ? "Patient portal" : (role === "admin" ? "Admin workspace" : "Clinical workspace");
       }
     });
     document.querySelectorAll("[data-avatar]").forEach(x => {
@@ -179,6 +181,19 @@
   }
 
   function filterSidebarByRole(role) {
+    if (role === "doctor") {
+      const adminOnlyTerms = ["billing", "inventory", "reports", "staff", "branches", "settings", "operations"];
+      document.querySelectorAll(".sidebar .nav a, .sidebar a").forEach(link => {
+        const href = (link.getAttribute("href") || "").toLowerCase();
+        const text = (link.textContent || "").toLowerCase();
+        if (adminOnlyTerms.some(term => href.includes(term) || text.includes(term))) {
+          link.remove();
+        }
+      });
+      document.querySelectorAll(".sidebar .nav-label.practice-label, .sidebar .practice-label").forEach(lbl => {
+        lbl.remove();
+      });
+    }
     if (role === "patient") {
       const forbiddenTerms = [
         "clinical", "dental-chart", "chart", "treatment-plans", "treatment_plans",
@@ -224,19 +239,31 @@
         }
       });
 
-      // Ensure Book & Wait Time link exists in nav
+      // Ensure only ONE Book & Wait Time link exists in nav (deduplicate)
       const nav = document.querySelector(".sidebar .nav");
-      if (nav && !nav.querySelector('a[href*="patient-dashboard"]')) {
-        const bookLink = document.createElement("a");
-        bookLink.href = "./patient-dashboard.html";
-        bookLink.setAttribute("data-role", "patient");
-        bookLink.innerHTML = "<span>Book &amp; Wait Time</span>";
-        if (location.pathname.includes("patient-dashboard")) bookLink.classList.add("active");
-        const firstLabel = nav.querySelector(".nav-label");
-        if (firstLabel && firstLabel.nextSibling) {
-          nav.insertBefore(bookLink, firstLabel.nextSibling);
-        } else {
-          nav.prepend(bookLink);
+      if (nav) {
+        const waitLinks = Array.from(nav.querySelectorAll('a')).filter(a => {
+          const txt = (a.textContent || "").toLowerCase();
+          const href = (a.getAttribute("href") || "").toLowerCase();
+          return txt.includes("wait time") || href.includes("patient-dashboard");
+        });
+        if (waitLinks.length > 1) {
+          // Keep only the first link and remove duplicates
+          for (let i = 1; i < waitLinks.length; i++) {
+            waitLinks[i].remove();
+          }
+        } else if (waitLinks.length === 0 && !nav.querySelector('a[href*="dashboard"]')) {
+          const bookLink = document.createElement("a");
+          bookLink.href = "/dashboard";
+          bookLink.setAttribute("data-role", "patient");
+          bookLink.innerHTML = "<span>Book &amp; Wait Time</span>";
+          if (location.pathname.includes("dashboard")) bookLink.classList.add("active");
+          const firstLabel = nav.querySelector(".nav-label");
+          if (firstLabel && firstLabel.nextSibling) {
+            nav.insertBefore(bookLink, firstLabel.nextSibling);
+          } else {
+            nav.prepend(bookLink);
+          }
         }
       }
     }
@@ -282,11 +309,10 @@
     try {
       let registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
       const defaults = [
-        { email: "doctor@dentiflow.com", name: "Dr. Ananya Sharma", role: "doctor" },
-        { email: "admin@dentiflow.com", name: "Dr. Rajesh Verma", role: "admin" },
+        { email: "doctor@gmail.com", name: "Dr. Ananya Sharma", role: "doctor" },
+        { email: "admin@gmail.com", name: "Dr. Rajesh Verma", role: "admin" },
         { email: "budigeashwinigoud@gmail.com", name: "Ashwini Goud", role: "patient" },
-        { email: "patient@dentiflow.com", name: "Ashwini Goud", role: "patient" },
-        { email: "reception@dentiflow.com", name: "Pooja Hegde", role: "reception" }
+        { email: "patient@gmail.com", name: "Ashwini Goud", role: "patient" }
       ];
       defaults.forEach(d => {
         if (!registered.some(r => r.email.toLowerCase() === d.email.toLowerCase())) {
@@ -399,13 +425,7 @@
         }
       }
       if (emailInput && !emailInput.value) {
-        if (selectedRole === "patient") {
-          emailInput.placeholder = "budigeashwinigoud@gmail.com";
-        } else if (selectedRole === "admin") {
-          emailInput.placeholder = "admin@dentiflow.com";
-        } else {
-          emailInput.placeholder = "doctor@dentiflow.com";
-        }
+        emailInput.placeholder = "example@gmail.com";
       }
     }
 
@@ -417,16 +437,13 @@
       let user = { role: chosen };
       if (chosen === "patient") {
         user.name = "Ashwini Goud";
-        user.email = "budigeashwinigoud@gmail.com";
+        user.email = "patient@gmail.com";
       } else if (chosen === "admin") {
         user.name = "Dr. Rajesh Verma";
-        user.email = "admin@dentiflow.com";
-      } else if (chosen === "reception") {
-        user.name = "Pooja Hegde";
-        user.email = "reception@dentiflow.com";
+        user.email = "admin@gmail.com";
       } else {
         user.name = "Dr. Ananya Sharma";
-        user.email = "doctor@dentiflow.com";
+        user.email = "doctor@gmail.com";
       }
       localStorage.setItem("dentiflowUser", JSON.stringify(user));
       location.href = chosen === "patient" ? "./patient-dashboard.html" : (chosen === "admin" ? "./admin-dashboard.html" : "./dashboard.html");
@@ -508,7 +525,7 @@
       const registered = JSON.parse(localStorage.getItem("dentiflowRegisteredUsers") || "[]");
       const foundUser = registered.find(u => u.email && u.email.toLowerCase() === (emailVal || "").toLowerCase());
 
-      if (!foundUser && !emailVal.endsWith("@dentiflow.com")) {
+      if (!foundUser && !emailVal.endsWith("@dentiflow.com") && !emailVal.endsWith("@gmail.com")) {
         toast("No account found for this email. Please create an account first!", "error");
         setMode("signup");
         if (emailInput) emailInput.value = emailVal;
@@ -695,6 +712,7 @@
   }
 
   function setupPayment() {
+    if (window.CURRENT_USER) return;
     document.querySelectorAll("[data-payment]").forEach(form => form.addEventListener("submit", e => {
       e.preventDefault(); const amount = form.querySelector("input").value || "0";
       localStorage.setItem("dentiflowPayment", JSON.stringify({ amount, date: new Date().toLocaleDateString("en-IN") }));
@@ -703,6 +721,7 @@
   }
 
   function setupAppointmentBooking() {
+    if (window.CURRENT_USER) return;
     const forms = document.querySelectorAll("#booking-form");
     if (!forms.length) return;
 
@@ -860,6 +879,7 @@
   }
 
   function renderAppointmentsAndQueue() {
+    if (window.CURRENT_USER) return;
     const user = demoUser();
     let list = getAppointments();
 
@@ -1118,6 +1138,7 @@
   }
 
   function setupProfile() {
+    if (window.CURRENT_USER) return;
     const user = demoUser();
     const profileForm = document.querySelector("form[data-action]");
     if (profileForm) {

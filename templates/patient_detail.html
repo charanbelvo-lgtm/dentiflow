@@ -8,8 +8,11 @@
         <p class="muted">{{ patient.patient_id }} - Patient since January 2024</p>
     </div>
     <div class="row">
+        {% if current_user.role in ['doctor', 'admin'] %}
+        <a class="btn btn-primary" href="{{ url_for('treatment_plans.index') }}?patient_id={{ patient.id }}">+ Build plan</a>
+        {% endif %}
         <a class="btn btn-soft" href="{{ url_for('clinical.chart') }}">Open dental chart</a>
-        <button class="btn btn-primary" onclick="window.toast('New visit scheduled for {{ patient.name }}', 'success')">+ New visit</button>
+        <button class="btn btn-ghost" onclick="window.toast('New visit scheduled for {{ patient.name }}', 'success')">+ New visit</button>
     </div>
 </div>
 

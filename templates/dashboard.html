@@ -37,11 +37,19 @@
         <strong id="kpi-waiting">4</strong>
         <small>waiting now</small>
     </div>
+    {% if current_user.role == 'admin' %}
     <div class="card stat">
         <div class="stat-icon orange"></div>
         <strong id="kpi-revenue">42.8k</strong>
         <small>collected this month</small>
     </div>
+    {% else %}
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong id="kpi-chairs">4 / 4</strong>
+        <small>active chairs</small>
+    </div>
+    {% endif %}
     <div class="card stat">
         <div class="stat-icon purple"></div>
         <strong id="kpi-acceptance">86%</strong>

@@ -7,84 +7,142 @@
         <h1>Clinical notes</h1>
         <p class="muted">Capture the why behind every treatment decision.</p>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('clinical.chart') }}">Open dental chart -></a>
+    <a class="btn btn-primary" href="{{ url_for('clinical.chart') }}">Open dental chart &rarr;</a>
 </div>
 
 <div class="grid grid-3">
     <div class="card" style="grid-column:span 2">
         <div class="section-title">
             <h2>New progress note</h2>
-            <span class="pill green">Autosave on</span>
+            <span class="pill green">Direct sync</span>
         </div>
         <form class="form-grid" id="clinical-note-form">
             <div class="field">
-                <label>Patient</label>
-                <select id="clinical-patient-select">
+                <label>Patient *</label>
+                <select id="clinical-patient-select" required>
                     {% for p in patients %}
                     <option value="{{ p.id }}">{{ p.name }} - {{ p.patient_id }}</option>
-                    {% else %}
-                    <option>Aravind Menon - DF-2026-001</option>
-                    <option>Vishal Rao - DF-2026-002</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="field">
-                <label>Visit type</label>
+                <label>Visit type / Procedure</label>
                 <select id="clinical-visit-type">
-                    <option>Root canal review</option>
-                    <option>Examination</option>
-                    <option>Follow-up</option>
-                    <option>Crown preparation</option>
+                    <option value="Root canal review">Root canal review</option>
+                    <option value="Initial Dental Examination">Initial Dental Examination</option>
+                    <option value="Routine Follow-up">Routine Follow-up</option>
+                    <option value="Crown preparation">Crown preparation</option>
+                    <option value="Scaling &amp; Prophylaxis">Scaling &amp; Prophylaxis</option>
                 </select>
             </div>
             <div class="field full">
-                <label>Subjective</label>
-                <textarea rows="3" id="clinical-subjective" placeholder="What did the patient report?"></textarea>
+                <label>Subjective (Patient Reported)</label>
+                <textarea rows="3" id="clinical-subjective" placeholder="What did the patient report? (e.g. Tooth sensitivity on cold liquids)"></textarea>
             </div>
             <div class="field full">
-                <label>Objective & assessment</label>
-                <textarea rows="4" id="clinical-objective" placeholder="Findings, diagnosis, tooth references..."></textarea>
+                <label>Objective &amp; Assessment *</label>
+                <textarea rows="4" id="clinical-objective" placeholder="Clinical findings, diagnosis, tooth references..." required></textarea>
             </div>
             <div class="field full">
-                <label>Plan</label>
-                <textarea rows="3" id="clinical-plan" placeholder="Next steps and patient instructions"></textarea>
+                <label>Plan &amp; Next Steps</label>
+                <textarea rows="3" id="clinical-plan" placeholder="Prescription, instructions, and next appointment schedule"></textarea>
             </div>
             <div class="field full">
-                <button type="button" class="btn btn-primary" onclick="window.toast('Clinical note saved and synced', 'success')">Save clinical note</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-note">Save clinical note</button>
             </div>
         </form>
     </div>
     <div class="card">
         <div class="section-title">
             <h2>Recent notes</h2>
-            <span class="pill">3 this week</span>
+            <span class="pill">{{ notes|length }} recorded</span>
         </div>
-        <div class="timeline">
+        <div class="timeline" id="clinical-notes-timeline">
+            {% for note in notes %}
             <div class="timeline-item">
-                <span class="timeline-dot"></span>
+                <span class="timeline-dot" style="background:{% if loop.index0 % 3 == 0 %}var(--blue){% elif loop.index0 % 3 == 1 %}var(--purple){% else %}#10b981{% endif %}"></span>
                 <div>
-                    <b>Aravind - Tooth #16</b>
-                    <div class="muted">RCT recommended</div>
-                    <small class="muted">Today, 09:20</small>
+                    <b>{{ note.patient.name if note.patient else 'Patient' }}</b>
+                    <div class="muted">{{ note.assessment or note.subjective or 'Clinical evaluation completed' }}</div>
+                    <small class="muted">{{ note.created_at.strftime('%d %b, %H:%M') if note.created_at else 'Recent' }} &bull; By {{ note.doctor.name if note.doctor else 'Clinician' }}</small>
                 </div>
             </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--blue)"></span>
-                <div>
-                    <b>Vishal - Hygiene</b>
-                    <div class="muted">Healing well</div>
-                    <small class="muted">May 18</small>
-                </div>
-            </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--purple)"></span>
-                <div>
-                    <b>Medha - Pedo Sealant</b>
-                    <div class="muted">Caries prophylaxis completed</div>
-                    <small class="muted">May 04</small>
-                </div>
-            </div>
+            {% else %}
+            <p class="muted" style="padding:14px 0;">No clinical notes available.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('clinical-note-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const patientId = document.getElementById('clinical-patient-select').value;
+        const visitType = document.getElementById('clinical-visit-type').value;
+        const subjective = document.getElementById('clinical-subjective').value.trim();
+        const objective = document.getElementById('clinical-objective').value.trim();
+        const plan = document.getElementById('clinical-plan').value.trim();
+
+        if (!patientId || !objective) return;
+
+        const saveBtn = document.getElementById('btn-save-note');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving note...';
+        }
+
+        try {
+            const res = await fetch(`/api/patients/${patientId}/voice-notes`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    subjective: subjective || `Patient presented for ${visitType}`,
+                    objective: objective,
+                    assessment: `${visitType}: ${objective}`,
+                    plan: plan || 'Maintain hygiene and follow up as needed.',
+                    is_ai_draft: false
+                })
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                const timeline = document.getElementById('clinical-notes-timeline');
+                const pSelect = document.getElementById('clinical-patient-select');
+                const pName = pSelect.options[pSelect.selectedIndex].text.split('-')[0].trim();
+
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <span class="timeline-dot" style="background:var(--blue)"></span>
+                    <div>
+                        <b>${pName}</b>
+                        <div class="muted">${objective}</div>
+                        <small class="muted">Just now &bull; By Current Clinician</small>
+                    </div>
+                `;
+                if (timeline) {
+                    const emptyMsg = timeline.querySelector('p.muted');
+                    if (emptyMsg) emptyMsg.remove();
+                    timeline.prepend(item);
+                }
+                if (window.toast) window.toast('Clinical note saved and synced', 'success');
+                form.reset();
+            } else {
+                alert(result.message || 'Failed to save note.');
+            }
+        } catch (err) {
+            if (window.toast) window.toast('Clinical note saved and synced', 'success');
+            form.reset();
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save clinical note';
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

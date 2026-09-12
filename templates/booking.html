@@ -6,7 +6,7 @@
         <div class="landing-logo">✦ Denti<span>Flow</span></div>
         <div class="row">
             <a class="btn btn-ghost" href="{{ url_for('auth.login') }}">Sign in</a>
-            <a class="btn btn-primary" href="{{ url_for('dashboard.landing_or_dashboard') }}">Home →</a>
+            <a class="btn btn-primary" href="{{ url_for('dashboard.landing_or_dashboard') }}">Home / Login →</a>
         </div>
     </nav>
     <div style="max-width: 720px; margin: 0 auto; padding: 0 20px;">
@@ -18,22 +18,47 @@
             </div>
         </div>
 
-        <div class="card">
-            <form id="public-booking-form" class="form-grid">
+        {% if confirmed and appointment %}
+        <div id="booking-confirmation-server" style="display:block;margin-bottom:24px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:24px;box-shadow:var(--shadow);">
+            <h2 style="color:#16a34a;margin-bottom:8px;font-size:22px;">✓ Appointment Confirmed!</h2>
+            <p style="margin:0 0 14px;color:#15803d;font-size:15px;">
+                Your appointment has been booked successfully! Booking Reference: <b>{{ appointment.appointment_number }}</b>
+            </p>
+            <div style="background:#fff;border-radius:10px;padding:14px 16px;border:1px solid #dcfce7;font-size:14px;margin-bottom:18px;display:grid;gap:6px;">
+                <div><b>Patient:</b> {{ appointment.patient.name }} ({{ appointment.patient.phone }})</div>
+                <div><b>Doctor:</b> {{ appointment.doctor.name if appointment.doctor else 'Dr. Sharma' }}</div>
+                <div><b>Date &amp; Time:</b> {{ appointment.appointment_date.strftime('%d %b %Y') }} at {{ appointment.start_time }}</div>
+                <div><b>Procedure:</b> {{ appointment.procedure_name }}</div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a href="{{ url_for('dashboard.landing_or_dashboard') }}" class="btn btn-primary" style="padding:10px 18px;">← Return to Landing / Sign In</a>
+                <a href="{{ url_for('public.booking_page') }}" class="btn btn-ghost" style="padding:10px 18px;">Book Another Visit</a>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="card" {% if confirmed %}style="display:none;"{% endif %}>
+            <form id="public-booking-form" class="form-grid" method="POST" action="{{ url_for('public.booking_page') }}">
                 <div class="field">
                     <label>Your Full Name *</label>
-                    <input type="text" name="name" placeholder="Ashwini Goud" required>
+                    <input type="text" name="name" value="{{ patient.name if patient else (current_user.name if current_user.is_authenticated else '') }}" placeholder="Ashwini Goud" required autofocus>
                 </div>
                 <div class="field">
                     <label>Phone Number *</label>
-                    <input type="tel" name="phone" placeholder="+91 98765 43210" required>
+                    <input type="tel" name="phone" value="{{ patient.phone if (patient and patient.phone != 'Not provided') else '' }}" placeholder="+91 98765 43210" required>
                 </div>
                 <div class="field">
                     <label>Email Address</label>
-                    <input type="email" name="email" placeholder="you@example.com">
+                    <input type="email" name="email" value="{{ patient.email if patient else (current_user.email if current_user.is_authenticated else '') }}" placeholder="you@example.com">
                 </div>
                 <div class="field">
-                    <label>Age & Gender</label>
+                    <label>Age &amp; Gender</label>
                     <div style="display:flex;gap:8px;">
                         <input type="number" name="age" placeholder="Age" min="1" max="120" style="width:70px;" value="28">
                         <select name="gender" style="flex:1;">
@@ -56,8 +81,8 @@
                 <div class="field">
                     <label>Service / Procedure *</label>
                     <select name="treatment_name" required>
-                        <option value="General Consultation">General Consultation & Checkup</option>
-                        <option value="Scaling & Polishing">Scaling & Oral Prophylaxis</option>
+                        <option value="General Consultation">General Consultation &amp; Checkup</option>
+                        <option value="Scaling &amp; Polishing">Scaling &amp; Oral Prophylaxis</option>
                         <option value="Root Canal Treatment">Root Canal Treatment</option>
                         <option value="Dental Filling">Composite Dental Filling</option>
                         <option value="Teeth Whitening">Laser Teeth Whitening</option>
@@ -72,7 +97,7 @@
                     <label>Preferred Time Slot *</label>
                     <select name="start_time" required>
                         <option value="09:30 AM">09:30 AM</option>
-                        <option value="10:30 AM">10:30 AM</option>
+                        <option value="10:30 AM" selected>10:30 AM</option>
                         <option value="11:30 AM">11:30 AM</option>
                         <option value="02:00 PM">02:00 PM</option>
                         <option value="03:30 PM">03:30 PM</option>
@@ -81,43 +106,54 @@
                     </select>
                 </div>
                 <div class="field full" style="margin-top: 10px;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                    <button type="submit" id="submit-booking-btn" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px; font-weight:700;">
                         Confirm Appointment Booking →
                     </button>
                 </div>
             </form>
-            <div id="booking-confirmation" style="display:none;margin-top:20px;" class="notice">
-                <h3 style="color:var(--teal);margin-bottom:6px;">Appointment Confirmed!</h3>
-                <p id="booking-msg" class="muted"></p>
-                <div style="margin-top:12px;">
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-teal">Go to Patient Login</a>
+            
+            <div id="booking-confirmation-ajax" style="display:none;margin-top:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;">
+                <h3 style="color:#16a34a;margin-bottom:6px;font-size:20px;">✓ Appointment Confirmed!</h3>
+                <p id="booking-msg" style="color:#15803d;font-size:14px;margin-bottom:14px;"></p>
+                <div>
+                    <a href="{{ url_for('dashboard.landing_or_dashboard') }}" class="btn btn-primary">← Return to Landing / Sign In</a>
                 </div>
             </div>
         </div>
     </div>
 </main>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('public-booking-form');
+    if (!form) return;
+
     const dateInput = form.querySelector('input[name="appointment_date"]');
-    if (dateInput) {
+    if (dateInput && !dateInput.value) {
         const today = new Date().toISOString().split('T')[0];
         dateInput.min = today;
         dateInput.value = today;
     }
 
     form.addEventListener('submit', async (e) => {
+        // Try AJAX first for instant client feedback
         e.preventDefault();
+        const submitBtn = document.getElementById('submit-booking-btn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Confirming booking...';
+        }
+
         const data = {
-            name: form.name.value,
-            phone: form.phone.value,
-            email: form.email.value,
-            age: form.age.value,
-            gender: form.gender.value,
-            doctor_id: form.doctor_id.value,
-            treatment_name: form.treatment_name.value,
-            appointment_date: form.appointment_date.value,
-            start_time: form.start_time.value
+            name: form.elements['name'].value.trim(),
+            phone: form.elements['phone'].value.trim(),
+            email: form.elements['email'].value.trim(),
+            age: form.elements['age'].value,
+            gender: form.elements['gender'].value,
+            doctor_id: form.elements['doctor_id'].value,
+            treatment_name: form.elements['treatment_name'].value,
+            appointment_date: form.elements['appointment_date'].value,
+            start_time: form.elements['start_time'].value
         };
 
         try {
@@ -128,16 +164,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await res.json();
             if (result.status === 'success') {
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                    return;
+                }
                 form.style.display = 'none';
-                const conf = document.getElementById('booking-confirmation');
+                const conf = document.getElementById('booking-confirmation-ajax');
                 const msg = document.getElementById('booking-msg');
-                msg.textContent = `${result.message} (Booking Ref: ${result.appointment_number} for ${result.date} at ${result.time})`;
+                msg.textContent = `${result.message} (Reference: ${result.appointment_number} for ${result.date} at ${result.time})`;
                 conf.style.display = 'block';
+                return;
             } else {
                 alert(result.message || 'Booking failed.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Appointment Booking →';
+                }
             }
         } catch (err) {
-            alert('Failed to submit appointment booking. Please try again.');
+            // If fetch fails, submit normally via form POST!
+            form.submit();
         }
     });
 });

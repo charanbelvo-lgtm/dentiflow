@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Profile &amp; Settings - DentiFlow{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <span class="eyebrow">AUTHENTICATED PROFILE</span>
+        <h1>{{ user.name }}</h1>
+        <p class="muted">
+            {% if user_role == 'patient' %}
+            Patient Portal &bull; {{ patient.patient_id if patient else 'DF-2026-PAT' }} &bull; Age {{ patient.age if patient else '28' }} ({{ patient.gender if patient else 'Other' }})
+            {% elif user_role == 'doctor' %}
+            {{ doctor.specialty if doctor else 'Dental Specialist' }} &bull; {{ doctor.experience_years if doctor else '8' }} years clinical experience
+            {% elif user_role == 'admin' %}
+            System Administrator &bull; Full Clinic &amp; Security Authority
+            {% endif %}
+        </p>
+    </div>
+    <span class="pill green">Active Account</span>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+        <div style="background:{% if cat == 'success' %}#f0fdf4{% else %}#eff6ff{% endif %};border:1px solid {% if cat == 'success' %}#bbf7d0{% else %}#bfdbfe{% endif %};color:{% if cat == 'success' %}#16a34a{% else %}#2563eb{% endif %};border-radius:10px;padding:12px 16px;font-size:14px;margin-bottom:18px;">
+            {{ msg }}
+        </div>
+    {% endfor %}
+{% endwith %}
+
+<div class="grid grid-2">
+    <!-- 1. Profile Identity Card -->
+    <div class="card">
+        <div class="section-title">
+            <h2>Personal credentials</h2>
+            <span class="pill green">{{ user_role|title }}</span>
+        </div>
+        <div class="row" style="align-items:flex-start;gap:20px;margin-bottom:18px;">
+            <div class="avatar" style="width:72px;height:72px;font-size:26px;border-radius:20px;background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">
+                {{ user.name[:2].upper() if user.name else 'DF' }}
+            </div>
+            <div>
+                <h3 style="margin:0 0 4px;">{{ user.name }}</h3>
+                <p class="muted" style="margin:0 0 6px;">{{ user.email }}</p>
+                <span class="pill" style="font-size:11px;">Account ID: #{{ user.id }}</span>
+            </div>
+        </div>
+
+        <div style="border-top:1px solid var(--line);padding-top:14px;display:grid;gap:8px;font-size:14px;">
+            {% if user_role == 'patient' and patient %}
+            <div class="row between">
+                <span class="muted">Patient ID</span>
+                <b>{{ patient.patient_id }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Contact Phone</span>
+                <b>{{ patient.phone }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Blood Group</span>
+                <b>{{ patient.blood_group }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Outstanding Balance</span>
+                <b style="color:{% if patient.outstanding_balance > 0 %}#ea580c{% else %}#16a34a{% endif %};">INR {{ "{:,.0f}".format(patient.outstanding_balance) }}</b>
+            </div>
+            {% elif user_role == 'doctor' and doctor %}
+            <div class="row between">
+                <span class="muted">Specialty</span>
+                <b>{{ doctor.specialty }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Medical Registration</span>
+                <b>{{ doctor.registration_no }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Assigned Chair</span>
+                <b>{{ doctor.assigned_chair }}</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Patient Rating</span>
+                <b style="color:#f59e0b;">⭐ {{ doctor.rating }} / 5.0</b>
+            </div>
+            {% elif user_role == 'admin' %}
+            <div class="row between">
+                <span class="muted">Authority Level</span>
+                <b>Root Administrator</b>
+            </div>
+            <div class="row between">
+                <span class="muted">System Users</span>
+                <b>{{ stats.total_users }} Registered</b>
+            </div>
+            <div class="row between">
+                <span class="muted">Registered Patients</span>
+                <b>{{ stats.total_patients }} Active</b>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. Edit Profile Details Form -->
+    <div class="card">
+        <div class="section-title">
+            <h2>Account details</h2>
+            <span class="pill" id="profile-role-pill">{{ user_role|title }}</span>
+        </div>
+        <form method="POST" action="{{ url_for('dashboard.profile') }}" class="form-grid">
+            <div class="field">
+                <label>Full name</label>
+                <input type="text" name="name" id="profile-name-input" value="{{ user.name }}" required>
+            </div>
+            <div class="field">
+                <label>Role</label>
+                <input type="text" id="profile-role-input" value="{{ user_role|title }}" readonly style="background:#f8fafc;cursor:not-allowed;">
+            </div>
+            <div class="field">
+                <label>Email address</label>
+                <input type="email" id="profile-email-input" value="{{ user.email }}" readonly style="background:#f8fafc;cursor:not-allowed;">
+            </div>
+            <div class="field">
+                <label>Contact number</label>
+                <input type="tel" name="phone" id="profile-phone-input" value="{{ user.phone if user.phone else (patient.phone if (patient and patient.phone != 'Not provided') else '') }}" placeholder="+91 98765 43210">
+            </div>
+            <div class="field full" style="margin-top:10px;">
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;">Save changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 3. Key Role Performance / Metrics Cards -->
+<div class="grid grid-3" style="margin-top:18px;">
+    {% if user_role == 'patient' %}
+    <div class="card stat">
+        <div class="stat-icon">📅</div>
+        <strong>{{ stats.appointments_count if stats else 0 }}</strong>
+        <small>Appointments booked</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">🦷</div>
+        <strong>{{ 'All clear' if not stats.medical_alerts else stats.medical_alerts|length }}</strong>
+        <small>Medical alerts noted</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">INR</div>
+        <strong>INR {{ "{:,.0f}".format(stats.outstanding_balance if stats else 0) }}</strong>
+        <small>Outstanding balance</small>
+    </div>
+    {% elif user_role == 'doctor' %}
+    <div class="card stat">
+        <div class="stat-icon">📅</div>
+        <strong>{{ stats.appointments_today if stats else 0 }}</strong>
+        <small>Appointments today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">👥</div>
+        <strong>{{ stats.patients_treated if stats else 0 }}</strong>
+        <small>Patients completed</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange">⭐</div>
+        <strong>{{ stats.rating if stats else 4.9 }} / 5.0</strong>
+        <small>Patient satisfaction</small>
+    </div>
+    {% elif user_role == 'admin' %}
+    <div class="card stat">
+        <div class="stat-icon">👥</div>
+        <strong>{{ stats.total_patients if stats else 0 }}</strong>
+        <small>Total clinic patients</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal">📅</div>
+        <strong>{{ stats.total_appointments if stats else 0 }}</strong>
+        <small>Total appointments</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple">💺</div>
+        <strong>{{ stats.active_chairs if stats else 0 }}</strong>
+        <small>Available dental chairs</small>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

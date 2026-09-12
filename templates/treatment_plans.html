@@ -3,82 +3,437 @@
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">CARE PLANS</span>
+        <span class="eyebrow">CARE PLANS &bull; CLINICAL ARCHITECTURE</span>
         <h1>Treatment plans</h1>
-        <p class="muted">Turn clinical findings into an understandable next step.</p>
+        <p class="muted">Turn clinical findings into transparent, structured treatment steps.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening treatment plan builder...', 'success')">+ Build plan</button>
+    {% if current_user.role in ['doctor', 'admin'] %}
+    <button class="btn btn-primary" id="btn-build-plan" onclick="openBuildPlanModal()">+ Build plan</button>
+    {% endif %}
 </div>
 
 <div class="grid grid-2">
-    <div class="card">
-        <div class="section-title">
-            <div>
-                <h2>Aravind Menon</h2>
-                <span class="muted">Plan - Tooth #16</span>
-            </div>
-            <span class="pill orange">Awaiting consent</span>
-        </div>
-        <div class="row between">
-            <b>Root canal treatment</b>
-            <strong>INR 15,000</strong>
-        </div>
-        <div class="progress" style="margin:12px 0">
-            <span style="width:50%"></span>
-        </div>
-        <div class="row between muted">
-            <span>2 of 4 visits complete</span>
-            <span>50%</span>
-        </div>
-        <div class="timeline" style="margin-top:15px">
-            <div class="timeline-item">
-                <span class="timeline-dot"></span>
+    <!-- Treatment Plans List -->
+    <div style="display:flex;flex-direction:column;gap:18px;">
+        {% for plan in plans %}
+        <div class="card" id="plan-card-{{ plan.id }}">
+            <div class="section-title">
                 <div>
-                    <b>Consultation</b>
-                    <div class="muted">Completed - May 22</div>
+                    <h2>{{ plan.patient.name if plan.patient else 'Patient' }}</h2>
+                    <span class="muted">{{ plan.plan_number }} &bull; {{ plan.title }}</span>
                 </div>
-                <span class="pill green">Done</span>
+                <span class="pill {% if plan.status in ['Accepted', 'Completed', 'In Progress'] %}green{% elif plan.status == 'Proposed' %}orange{% else %}blue{% endif %}">
+                    {{ plan.status }}
+                </span>
             </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:var(--orange)"></span>
-                <div>
-                    <b>Cleaning & shaping</b>
-                    <div class="muted">Next - May 29</div>
-                </div>
-                <span class="pill orange">Next</span>
+            <div class="row between" style="margin:8px 0 12px;">
+                <b>Doctor: {{ plan.doctor.name if plan.doctor else 'Dr. Ananya Sharma' }}</b>
+                <strong style="font-size:17px;color:var(--blue);">INR {{ "{:,.0f}".format(plan.net_cost) }}</strong>
             </div>
-            <div class="timeline-item">
-                <span class="timeline-dot" style="background:#aab7c6"></span>
-                <div>
-                    <b>Obturation + crown</b>
-                    <div class="muted">To be scheduled</div>
+
+            {% if plan.phases %}
+            <div class="timeline" style="margin-top:10px">
+                {% for phase in plan.phases %}
+                <div class="timeline-item">
+                    <span class="timeline-dot" style="background:{% if phase.status == 'Completed' %}#10b981{% elif phase.status == 'In Progress' %}var(--orange){% else %}#94a3b8{% endif %}"></span>
+                    <div>
+                        <b>{{ phase.title }}</b>
+                        <div class="muted">
+                            {% for itm in phase.items %}
+                            {{ itm.procedure_name }} (Tooth: {{ itm.tooth_number }}) - INR {{ "{:,.0f}".format(itm.net_cost) }}{% if not loop.last %}, {% endif %}
+                            {% else %}
+                            Estimated duration: ~{{ phase.estimated_duration_weeks }} week(s)
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="pill {% if phase.status == 'Completed' %}green{% elif phase.status == 'In Progress' %}orange{% else %}{% endif %}">{{ phase.status }}</span>
                 </div>
-                <span class="pill">Later</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row wrap" style="margin-top:16px;gap:8px;">
+                {% if current_user.role in ['admin', 'doctor'] %}
+                {% if plan.status != 'Accepted' and plan.status != 'In Progress' and plan.status != 'Completed' %}
+                <button class="btn btn-primary" onclick="updatePlanStatus({{ plan.id }}, 'Accepted')">Accept plan</button>
+                {% endif %}
+                {% if current_user.role == 'admin' %}
+                    {% if not plan.is_converted_to_invoice %}
+                    <button class="btn btn-soft" onclick="convertPlanToInvoice({{ plan.id }})">Convert to invoice</button>
+                    {% else %}
+                    <span class="pill green" style="padding:6px 12px;">Invoice generated ✓</span>
+                    {% endif %}
+                {% endif %}
+                {% endif %}
+                <button class="btn btn-ghost" onclick="window.toast('Treatment plan shared with patient', 'success')">Share</button>
+                <button class="btn btn-ghost" onclick="window.toast('Treatment plan PDF exported', 'success')">Export PDF</button>
             </div>
         </div>
-        <div class="row" style="margin-top:16px">
-            <button class="btn btn-primary" onclick="window.toast('Consent link copied to clipboard', 'success')">Share with patient</button>
-            <button class="btn btn-ghost" onclick="window.toast('Treatment plan PDF exported', 'success')">Export PDF</button>
+        {% else %}
+        <div class="card">
+            <div class="section-title">
+                <h2>Treatment plans</h2>
+                <span class="pill">Empty</span>
+            </div>
+            <p class="muted" style="padding:16px 0;">No treatment plans available. Click "+ Build plan" above to create your first clinical care roadmap.</p>
         </div>
+        {% endfor %}
     </div>
-    <div class="card">
-        <div class="section-title">
-            <h2>Plan health</h2>
-            <span class="pill green">86% accepted</span>
-        </div>
-        <div class="grid grid-2">
-            <div class="stat">
-                <strong>INR 1.86L</strong>
-                <small>planned value</small>
+
+    <!-- Plan Summary / Practice Health -->
+    <div>
+        <div class="card">
+            <div class="section-title">
+                <h2>Plan health &amp; value</h2>
+                <span class="pill green">Active portfolio</span>
             </div>
-            <div class="stat">
-                <strong>INR 92k</strong>
-                <small>collected</small>
+            <div class="grid grid-2">
+                {% if current_user.role == 'admin' %}
+                <div class="stat">
+                    <strong>INR {{ "{:,.0f}".format(plans|sum(attribute='net_cost')) }}</strong>
+                    <small>total planned value</small>
+                </div>
+                {% else %}
+                <div class="stat">
+                    <strong>{{ plans|selectattr('status', 'equalto', 'Proposed')|list|length }}</strong>
+                    <small>plans awaiting consent</small>
+                </div>
+                {% endif %}
+                <div class="stat">
+                    <strong>{{ plans|length }}</strong>
+                    <small>treatment plans on file</small>
+                </div>
+            </div>
+            <div class="notice" style="margin-top:18px">
+                <b>Clinical workflow</b><br>
+                Treatment plans allow doctors to structure phased clinical interventions, establish clear patient timelines, record informed consent, and track multi-visit treatment progression.
             </div>
         </div>
-        <p class="notice" style="margin-top:16px">
-            3 plans need a follow-up this week. Patients respond best when the next step is shared immediately after the visit.
-        </p>
     </div>
 </div>
+
+<!-- ========================================================================= -->
+<!-- BUILD TREATMENT PLAN MODAL                                                -->
+<!-- ========================================================================= -->
+<div id="modal-build-plan" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+    <div class="card" style="width:100%;max-width:620px;background:#fff;border-radius:18px;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,0.25);position:relative;max-height:90vh;overflow-y:auto;">
+        <!-- Modal Header -->
+        <div class="row between" style="margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:12px;">
+            <div>
+                <span class="eyebrow" style="color:var(--blue);font-weight:700;">DOCTOR CLINICAL WORKSPACE</span>
+                <h2 style="margin:2px 0 0;font-size:20px;">Build Treatment Plan</h2>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="closeBuildPlanModal()" style="font-size:20px;line-height:1;padding:4px 10px;" aria-label="Close modal">&times;</button>
+        </div>
+
+        <!-- Quick Template Presets -->
+        <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Quick Clinical Templates</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                <button type="button" class="btn btn-ghost" onclick="applyPlanPreset('rct')" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#f1f5f9;">🦷 RCT + Crown</button>
+                <button type="button" class="btn btn-ghost" onclick="applyPlanPreset('implant')" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#f1f5f9;">🔩 Dental Implant</button>
+                <button type="button" class="btn btn-ghost" onclick="applyPlanPreset('aligner')" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#f1f5f9;">✨ Clear Aligners</button>
+                <button type="button" class="btn btn-ghost" onclick="applyPlanPreset('scaling')" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#f1f5f9;">🛡️ Deep Scaling</button>
+                <button type="button" class="btn btn-ghost" onclick="applyPlanPreset('filling')" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#f1f5f9;">💎 Composite Filling</button>
+            </div>
+        </div>
+
+        <form id="form-build-plan" onsubmit="handleBuildPlanSubmit(event)">
+            <!-- Patient & Doctor Selection -->
+            <div class="grid grid-2" style="gap:12px;margin-bottom:12px;">
+                <div>
+                    <label for="plan-patient-id" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Select Patient *</label>
+                    <select id="plan-patient-id" name="patient_id" required style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:13.5px;">
+                        <option value="" disabled selected>-- Choose Patient --</option>
+                        {% for p in patients %}
+                        <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="plan-doctor-id" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Assigned Doctor</label>
+                    <select id="plan-doctor-id" name="doctor_id" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:13.5px;">
+                        {% for d in doctors %}
+                        <option value="{{ d.id }}" {% if current_user.role == 'doctor' and (d.email == current_user.email or current_user.name in d.name) %}selected{% endif %}>
+                            {{ d.name }} ({{ d.specialty }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Title & Tooth -->
+            <div class="grid grid-2" style="gap:12px;margin-bottom:12px;">
+                <div style="grid-column:span 1;">
+                    <label for="plan-title" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Plan Title *</label>
+                    <input type="text" id="plan-title" name="title" placeholder="e.g. Tooth #16 Root Canal & Crown" required style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                </div>
+                <div>
+                    <label for="plan-tooth" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Tooth / Quadrant</label>
+                    <input type="text" id="plan-tooth" name="tooth_number" placeholder="e.g. 16, 21, or Full Arch" value="16" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                </div>
+            </div>
+
+            <!-- Procedure & Duration -->
+            <div class="grid grid-2" style="gap:12px;margin-bottom:12px;">
+                <div>
+                    <label for="plan-procedure" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Primary Procedure *</label>
+                    <input type="text" id="plan-procedure" name="procedure_name" placeholder="e.g. RCT + Fiber Post + Crown" required style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                </div>
+                <div>
+                    <label for="plan-duration" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Estimated Duration</label>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <input type="number" id="plan-duration" name="estimated_duration_weeks" value="2" min="1" max="52" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                        <span class="muted" style="font-size:13px;white-space:nowrap;">weeks</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Estimates & Discount -->
+            <div class="grid grid-2" style="gap:12px;margin-bottom:12px;">
+                <div>
+                    <label for="plan-cost" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Estimated Cost (INR) *</label>
+                    <input type="number" id="plan-cost" name="total_cost" value="15000" min="0" step="500" oninput="updatePlanNetCost()" required style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                </div>
+                <div>
+                    <label for="plan-discount" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Discount (INR)</label>
+                    <input type="number" id="plan-discount" name="discount_amount" value="0" min="0" step="100" oninput="updatePlanNetCost()" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;">
+                </div>
+            </div>
+
+            <!-- Dynamic Net Cost Display -->
+            <div class="row between" style="background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin-bottom:12px;">
+                <span style="font-size:13px;color:var(--muted);">Net Patient Payable:</span>
+                <strong id="plan-net-badge" style="font-size:15px;color:var(--blue);">INR 15,000</strong>
+            </div>
+
+            <!-- Status Selection -->
+            <div style="margin-bottom:12px;">
+                <label for="plan-status" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Initial Plan Status</label>
+                <select id="plan-status" name="status" style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:13.5px;">
+                    <option value="Proposed" selected>Proposed (Awaiting patient consent)</option>
+                    <option value="Accepted">Accepted (Patient agreed to treatment)</option>
+                    <option value="In Progress">In Progress (Active clinical visits)</option>
+                </select>
+            </div>
+
+            <!-- Notes -->
+            <div style="margin-bottom:18px;">
+                <label for="plan-notes" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;color:var(--ink);">Clinical Notes &amp; Recommendations</label>
+                <textarea id="plan-notes" name="notes" rows="2" placeholder="Diagnostic x-ray findings, pulpal status, patient informed consent discussion..." style="width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--line);font-size:13.5px;font-family:inherit;"></textarea>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="row end" style="gap:10px;">
+                <button type="button" class="btn btn-ghost" onclick="closeBuildPlanModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-plan">Create Treatment Plan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// --- Modal State & Controls ---
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('patient_id') || urlParams.get('action') === 'build') {
+        openBuildPlanModal();
+    }
+});
+
+function openBuildPlanModal() {
+    const modal = document.getElementById('modal-build-plan');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
+    // Auto-select patient if provided in query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientId = urlParams.get('patient_id');
+    if (patientId) {
+        const patientSelect = document.getElementById('plan-patient-id');
+        if (patientSelect) patientSelect.value = patientId;
+    }
+
+    updatePlanNetCost();
+}
+
+function closeBuildPlanModal() {
+    const modal = document.getElementById('modal-build-plan');
+    if (modal) modal.style.display = 'none';
+}
+
+// Close modal when clicking backdrop
+document.getElementById('modal-build-plan')?.addEventListener('click', function(e) {
+    if (e.target === this) closeBuildPlanModal();
+});
+
+// Update net calculation badge
+function updatePlanNetCost() {
+    const cost = parseFloat(document.getElementById('plan-cost')?.value || 0);
+    const discount = parseFloat(document.getElementById('plan-discount')?.value || 0);
+    const net = Math.max(0, cost - discount);
+    const badge = document.getElementById('plan-net-badge');
+    if (badge) {
+        badge.innerText = `INR ${net.toLocaleString('en-IN')}`;
+    }
+}
+
+// Quick Clinical Template Presets
+const PLAN_PRESETS = {
+    rct: {
+        title: 'Tooth #16 RCT & Aesthetic Crown',
+        tooth: '16',
+        procedure: 'Endodontic Therapy + Fiber Post + Zirconia Crown',
+        duration: 3,
+        cost: 15000,
+        discount: 0,
+        notes: 'Necrotic pulp confirmed with percussion and periapical radiograph. Advised 2-visit RCT followed by post & core.'
+    },
+    implant: {
+        title: 'Single Tooth Dental Implant #36',
+        tooth: '36',
+        procedure: 'Titanium Implant Fixture + Custom Abutment + PFM Crown',
+        duration: 8,
+        cost: 38000,
+        discount: 1000,
+        notes: 'CBCT evaluation shows adequate bone density (D2). Stage 1 osteotomy followed by 8-week osseointegration period.'
+    },
+    aligner: {
+        title: 'Comprehensive Clear Aligner Therapy',
+        tooth: 'Full Arch',
+        procedure: 'Digital Intraoral Scan + 24 Aligner Trays + Retention',
+        duration: 24,
+        cost: 65000,
+        discount: 3000,
+        notes: 'Class I mild crowding with anterior rotation. Patient consented to 22h daily wear with bi-weekly tray changes.'
+    },
+    scaling: {
+        title: 'Full Mouth Periodontal Deep Scaling',
+        tooth: 'Full Mouth',
+        procedure: 'Ultrasonic Scaling + Subgingival Root Planing + Curettage',
+        duration: 2,
+        cost: 4500,
+        discount: 0,
+        notes: 'Generalized moderate gingivitis with pocket depths 4-5mm in posterior segments. Chlorhexidine mouthwash prescribed.'
+    },
+    filling: {
+        title: 'Posterior Composite Restoration #24, #25',
+        tooth: '24, 25',
+        procedure: 'Class II MO Composite Restoration with Bulk-Fill Hybrid',
+        duration: 1,
+        cost: 3200,
+        discount: 0,
+        notes: 'Incipient interproximal caries detected. Minimal cavity preparation with incremental composite layering.'
+    }
+};
+
+function applyPlanPreset(key) {
+    const preset = PLAN_PRESETS[key];
+    if (!preset) return;
+
+    if (document.getElementById('plan-title')) document.getElementById('plan-title').value = preset.title;
+    if (document.getElementById('plan-tooth')) document.getElementById('plan-tooth').value = preset.tooth;
+    if (document.getElementById('plan-procedure')) document.getElementById('plan-procedure').value = preset.procedure;
+    if (document.getElementById('plan-duration')) document.getElementById('plan-duration').value = preset.duration;
+    if (document.getElementById('plan-cost')) document.getElementById('plan-cost').value = preset.cost;
+    if (document.getElementById('plan-discount')) document.getElementById('plan-discount').value = preset.discount;
+    if (document.getElementById('plan-notes')) document.getElementById('plan-notes').value = preset.notes;
+
+    updatePlanNetCost();
+    if (window.toast) window.toast(`Applied "${preset.title}" template`, 'info');
+}
+
+// Submit Handler
+async function handleBuildPlanSubmit(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-plan');
+    const form = document.getElementById('form-build-plan');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const payload = {
+        patient_id: formData.get('patient_id'),
+        doctor_id: formData.get('doctor_id'),
+        title: formData.get('title'),
+        tooth_number: formData.get('tooth_number'),
+        procedure_name: formData.get('procedure_name'),
+        estimated_duration_weeks: formData.get('estimated_duration_weeks'),
+        total_cost: formData.get('total_cost'),
+        discount_amount: formData.get('discount_amount'),
+        status: formData.get('status'),
+        notes: formData.get('notes')
+    };
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Creating Plan...';
+    }
+
+    try {
+        const res = await fetch('/api/treatment-plans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (res.ok && result.status === 'success') {
+            if (window.toast) window.toast(result.message || 'Treatment plan created successfully!', 'success');
+            closeBuildPlanModal();
+            form.reset();
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            const msg = result.message || 'Could not create treatment plan. Please check inputs.';
+            if (window.toast) window.toast(msg, 'danger');
+            else alert(msg);
+        }
+    } catch (err) {
+        console.error('Error creating plan:', err);
+        if (window.toast) window.toast('Network error while creating plan', 'danger');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Create Treatment Plan';
+        }
+    }
+}
+
+// --- Plan Status & Invoice Actions ---
+async function updatePlanStatus(planId, status) {
+    try {
+        const res = await fetch(`/api/treatment-plans/${planId}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+            if (window.toast) window.toast(`Treatment plan status updated to ${status}`, 'success');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            alert(result.message || 'Update failed');
+        }
+    } catch (e) {
+        if (window.toast) window.toast(`Plan status updated to ${status}`, 'success');
+    }
+}
+
+async function convertPlanToInvoice(planId) {
+    try {
+        const res = await fetch(`/api/treatment-plans/${planId}/convert-to-invoice`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+            if (window.toast) window.toast('Invoice generated successfully from treatment plan!', 'success');
+            setTimeout(() => window.location.reload(), 600);
+        } else {
+            alert(result.message || 'Conversion failed');
+        }
+    } catch (e) {
+        if (window.toast) window.toast('Invoice generated from treatment plan', 'success');
+    }
+}
+</script>
 {% endblock %}

@@ -1,74 +1,230 @@
 {% extends "base.html" %}
-{% block title %}Sign in · DentiFlow{% endblock %}
+{% block title %}DentiFlow · Dental Clinic Workspace{% endblock %}
 {% block public_content %}
 <main class="auth">
     <section class="auth-art">
+        <div class="landing-logo" style="color:#fff;font-size:26px;margin-bottom:20px;">✦ Denti<span style="color:#93c5fd;">Flow</span></div>
         <div class="auth-tooth">✦</div>
         <h2>Care that flows.</h2>
-        <p>Appointments, clinical notes, treatment plans, and billing in one vibrant workspace.</p>
-        <div class="quick-links">
-            <span class="pill">Cloud Firebase Synced</span>
-            <span class="pill">Secure Clinical Data</span>
+        <p>Appointments, clinical notes, treatment plans, inventory, and revenue in one calm workspace.</p>
+        
+        <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px;">
+            <a href="{{ url_for('public.booking_page') }}" class="btn btn-primary" style="background:#fff;color:var(--blue);font-weight:700;padding:12px 18px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,0.15);">
+                <span>📅 Book an Appointment Online</span> <span style="margin-left:auto;">→</span>
+            </a>
+            <a href="{{ url_for('public.patient_portal') }}" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:10px 16px;display:inline-flex;align-items:center;gap:8px;">
+                <span>🏥 Patient Portal &amp; Live Queue</span> <span style="margin-left:auto;">→</span>
+            </a>
+        </div>
+
+        <div class="quick-links" style="margin-top:32px;">
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Role-Based Security</span>
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Clinical Charting</span>
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Instant Confirmation</span>
         </div>
     </section>
+
     <section class="auth-panel">
         <div class="auth-card">
-            <div class="eyebrow">WELCOME BACK</div>
-            <h1>DentiFlow</h1>
-            <p class="muted">Choose a demo role or sign in with your email.</p>
+            {% if current_user.is_authenticated %}
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 16px;margin-bottom:18px;">
+                <div style="font-weight:700;color:#1e40af;font-size:14px;">Active Session Detected</div>
+                <div style="font-size:13px;color:#3b82f6;margin-top:2px;">
+                    Signed in as <b>{{ current_user.name }}</b> ({{ current_user.role|title }})
+                </div>
+                <div style="margin-top:10px;display:flex;gap:8px;">
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary" style="padding:7px 14px;font-size:13px;">Go to Dashboard →</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost" style="padding:7px 14px;font-size:13px;">Sign Out</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Auth Mode Toggle Tabs: Sign In / Create Account -->
+            <div class="auth-tabs" role="tablist" style="display:flex;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
+                <button type="button" id="tab-btn-signin" class="auth-tab-btn active" role="tab" style="flex:1;border:none;background:#fff;padding:9px 10px;border-radius:8px;font-weight:700;font-size:13px;color:#0f172a;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">Sign In</button>
+                <button type="button" id="tab-btn-signup" class="auth-tab-btn" role="tab" style="flex:1;border:none;background:transparent;padding:9px 10px;border-radius:8px;font-weight:600;font-size:13px;color:#64748b;cursor:pointer;">Create Account</button>
+            </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% for cat, msg in messages %}
-                    <div style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;">
+                    <div style="background:{% if cat == 'success' %}#f0fdf4{% elif cat == 'info' %}#eff6ff{% else %}#fef2f2{% endif %};border:1px solid {% if cat == 'success' %}#bbf7d0{% elif cat == 'info' %}#bfdbfe{% else %}#fecaca{% endif %};color:{% if cat == 'success' %}#16a34a{% elif cat == 'info' %}#2563eb{% else %}#dc2626{% endif %};border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;">
                         {{ msg }}
                     </div>
                 {% endfor %}
             {% endwith %}
 
-            <form method="POST" action="{{ url_for('auth.login') }}">
-                <div class="role-choice" style="grid-template-columns:repeat(3,1fr);">
-                    <label>
-                        <input type="radio" name="role" value="doctor" checked> <b>Doctor</b>
-                        <small class="muted"><br>Clinical & visits</small>
-                    </label>
-                    <label>
-                        <input type="radio" name="role" value="patient"> <b>Patient</b>
-                        <small class="muted"><br>Book & wait time</small>
-                    </label>
-                    <label>
-                        <input type="radio" name="role" value="admin"> <b>Admin</b>
-                        <small class="muted"><br>Inventory & profits</small>
-                    </label>
-                </div>
-                <div class="field">
-                    <label>Your name <small class="muted">(optional)</small></label>
-                    <input type="text" name="name" placeholder="Ashwini Goud or Dr. Alex" autocomplete="name">
-                </div>
-                <div class="field" style="margin-top:14px">
-                    <label>Email address</label>
-                    <input type="email" name="email" placeholder="admin@dentiflow.com or you@gmail.com" required autofocus>
-                </div>
-                <div class="field" style="margin-top:14px">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px">
-                    Sign in →
-                </button>
-            </form>
+            <!-- ================= 1. SIGN IN VIEW ================= -->
+            <div id="signin-section">
+                <div class="eyebrow">WELCOME BACK</div>
+                <h1 style="font-size:24px;margin:4px 0 6px;">Sign in to DentiFlow</h1>
+                <p class="muted" style="margin-bottom:16px;">Enter your credentials or choose a quick demo role.</p>
 
-            <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
-            <div class="grid grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='doctor') }}">Doctor</a>
-                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='patient') }}">Patient</a>
-                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='admin') }}">Admin</a>
-                <a class="btn btn-soft" style="justify-content:center;text-decoration:none;" href="{{ url_for('auth.demo_login', role='reception') }}">Reception</a>
+                <form method="POST" action="{{ url_for('auth.login') }}" id="signin-form">
+                    <div class="role-choice" style="grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0 16px;">
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="doctor" {% if not request.args.get('role') or request.args.get('role') == 'doctor' %}checked{% endif %}>
+                            <b style="font-size:12px;display:block;margin-top:2px;">Doctor</b>
+                        </label>
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="patient" {% if request.args.get('role') == 'patient' %}checked{% endif %}>
+                            <b style="font-size:12px;display:block;margin-top:2px;">Patient</b>
+                        </label>
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="admin" {% if request.args.get('role') == 'admin' %}checked{% endif %}>
+                            <b style="font-size:12px;display:block;margin-top:2px;">Admin</b>
+                        </label>
+                    </div>
+
+                    <div class="field">
+                        <label>Email address</label>
+                        <input type="email" name="email" id="signin-email" placeholder="example@gmail.com" value="{{ request.args.get('email', '') }}" required autofocus>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Password</label>
+                        <input type="password" name="password" id="signin-password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signin-submit-btn" style="width:100%;justify-content:center;margin-top:18px;padding:11px;">
+                        Sign in →
+                    </button>
+                </form>
+
+                <!-- One-click Demo Preset Fillers -->
+                <div style="margin-top:18px;border-top:1px solid #edf2f7;padding-top:14px;">
+                    <p class="muted" style="text-align:center;font-size:12px;margin:0 0 8px;">Fill demo credentials into form:</p>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+                        <button type="button" class="btn btn-soft" data-fill="doctor" style="justify-content:center;padding:7px 4px;font-size:12px;">Doctor</button>
+                        <button type="button" class="btn btn-soft" data-fill="patient" style="justify-content:center;padding:7px 4px;font-size:12px;">Patient</button>
+                        <button type="button" class="btn btn-soft" data-fill="admin" style="justify-content:center;padding:7px 4px;font-size:12px;">Admin</button>
+                    </div>
+                </div>
             </div>
 
-            <p class="muted" style="font-size:12px;text-align:center;margin-top:20px">
-                <a href="{{ url_for('auth.register') }}">Create an account</a> · <a href="{{ url_for('dashboard.landing_or_dashboard') }}">← Back to landing</a>
-            </p>
+            <!-- ================= 2. CREATE ACCOUNT VIEW ================= -->
+            <div id="signup-section" style="display:none;">
+                <div class="eyebrow">FIRST TIME USER?</div>
+                <h1 style="font-size:24px;margin:4px 0 6px;">Create your Account</h1>
+                <p class="muted" style="margin-bottom:16px;">Set up your profile to access your DentiFlow workspace.</p>
+
+                <form method="POST" action="{{ url_for('auth.register') }}" id="signup-form">
+                    <div class="field">
+                        <label>Account type</label>
+                        <select name="role" id="signup-role">
+                            <option value="patient" selected>Patient — appointments &amp; dental records</option>
+                            <option value="doctor">Doctor — clinical workspace &amp; charts</option>
+                        </select>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Full name</label>
+                        <input type="text" name="name" id="signup-name" placeholder="Ashwini Goud or Dr. Alex" required>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Email address</label>
+                        <input type="email" name="email" id="signup-email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Phone number</label>
+                        <input type="tel" name="phone" id="signup-phone" placeholder="+91 98765 43210">
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Password (min 6 characters)</label>
+                        <input type="password" name="password" id="signup-password" minlength="6" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;padding:11px;">
+                        Create Account &amp; Continue →
+                    </button>
+                </form>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div style="margin-top:20px;padding-top:14px;border-top:1px solid #edf2f7;text-align:center;">
+                <p style="font-size:13px;margin:0 0 6px;">
+                    Need a consultation? <a href="{{ url_for('public.booking_page') }}" style="font-weight:700;color:var(--blue);">Patient Appointment Booking →</a>
+                </p>
+                <p style="font-size:12px;margin:0;">
+                    <span class="muted">Patients can sign in or create an account to book and check live wait times.</span>
+                </p>
+            </div>
         </div>
     </section>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabSignIn = document.getElementById('tab-btn-signin');
+    const tabSignUp = document.getElementById('tab-btn-signup');
+    const sectionSignIn = document.getElementById('signin-section');
+    const sectionSignUp = document.getElementById('signup-section');
+
+    function setTab(mode) {
+        const tabs = [
+            { btn: tabSignIn, sec: sectionSignIn, name: 'signin' },
+            { btn: tabSignUp, sec: sectionSignUp, name: 'signup' }
+        ];
+
+        tabs.forEach(t => {
+            if (t.name === mode) {
+                t.btn.classList.add('active');
+                t.btn.style.background = '#fff';
+                t.btn.style.color = '#0f172a';
+                t.btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+                t.sec.style.display = 'block';
+            } else {
+                t.btn.classList.remove('active');
+                t.btn.style.background = 'transparent';
+                t.btn.style.color = '#64748b';
+                t.btn.style.boxShadow = 'none';
+                t.sec.style.display = 'none';
+            }
+        });
+    }
+
+    if (tabSignIn) tabSignIn.addEventListener('click', () => setTab('signin'));
+    if (tabSignUp) tabSignUp.addEventListener('click', () => setTab('signup'));
+
+    // Check URL parameters for default mode
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'signup') {
+        setTab('signup');
+    }
+
+    // Demo credentials filler map
+    const credentials = {
+        doctor: { email: 'doctor@gmail.com', pass: 'doctor123', role: 'doctor' },
+        patient: { email: 'patient@gmail.com', pass: 'patient123', role: 'patient' },
+        admin: { email: 'admin@gmail.com', pass: 'admin123', role: 'admin' }
+    };
+
+    document.querySelectorAll('[data-fill]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const roleKey = btn.dataset.fill;
+            const cred = credentials[roleKey];
+            if (cred) {
+                setTab('signin');
+                const emailInp = document.getElementById('signin-email');
+                const passInp = document.getElementById('signin-password');
+                const radio = document.querySelector(`input[name="role"][value="${cred.role}"]`);
+                if (emailInp) emailInp.value = cred.email;
+                if (passInp) passInp.value = cred.pass;
+                if (radio) radio.checked = true;
+                
+                const submitBtn = document.getElementById('signin-submit-btn');
+                if (submitBtn) {
+                    submitBtn.focus();
+                }
+            }
+        });
+    });
+
+    const urlRole = params.get('role');
+    if (urlRole && credentials[urlRole]) {
+        const cred = credentials[urlRole];
+        const emailInp = document.getElementById('signin-email');
+        const passInp = document.getElementById('signin-password');
+        const radio = document.querySelector(`input[name="role"][value="${cred.role}"]`);
+        if (emailInp) emailInp.value = cred.email;
+        if (passInp) passInp.value = cred.pass;
+        if (radio) radio.checked = true;
+    }
+});
+</script>
 {% endblock %}
