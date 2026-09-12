@@ -58,13 +58,22 @@
             </form>
 
             <script>
-                document.getElementById('auth-form').addEventListener('submit', function() {
+                document.getElementById('auth-form').addEventListener('submit', function(e) {
+                    const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
+                    const email = document.getElementById('login-email')?.value || '';
+                    const name = document.getElementById('login-name')?.value || (role === 'admin' ? 'Dr. Rajesh Verma' : 'User');
                     try {
-                        const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
-                        const email = document.getElementById('login-email')?.value || '';
-                        const name = document.getElementById('login-name')?.value || (role === 'admin' ? 'Dr. Rajesh Verma' : 'User');
                         localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
-                    } catch(e) {}
+                    } catch(err) {}
+
+                    // If hosted on GitHub Pages or static host (no Flask backend)
+                    const isStatic = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+                    if (isStatic) {
+                        e.preventDefault();
+                        const target = role === 'admin' ? './admin-dashboard.html' : (role === 'patient' ? './patient-dashboard.html' : './dashboard.html');
+                        window.location.href = target;
+                        return false;
+                    }
                 });
             </script>
 

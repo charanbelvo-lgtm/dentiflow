@@ -55,6 +55,24 @@
                 </button>
             </form>
 
+            <script>
+                document.querySelector('form')?.addEventListener('submit', function(e) {
+                    const isStatic = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+                    if (isStatic) {
+                        e.preventDefault();
+                        const role = document.querySelector('[name="role"]')?.value || 'admin';
+                        const name = document.querySelector('[name="name"]')?.value || 'User';
+                        const email = document.querySelector('[name="email"]')?.value || '';
+                        try {
+                            localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
+                        } catch(err) {}
+                        const target = role === 'admin' ? './admin-dashboard.html' : (role === 'patient' ? './patient-dashboard.html' : './dashboard.html');
+                        window.location.href = target;
+                        return false;
+                    }
+                });
+            </script>
+
             <p class="muted" style="font-size:13px;text-align:center;margin-top:20px">
                 Already have an account? <a href="{{ url_for('auth.login') }}">Sign in</a>
             </p>

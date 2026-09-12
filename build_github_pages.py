@@ -87,6 +87,9 @@ URL_REPLACEMENTS = [
     (r'href="/favicon\.ico"', r'href="./favicon.ico"'),
     (r'href="/"', r'href="./index.html"'),
     (r'href="/book"', r'href="./index.html"'),
+    (r'action="/login"', r'action="javascript:void(0)"'),
+    (r'action="/register"', r'action="javascript:void(0)"'),
+    (r'method="POST"', r'method="GET"'),
 ]
 
 # Client-side Mock API script for GitHub Pages static hosting
