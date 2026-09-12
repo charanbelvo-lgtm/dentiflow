@@ -96,7 +96,7 @@
                     </label>
                 </div>
                 <div class="top-actions">
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="{{ url_for('auth.login', switch=1) }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;">Switch Role / Login 🔄</a>
                     {% if current_user.role == 'admin' %}
                     <a href="{{ url_for('dashboard.admin_dashboard') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
                     {% endif %}

@@ -173,7 +173,10 @@ def login():
         return redirect(safe_url)
 
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard.index'))
+        if request.args.get('switch') or request.args.get('role'):
+            logout_user()
+        else:
+            return redirect(url_for('dashboard.index'))
 
     return render_template('login.html')
 

@@ -214,11 +214,12 @@ document.addEventListener('DOMContentLoaded', () => {
         admin: { email: 'admin@gmail.com', pass: 'admin123', role: 'admin' }
     };
 
-    document.querySelectorAll('[data-fill]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const roleKey = btn.dataset.fill;
+    document.querySelectorAll('[data-demo-role], [data-demo-login], [data-fill]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const roleKey = btn.dataset.demoRole || btn.dataset.demoLogin || btn.dataset.fill;
             const cred = credentials[roleKey];
             if (cred) {
+                e.preventDefault();
                 setTab('signin');
                 const emailInp = document.getElementById('signin-email');
                 const passInp = document.getElementById('signin-password');
@@ -227,10 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (passInp) passInp.value = cred.pass;
                 if (radio) radio.checked = true;
                 
-                const submitBtn = document.getElementById('signin-submit-btn');
-                if (submitBtn) {
-                    submitBtn.focus();
-                }
+                const form = document.getElementById('signin-form');
+                if (form) form.submit();
             }
         });
     });
