@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from urllib.parse import quote_plus
 from dotenv import load_dotenv
 
@@ -34,9 +35,10 @@ class Config:
         SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(BASE_DIR, 'dentiflow.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_SORT_KEYS = False
-    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', '0').lower() in {'1', 'true', 'yes'}
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', '0').lower() in {'1', 'true', 'yes'} or (APP_ENV == 'production' and os.environ.get('SESSION_COOKIE_SECURE') != '0')
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(BASE_DIR, 'uploads'))
 
     # Firebase Configuration

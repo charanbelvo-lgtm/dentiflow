@@ -4,11 +4,13 @@ from flask_login import login_required, current_user
 from models import (
     db, Doctor, StaffShift, LeaveRequest, Appointment, Chair, Branch, AuditLog
 )
+from security import staff_required, admin_required, log_audit_event
 
 staff_bp = Blueprint('staff', __name__)
 
 @staff_bp.route('/staff')
 @login_required
+@admin_required
 def index():
     doctors = Doctor.query.all()
     chairs = Chair.query.all()
@@ -17,6 +19,7 @@ def index():
 
 @staff_bp.route('/doctor-profile/<int:doctor_id>')
 @login_required
+@admin_required
 def doctor_profile(doctor_id):
     doctor = Doctor.query.get_or_404(doctor_id)
     today = date.today()
@@ -26,6 +29,7 @@ def doctor_profile(doctor_id):
 
 @staff_bp.route('/api/staff')
 @login_required
+@admin_required
 def get_staff_data():
     today = date.today()
     doctors = Doctor.query.all()
@@ -56,6 +60,7 @@ def get_staff_data():
 
 @staff_bp.route('/api/staff/shifts', methods=['POST'])
 @login_required
+@admin_required
 def update_shift():
     data = request.get_json()
     doctor_id = int(data.get('doctor_id'))
@@ -72,5 +77,10 @@ def update_shift():
     shift.status = status
     shift.notes = data.get('notes')
     db.session.commit()
+
+    log_audit_event(
+        action=f"Updated shift for Doctor #{doctor_id} on {shift_date} to '{status}' ({shift_type})",
+        module="Staff Management"
+    )
 
     return jsonify({'status': 'success', 'message': 'Shift updated', 'shift': shift.to_dict()})

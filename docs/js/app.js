@@ -224,19 +224,31 @@
         }
       });
 
-      // Ensure Book & Wait Time link exists in nav
+      // Ensure only ONE Book & Wait Time link exists in nav (deduplicate)
       const nav = document.querySelector(".sidebar .nav");
-      if (nav && !nav.querySelector('a[href*="patient-dashboard"]')) {
-        const bookLink = document.createElement("a");
-        bookLink.href = "./patient-dashboard.html";
-        bookLink.setAttribute("data-role", "patient");
-        bookLink.innerHTML = "<span>Book &amp; Wait Time</span>";
-        if (location.pathname.includes("patient-dashboard")) bookLink.classList.add("active");
-        const firstLabel = nav.querySelector(".nav-label");
-        if (firstLabel && firstLabel.nextSibling) {
-          nav.insertBefore(bookLink, firstLabel.nextSibling);
-        } else {
-          nav.prepend(bookLink);
+      if (nav) {
+        const waitLinks = Array.from(nav.querySelectorAll('a')).filter(a => {
+          const txt = (a.textContent || "").toLowerCase();
+          const href = (a.getAttribute("href") || "").toLowerCase();
+          return txt.includes("wait time") || href.includes("patient-dashboard");
+        });
+        if (waitLinks.length > 1) {
+          // Keep only the first link and remove duplicates
+          for (let i = 1; i < waitLinks.length; i++) {
+            waitLinks[i].remove();
+          }
+        } else if (waitLinks.length === 0 && !nav.querySelector('a[href*="dashboard"]')) {
+          const bookLink = document.createElement("a");
+          bookLink.href = "/dashboard";
+          bookLink.setAttribute("data-role", "patient");
+          bookLink.innerHTML = "<span>Book &amp; Wait Time</span>";
+          if (location.pathname.includes("dashboard")) bookLink.classList.add("active");
+          const firstLabel = nav.querySelector(".nav-label");
+          if (firstLabel && firstLabel.nextSibling) {
+            nav.insertBefore(bookLink, firstLabel.nextSibling);
+          } else {
+            nav.prepend(bookLink);
+          }
         }
       }
     }

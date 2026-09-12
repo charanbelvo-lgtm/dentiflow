@@ -42,7 +42,7 @@ class Patient(db.Model):
     xrays = db.relationship('XRayImage', backref='patient', cascade='all, delete-orphan', lazy=True)
     clinical_notes = db.relationship('ClinicalNote', backref='patient', cascade='all, delete-orphan', lazy=True)
 
-    def to_dict(self):
+    def to_dict(self, include_financial=True):
         alerts = [a.alert_text for a in self.medical_alerts if a.is_critical]
         return {
             'id': self.id,
@@ -64,8 +64,8 @@ class Patient(db.Model):
             'abdm_health_id': self.abdm_health_id,
             'insurance_policy_no': self.insurance_policy_no,
             'insurance_provider': self.insurance_provider,
-            'outstanding_balance': self.outstanding_balance,
-            'total_spent': self.total_spent,
+            'outstanding_balance': self.outstanding_balance if include_financial else None,
+            'total_spent': self.total_spent if include_financial else None,
             'last_visit_formatted': self.last_visit.strftime('%d %b %Y') if self.last_visit else 'Never',
             'next_appointment_formatted': self.next_appointment.strftime('%d %b %Y, %I:%M %p') if self.next_appointment else 'None scheduled',
             'critical_alerts': alerts,

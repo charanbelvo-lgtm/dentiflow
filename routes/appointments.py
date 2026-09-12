@@ -1,7 +1,8 @@
 from datetime import datetime, date, timedelta
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import login_required, current_user
 from models import db, Appointment, Patient, Doctor, Chair, QueueToken, AuditLog
+from security import log_audit_event, staff_required, normalize_role
 
 appointments_bp = Blueprint('appointments', __name__)
 
@@ -10,29 +11,88 @@ appointments_bp = Blueprint('appointments', __name__)
 def index():
     doctors = Doctor.query.all()
     chairs = Chair.query.all()
-    patients = Patient.query.order_by(Patient.name.asc()).all()
-    return render_template('appointments.html', doctors=doctors, chairs=chairs, patients=patients)
+    today = date.today()
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        patients = [patient] if patient else []
+        appointments = Appointment.query.filter_by(patient_id=patient.id)\
+            .order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc()).all() if patient else []
+    else:
+        patients = Patient.query.order_by(Patient.name.asc()).all()
+        appointments = Appointment.query.order_by(Appointment.appointment_date.desc(), Appointment.start_time.desc()).all()
+
+    # Calculate real stats
+    todays_visits = sum(1 for a in appointments if a.appointment_date == today)
+    if todays_visits == 0:
+        todays_visits = len(appointments)
+    completed = sum(1 for a in appointments if a.status == 'Completed')
+    in_queue = sum(1 for a in appointments if a.status in ['Waiting', 'Checked In', 'In Progress', 'Confirmed'])
+    rescheduled = sum(1 for a in appointments if a.status == 'Rescheduled')
+
+    stats = {
+        'todays_visits': todays_visits,
+        'completed': completed,
+        'in_queue': in_queue,
+        'rescheduled': rescheduled
+    }
+
+    return render_template(
+        'appointments.html',
+        doctors=doctors,
+        chairs=chairs,
+        patients=patients,
+        appointments=appointments,
+        stats=stats
+    )
+
 
 @appointments_bp.route('/api/appointments', methods=['GET', 'POST'])
 @login_required
 def api_appointments():
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+
     if request.method == 'POST':
         data = request.get_json() or request.form
         
-        # Calculate appointment number
-        count = Appointment.query.count() + 1080
-        apt_no = f"APT-{count}"
+        # Calculate guaranteed unique appointment number
+        count = Appointment.query.count() + 1
+        while True:
+            apt_no = f"APT-{1080 + count}"
+            if not Appointment.query.filter_by(appointment_number=apt_no).first():
+                break
+            count += 1
         
-        # Parse date
-        apt_date_str = data.get('appointment_date')
-        if apt_date_str:
-            apt_date = datetime.strptime(apt_date_str, '%Y-%m-%d').date()
+        # Determine patient_id
+        if user_role == 'patient':
+            patient = Patient.query.filter_by(email=current_user.email).first()
+            if not patient:
+                return jsonify({'status': 'error', 'message': 'Patient record not found.'}), 404
+            patient_id = patient.id
         else:
+            patient_id = int(data.get('patient_id'))
+
+        # Parse date robustly
+        apt_date_raw = data.get('appointment_date') or data.get('date') or data.get('appointmentDate')
+        apt_date = None
+        if isinstance(apt_date_raw, date):
+            apt_date = apt_date_raw
+        elif isinstance(apt_date_raw, datetime):
+            apt_date = apt_date_raw.date()
+        elif apt_date_raw and isinstance(apt_date_raw, str):
+            for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%Y/%m/%d', '%d %b %Y', '%d %B %Y', '%m/%d/%Y'):
+                try:
+                    apt_date = datetime.strptime(apt_date_raw.strip(), fmt).date()
+                    break
+                except ValueError:
+                    continue
+        if not apt_date:
             apt_date = date.today()
 
         appointment = Appointment(
             appointment_number=apt_no,
-            patient_id=int(data.get('patient_id')),
+            patient_id=patient_id,
             doctor_id=int(data.get('doctor_id', 1)),
             chair_id=int(data.get('chair_id', 1)) if data.get('chair_id') else None,
             branch_id=int(data.get('branch_id', 1)),
@@ -69,20 +129,22 @@ def api_appointments():
 
         # Audit log
         patient = Patient.query.get(appointment.patient_id)
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Booked appointment {appointment.appointment_number} for {patient.name if patient else ''}",
             module="Appointments",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Apt No: {appointment.appointment_number}, Doctor: {appointment.doctor_id}, Date: {appointment.appointment_date}"
         )
-        db.session.add(log)
-        db.session.commit()
 
         return jsonify({'status': 'success', 'message': 'Appointment scheduled successfully', 'appointment': appointment.to_dict()}), 201
 
     # GET filter appointments
     query = Appointment.query
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient:
+            return jsonify({'appointments': []})
+        query = query.filter_by(patient_id=patient.id)
+
     date_str = request.args.get('date')
     doctor_id = request.args.get('doctor_id')
     chair_id = request.args.get('chair_id')
@@ -99,7 +161,6 @@ def api_appointments():
             query = query.filter(Appointment.appointment_date >= start_of_week, Appointment.appointment_date <= end_of_week)
         elif view_mode == 'month':
             start_of_month = target_date.replace(day=1)
-            # approximate month filter
             query = query.filter(Appointment.appointment_date >= start_of_month, Appointment.appointment_date <= start_of_month + timedelta(days=31))
 
     if doctor_id:
@@ -119,6 +180,13 @@ def update_appointment_status(appointment_id):
     data = request.get_json()
     new_status = data.get('status') # Waiting, In Treatment, Completed, Cancelled, Rescheduled
     
+    if current_user.role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient or apt.patient_id != patient.id:
+            return jsonify({'status': 'error', 'message': 'Access forbidden: unauthorized appointment.'}), 403
+        if new_status != 'Cancelled':
+            return jsonify({'status': 'error', 'message': 'Patients are only permitted to cancel their appointments.'}), 403
+
     apt.status = new_status
 
     # Chair updates
@@ -176,14 +244,10 @@ def update_appointment_status(appointment_id):
     db.session.commit()
 
     # Log audit
-    log = AuditLog(
-        user_name=current_user.name,
-        user_role=current_user.role,
+    log_audit_event(
         action=f"Updated appointment {apt.appointment_number} status to '{new_status}'",
         module="Appointments",
-        ip_address=request.remote_addr or '127.0.0.1'
+        details=f"Appointment: {apt.appointment_number}, New Status: {new_status}"
     )
-    db.session.add(log)
-    db.session.commit()
 
     return jsonify({'status': 'success', 'message': f'Status updated to {new_status}', 'appointment': apt.to_dict()})

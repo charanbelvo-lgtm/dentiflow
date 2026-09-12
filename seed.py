@@ -48,9 +48,9 @@ def seed_database(reset=False):
 
         # 3. Users
         users = [
-            User(email='admin@dentiflow.com', name='Dr. Rajesh Verma', role='admin', phone='+91 98765 43210', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
-            User(email='doctor@dentiflow.com', name='Dr. Ananya Sharma', role='doctor', phone='+91 98765 43211', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
-            User(email='reception@dentiflow.com', name='Pooja Hegde', role='receptionist', phone='+91 98765 43212', branch_id=1, avatar='/static/img/cartoon-patient.svg'),
+            User(email='admin@gmail.com', name='Dr. Rajesh Verma', role='admin', phone='+91 98765 43210', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
+            User(email='doctor@gmail.com', name='Dr. Ananya Sharma', role='doctor', phone='+91 98765 43211', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
+            User(email='patient@gmail.com', name='Ashwini Goud', role='patient', phone='+91 98765 43213', branch_id=1, avatar='/static/img/cartoon-patient.svg'),
             User(email='budigeashwinigoud@gmail.com', name='Ashwini Goud', role='patient', phone='+91 98765 43213', branch_id=1, avatar='/static/img/cartoon-patient.svg')
         ]
         for u in users:
@@ -350,10 +350,8 @@ def seed_database(reset=False):
         # 26. Audit Logs
         logs = [
             AuditLog(user_name='Dr. Ananya Sharma', user_role='doctor', action='Updated Tooth #16 Root Canal Clinical Findings & 3D Chart', module='Clinical', ip_address='192.168.1.104', details='Added diagnosis and phase 1 restorative notes.'),
-            AuditLog(user_name='Pooja Hegde', user_role='receptionist', action='Checked in Patient Rahul Mehta for Token #014', module='Queue', ip_address='192.168.1.102', details='Assigned to Chair 01 with Dr. Ananya Sharma'),
             AuditLog(user_name='Dr. Rajesh Verma', user_role='admin', action='Generated GST Invoice INV-2026-1029 for ₹17,110', module='Billing', ip_address='192.168.1.101', details='Applied 18% GST (CGST 9% + SGST 9%)'),
-            AuditLog(user_name='Pooja Hegde', user_role='receptionist', action='Recorded UPI Payment of ₹14,610 (RCP-2026-904)', module='Billing', ip_address='192.168.1.102', details='Transaction Ref: UPI-948102948201'),
-            AuditLog(user_name='Dr. Rohan Patel', user_role='doctor', action='Logged usage of 2x Composite Resin A2 & 1x Mani Bur Pack', module='Inventory', ip_address='192.168.1.105', details='Deducted stock for operative procedure')
+            AuditLog(user_name='Dr. Rajesh Verma', user_role='admin', action='Recorded UPI Payment of ₹14,610 (RCP-2026-904)', module='Billing', ip_address='192.168.1.101', details='Transaction Ref: UPI-948102948201')
         ]
         db.session.add_all(logs)
 
