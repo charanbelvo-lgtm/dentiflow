@@ -1,26 +1,58 @@
 from datetime import datetime, date, timedelta
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort
 from flask_login import login_required, current_user
 from models import (
     db, Invoice, InvoiceItem, Payment, EMIPlan, PaymentInstallment,
     Patient, Doctor, Branch, AuditLog
 )
+from security import billing_required, log_audit_event, normalize_role
 from firebase_service import sync_invoice_to_firestore
 
 billing_bp = Blueprint('billing', __name__)
 
 @billing_bp.route('/billing')
 @login_required
+@billing_required
 def index():
     invoices = Invoice.query.order_by(Invoice.id.desc()).all()
     patients = Patient.query.order_by(Patient.name.asc()).all()
     doctors = Doctor.query.all()
-    return render_template('billing.html', invoices=invoices, patients=patients, doctors=doctors)
+
+    total_invoiced = sum(inv.total_amount for inv in invoices)
+    total_collected = sum(inv.paid_amount for inv in invoices)
+    total_outstanding = sum(inv.due_amount for inv in invoices)
+    collection_rate = round((total_collected / total_invoiced * 100)) if total_invoiced > 0 else 100
+
+    stats = {
+        'collected': total_collected,
+        'outstanding': total_outstanding,
+        'collection_rate': collection_rate,
+        'invoices_count': len(invoices)
+    }
+    unpaid_invoices = [inv for inv in invoices if inv.status != 'Paid']
+
+    return render_template(
+        'billing.html',
+        invoices=invoices,
+        patients=patients,
+        doctors=doctors,
+        stats=stats,
+        unpaid_invoices=unpaid_invoices
+    )
 
 @billing_bp.route('/api/invoices', methods=['GET', 'POST'])
 @login_required
 def api_invoices():
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+
     if request.method == 'POST':
+        if user_role != 'admin':
+            log_audit_event(
+                action=f"ACCESS_DENIED: {current_user.name} ({user_role}) denied creating invoice",
+                module="Billing"
+            )
+            return jsonify({'status': 'error', 'message': 'Access forbidden: only administrators can create invoices.'}), 403
+
         data = request.get_json()
         last_inv = Invoice.query.order_by(Invoice.id.desc()).first()
         next_inv_num = (last_inv.id + 1033) if last_inv else 1033
@@ -85,20 +117,33 @@ def api_invoices():
         db.session.commit()
 
         # Log audit
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Created Invoice {invoice.invoice_number} (₹{invoice.total_amount:,.0f}) for {patient.name if patient else ''}",
             module="Billing",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Invoice: {invoice.invoice_number}, Total: {invoice.total_amount}, Patient: {invoice.patient_id}"
         )
-        db.session.add(log)
-        db.session.commit()
 
         inv_dict = invoice.to_dict()
         sync_invoice_to_firestore(inv_dict)
 
         return jsonify({'status': 'success', 'message': 'Invoice created successfully', 'invoice': inv_dict}), 201
+
+    if user_role == 'doctor':
+        log_audit_event(
+            action=f"ACCESS_DENIED: Doctor {current_user.name} denied viewing billing invoices",
+            module="Billing"
+        )
+        return jsonify({'status': 'error', 'message': 'Access forbidden: doctors are not permitted to access billing data.'}), 403
+
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient:
+            return jsonify({'invoices': []})
+        invoices = Invoice.query.filter_by(patient_id=patient.id).order_by(Invoice.id.desc()).all()
+        return jsonify({'invoices': [inv.to_dict() for inv in invoices]})
+
+    if user_role != 'admin':
+        abort(403)
 
     patient_id = request.args.get('patient_id')
     query = Invoice.query
@@ -110,15 +155,54 @@ def api_invoices():
 @billing_bp.route('/api/invoices/<int:invoice_id>')
 @login_required
 def get_invoice_detail(invoice_id):
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role == 'doctor':
+        log_audit_event(
+            action=f"ACCESS_DENIED: Doctor {current_user.name} denied access to invoice #{invoice_id}",
+            module="Billing"
+        )
+        return jsonify({'status': 'error', 'message': 'Access forbidden: doctors are not permitted to access invoice details.'}), 403
+
     invoice = Invoice.query.get_or_404(invoice_id)
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient or invoice.patient_id != patient.id:
+            abort(403)
+    elif user_role != 'admin':
+        abort(403)
+
     return jsonify({'invoice': invoice.to_dict()})
 
 @billing_bp.route('/api/payments', methods=['POST'])
 @login_required
 def record_payment():
-    data = request.get_json()
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role == 'doctor':
+        log_audit_event(
+            action=f"ACCESS_DENIED: Doctor {current_user.name} denied recording payment",
+            module="Billing"
+        )
+        return jsonify({'status': 'error', 'message': 'Access forbidden: doctors are not permitted to record payments.'}), 403
+
+    data = request.get_json() or {}
     invoice_id = int(data.get('invoice_id'))
     invoice = Invoice.query.get_or_404(invoice_id)
+
+    if user_role == 'patient':
+        patient = Patient.query.filter_by(email=current_user.email).first()
+        if not patient or invoice.patient_id != patient.id:
+            log_audit_event(
+                action=f"ACCESS_DENIED: Patient {current_user.name} denied paying invoice #{invoice_id}",
+                module="Billing"
+            )
+            return jsonify({'status': 'error', 'message': 'Access forbidden: you can only pay for your own invoice.'}), 403
+    elif user_role != 'admin':
+        log_audit_event(
+            action=f"ACCESS_DENIED: {current_user.name} ({user_role}) denied recording payment",
+            module="Billing"
+        )
+        return jsonify({'status': 'error', 'message': 'Access forbidden: insufficient permissions.'}), 403
+
     
     amount = float(data.get('amount', 0.0))
     payment_method = data.get('payment_method', 'UPI')
@@ -169,15 +253,11 @@ def record_payment():
     db.session.commit()
 
     # Log audit
-    log = AuditLog(
-        user_name=current_user.name,
-        user_role=current_user.role,
+    log_audit_event(
         action=f"Recorded {payment_method} Payment of ₹{amount:,.0f} ({payment.receipt_number}) for Invoice {invoice.invoice_number}",
         module="Billing",
-        ip_address=request.remote_addr or '127.0.0.1'
+        details=f"Payment: {payment.receipt_number}, Amount: {amount}, Invoice: {invoice.invoice_number}"
     )
-    db.session.add(log)
-    db.session.commit()
 
     inv_dict = invoice.to_dict()
     sync_invoice_to_firestore(inv_dict)
@@ -193,12 +273,28 @@ def record_payment():
 @billing_bp.route('/invoices/<int:invoice_id>/print')
 @login_required
 def print_invoice(invoice_id):
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role == 'doctor':
+        abort(403)
     invoice = Invoice.query.get_or_404(invoice_id)
+    if user_role == 'patient':
+        if not invoice.patient or invoice.patient.email != current_user.email:
+            abort(403)
+    elif user_role != 'admin':
+        abort(403)
     return render_template('print_invoice.html', invoice=invoice)
 
 # Printable view for Payment Receipt
 @billing_bp.route('/receipts/<int:payment_id>/print')
 @login_required
 def print_receipt(payment_id):
+    user_role = normalize_role(getattr(current_user, 'role', ''))
+    if user_role == 'doctor':
+        abort(403)
     payment = Payment.query.get_or_404(payment_id)
+    if user_role == 'patient':
+        if not payment.patient or payment.patient.email != current_user.email:
+            abort(403)
+    elif user_role != 'admin':
+        abort(403)
     return render_template('print_receipt.html', payment=payment)

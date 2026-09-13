@@ -48,12 +48,13 @@ def seed_database(reset=False):
 
         # 3. Users
         users = [
-            User(email='admin@dentiflow.com', name='Dr. Rajesh Verma', role='admin', phone='+91 98765 43210', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
-            User(email='doctor@dentiflow.com', name='Dr. Ananya Sharma', role='doctor', phone='+91 98765 43211', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
-            User(email='reception@dentiflow.com', name='Pooja Hegde', role='receptionist', phone='+91 98765 43212', branch_id=1, avatar='/static/img/cartoon-patient.svg')
+            User(email='admin@gmail.com', name='Dr. Rajesh Verma', role='admin', phone='+91 98765 43210', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
+            User(email='doctor@gmail.com', name='Dr. Ananya Sharma', role='doctor', phone='+91 98765 43211', branch_id=1, avatar='/static/img/cartoon-doctor.svg'),
+            User(email='patient@gmail.com', name='Ashwini Goud', role='patient', phone='+91 98765 43213', branch_id=1, avatar='/static/img/cartoon-patient.svg'),
+            User(email='budigeashwinigoud@gmail.com', name='Ashwini Goud', role='patient', phone='+91 98765 43213', branch_id=1, avatar='/static/img/cartoon-patient.svg')
         ]
         for u in users:
-            u.set_password(u.email.split('@')[0] + '123')
+            u.set_password('patient123' if u.role == 'patient' else u.email.split('@')[0] + '123')
         db.session.add_all(users)
         db.session.commit()
 
@@ -87,7 +88,7 @@ def seed_database(reset=False):
 
         # 6. Patients
         patients_data = [
-            Patient(patient_id='DF-2026-001', name='Aravind', age=29, gender='Male', phone='123456789', email='aravind@gmail.com', blood_group='O+', address='Indiranagar, Bengaluru', emergency_contact_name='Kavya (Sister)', emergency_contact_phone='123456780', primary_doctor_id=1, branch_id=1, abdm_health_id='aravind.demo', outstanding_balance=2500.0, total_spent=18500.0, last_visit=datetime.utcnow() - timedelta(days=12)),
+            Patient(patient_id='DF-2026-001', name='Ashwini Goud', age=29, gender='Female', phone='+91 98765 43213', email='budigeashwinigoud@gmail.com', blood_group='O+', address='Indiranagar, Bengaluru', emergency_contact_name='Kavya (Sister)', emergency_contact_phone='123456780', primary_doctor_id=1, branch_id=1, abdm_health_id='ashwini.demo', outstanding_balance=2500.0, total_spent=18500.0, last_visit=datetime.utcnow() - timedelta(days=12)),
             Patient(patient_id='DF-2026-002', name='Vishal', age=35, gender='Male', phone='123456788', email='vishal@gmail.com', blood_group='B+', address='Koramangala, Bengaluru', emergency_contact_name='Meera (Spouse)', emergency_contact_phone='123456781', primary_doctor_id=2, branch_id=1, outstanding_balance=0.0, total_spent=42000.0, last_visit=datetime.utcnow() - timedelta(days=5)),
             Patient(patient_id='DF-2026-003', name='Medha', age=27, gender='Female', phone='123456787', email='medha@gmail.com', blood_group='A+', address='Whitefield, Bengaluru', emergency_contact_name='Ravi (Father)', emergency_contact_phone='123456782', primary_doctor_id=2, branch_id=1, outstanding_balance=0.0, total_spent=14500.0, last_visit=datetime.utcnow() - timedelta(days=20)),
             Patient(patient_id='DF-2026-004', name='Lokesh', age=42, gender='Male', phone='123456786', email='lokesh@gmail.com', blood_group='AB+', address='HSR Layout, Bengaluru', emergency_contact_name='Anita (Spouse)', emergency_contact_phone='123456783', primary_doctor_id=3, branch_id=1, outstanding_balance=4500.0, total_spent=31000.0, last_visit=datetime.utcnow() - timedelta(days=3)),
@@ -349,10 +350,8 @@ def seed_database(reset=False):
         # 26. Audit Logs
         logs = [
             AuditLog(user_name='Dr. Ananya Sharma', user_role='doctor', action='Updated Tooth #16 Root Canal Clinical Findings & 3D Chart', module='Clinical', ip_address='192.168.1.104', details='Added diagnosis and phase 1 restorative notes.'),
-            AuditLog(user_name='Pooja Hegde', user_role='receptionist', action='Checked in Patient Rahul Mehta for Token #014', module='Queue', ip_address='192.168.1.102', details='Assigned to Chair 01 with Dr. Ananya Sharma'),
             AuditLog(user_name='Dr. Rajesh Verma', user_role='admin', action='Generated GST Invoice INV-2026-1029 for ₹17,110', module='Billing', ip_address='192.168.1.101', details='Applied 18% GST (CGST 9% + SGST 9%)'),
-            AuditLog(user_name='Pooja Hegde', user_role='receptionist', action='Recorded UPI Payment of ₹14,610 (RCP-2026-904)', module='Billing', ip_address='192.168.1.102', details='Transaction Ref: UPI-948102948201'),
-            AuditLog(user_name='Dr. Rohan Patel', user_role='doctor', action='Logged usage of 2x Composite Resin A2 & 1x Mani Bur Pack', module='Inventory', ip_address='192.168.1.105', details='Deducted stock for operative procedure')
+            AuditLog(user_name='Dr. Rajesh Verma', user_role='admin', action='Recorded UPI Payment of ₹14,610 (RCP-2026-904)', module='Billing', ip_address='192.168.1.101', details='Transaction Ref: UPI-948102948201')
         ]
         db.session.add_all(logs)
 

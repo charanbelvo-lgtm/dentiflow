@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Operations - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                <div class="nav-label practice-label">Practice</div>
+                <a href="./billing.html" class="">
+                    <span>Billing</span>
+                </a>
+                <a href="./inventory.html" class="">
+                    <span>Inventory</span>
+                </a>
+                <a href="./reports.html" class="">
+                    <span>Reports</span>
+                </a>
+                <a href="./staff.html" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./admin-dashboard.html">
+                    <span>Admin Suite &rarr;</span>
+                </a>
+                
+                
+                <a href="./patient-portal.html">
+                    <span>Patient view</span>
+                </a>
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="./login.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+                    <a href="./admin-dashboard.html" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    <span class="pill green">Demo mode</span>
+                    <div class="user-chip">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </div>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-header">
+    <h1 class="page-title">Operations</h1>
+</div>
+<div class="page-body" id="app-root">
+    <!-- Frontend JS will mount here or we render basic UI -->
+    <div class="card p-4 text-center">
+        <i class="fa-solid fa-gears fa-3x text-primary mb-3"></i>
+        <h3>Clinic operations</h3>
+        <p class="text-muted">Lab orders and equipment will appear here.</p>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js"></script>
+    
+<script src="./js/operations.js"></script>
+
+</body>
+</html>

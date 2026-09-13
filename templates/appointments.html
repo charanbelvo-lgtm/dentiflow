@@ -1,98 +1,215 @@
 {% extends "base.html" %}
-{% block title %}Appointments - DentiFlow{% endblock %}
+{% block title %}{{ 'My Appointments - DentiFlow' if current_user.role == 'patient' else 'Appointments - DentiFlow' }}{% endblock %}
 {% block content %}
+<!-- Page Header -->
 <div class="page-head">
     <div>
-        <span class="eyebrow">SCHEDULE & QUEUE</span>
-        <h1>Appointments</h1>
-        <p class="muted">Coordinate every chair, clinician, and patient.</p>
+        <span class="eyebrow">{{ 'MY SCHEDULE' if current_user.role == 'patient' else 'SCHEDULE & QUEUE' }}</span>
+        <h1>{{ 'My Appointments' if current_user.role == 'patient' else 'Appointments' }}</h1>
+        <p class="muted">{{ 'Track your dental appointments and live queue status.' if current_user.role == 'patient' else 'Coordinate every chair, clinician, and patient.' }}</p>
     </div>
+    {% if current_user.role == 'patient' %}
+    <a class="btn btn-primary" href="{{ url_for('public.booking_page') }}">+ Book appointment</a>
+    {% else %}
     <button class="btn btn-primary" onclick="openBookAptModal()">+ Book appointment</button>
+    {% endif %}
 </div>
 
-<div class="grid grid-4">
-    <div class="card stat">
-        <div class="stat-icon"></div>
-        <strong id="stat-apt-count">{{ appointments|length }}</strong>
-        <small>scheduled visits</small>
+<!-- PATIENT SPECIFIC VIEW: Only visible when patient logs in -->
+<div id="patient-view-container" class="patient-only-view" {% if current_user.role != 'patient' %}style="display:none;"{% endif %}>
+    <!-- Wait Time & Queue Status Banner -->
+    <div class="wait-banner">
+        <span class="eyebrow" style="color:#67e8f9;">LIVE CLINIC QUEUE STATUS</span>
+        <h2 id="patient-wait-title">Estimated Wait Time: ~12 mins</h2>
+        <p style="color:#bae6fd;margin:4px 0 0;" id="patient-wait-subtitle">Your appointment is scheduled with Dr. Ananya Sharma. 1 patient is currently in chair ahead of you.</p>
+        <div class="wait-grid">
+            <div class="wait-item">
+                <small>Queue Token</small>
+                <strong id="patient-token">#02</strong>
+            </div>
+            <div class="wait-item">
+                <small>Est. Wait Time</small>
+                <strong id="patient-wait-time">~12 mins</strong>
+            </div>
+            <div class="wait-item">
+                <small>Clinician</small>
+                <strong id="patient-doc-name">Dr. Ananya Sharma</strong>
+            </div>
+            <div class="wait-item">
+                <small>Assigned Chair</small>
+                <strong id="patient-chair">Chair 01</strong>
+            </div>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:#e0f2fe;display:flex;align-items:center;gap:8px;">
+            <span class="pill green" style="background:#0284c7;color:#fff;border:1px solid #38bdf8;">✓ Checked In</span>
+            <span>Please relax in our patient lounge. Refreshments and complimentary Wi-Fi are available.</span>
+        </div>
     </div>
-    <div class="card stat">
-        <div class="stat-icon teal"></div>
-        <strong>12</strong>
-        <small>completed</small>
+
+    <!-- My Appointments List -->
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>My Appointments</h2>
+            <span class="pill green" id="patient-apt-count">{{ appointments|length }} Scheduled</span>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Procedure / Category</th>
+                        <th>Doctor</th>
+                        <th>Chair</th>
+                        <th>Payment Status</th>
+                        <th>Queue Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="patient-appointments-tbody">
+                    {% for apt in appointments %}
+                    <tr>
+                        <td><b>{{ apt.start_time }}</b> &bull; {{ apt.appointment_date.strftime('%d %b %Y') if apt.appointment_date else '' }}</td>
+                        <td><b>{{ apt.procedure_name or 'Dental Consultation' }}</b></td>
+                        <td>{{ apt.doctor.name if apt.doctor else 'Dr. Ananya Sharma' }}</td>
+                        <td><span class="pill">{{ apt.chair.name if apt.chair else 'Chair 01' }}</span></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td><span class="pill orange">{{ apt.status }}</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Reschedule request sent to clinic desk', 'success')">Reschedule</button></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align:center;padding:24px;" class="muted">No scheduled appointments found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="card stat">
-        <div class="stat-icon orange"></div>
-        <strong>4</strong>
-        <small>in queue</small>
-    </div>
-    <div class="card stat">
-        <div class="stat-icon purple"></div>
-        <strong>2</strong>
-        <small>rescheduled</small>
+
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <h2>Care &amp; Preparation Notice</h2>
+            <span class="pill green">Helpful info</span>
+        </div>
+        <div class="notice">
+            <b>Important Clinic Guidance:</b><br>
+            Please arrive 10 minutes before your appointment time. If you are delayed or need urgent emergency assistance before your visit, contact our care desk directly at <b>+91 98450 11223</b>.
+        </div>
     </div>
 </div>
 
-<div class="card" style="margin-top:18px">
-    <div class="section-title">
-        <h2>Today's Appointments</h2>
-        <button class="btn btn-ghost" onclick="location.reload()">Refresh</button>
+<!-- DOCTOR SPECIFIC VIEW: Visible for Doctors / Admin / Staff -->
+<div id="doctor-view-container" class="doctor-only-view" {% if current_user.role == 'patient' %}style="display:none;"{% endif %}>
+    <!-- Now Treating Patient Banner -->
+    <div class="now-treating-banner">
+        <div>
+            <span class="eyebrow" style="color:#a7f3d0;">💺 CLINICAL CHAIR 01 &bull; NOW TREATING</span>
+            <h2 id="now-treating-name">Aravind Menon &bull; Root Canal Review</h2>
+            <p style="color:#d1fae5;margin:4px 0 0;" id="now-treating-details">Patient is currently in chair with Dr. Ananya Sharma. Procedure in progress (started 09:00 AM &bull; 35 mins elapsed).</p>
+            <div class="queue-strip" id="queue-strip-container">
+                <span class="queue-member-chip" style="background:rgba(255,255,255,.25);font-weight:700;">Now: Aravind Menon</span>
+                <span class="queue-member-chip">Next: Vishal Rao (#02 &bull; 12m)</span>
+                <span class="queue-member-chip">Queued: Medha Iyer (#03 &bull; 30m)</span>
+                <span class="queue-member-chip" id="more-queue-chip">+1 more in queue</span>
+            </div>
+        </div>
+        <div class="row">
+            <button class="btn btn-ghost" style="background:#fff;color:#064e3b;font-weight:700;" data-action="complete-current-treating" onclick="window.toast('Procedure marked complete', 'success')">✓ Mark Complete</button>
+            <a class="btn" style="background:rgba(255,255,255,.2);color:#fff;" href="{{ url_for('clinical.chart') }}">Open Chart</a>
+        </div>
     </div>
-    <div class="table-wrap">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Patient</th>
-                    <th>Visit</th>
-                    <th>Chair</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="appointments-table-body">
-                {% for apt in appointments %}
-                <tr>
-                    <td><b>{{ apt.start_time }}</b></td>
-                    <td class="patient">
-                        <span class="avatar">{{ apt.patient.name[:2].upper() if apt.patient else 'PT' }}</span>
-                        <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
-                            {{ apt.patient.name if apt.patient else 'Walk-in Patient' }}
-                        </a>
-                    </td>
-                    <td>{{ apt.procedure_name }}</td>
-                    <td>{{ apt.chair.name if apt.chair else 'Chair 01' }}</td>
-                    <td>
-                        {% if apt.status == 'In Progress' or apt.status == 'Confirmed' %}
-                        <span class="pill green">{{ apt.status }}</span>
-                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
-                        <span class="pill orange">{{ apt.status }}</span>
-                        {% else %}
-                        <span class="pill">{{ apt.status }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if apt.status == 'In Progress' %}
-                        <button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button>
-                        {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
-                        <button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button>
-                        {% else %}
-                        <button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td><b>09:00</b></td>
-                    <td class="patient"><span class="avatar">AM</span>Aravind Menon</td>
-                    <td>Root canal review</td>
-                    <td>Chair 01</td>
-                    <td><span class="pill green">In progress</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Clinic Stats Grid -->
+    <div class="grid grid-4" style="margin-top:18px;">
+        <div class="card stat">
+            <div class="stat-icon"></div>
+            <strong>{{ stats.todays_visits if stats else appointments|length }}</strong>
+            <small>todays visits</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon teal"></div>
+            <strong>{{ stats.completed if stats else 0 }}</strong>
+            <small>completed</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon orange"></div>
+            <strong id="doc-queue-count">{{ stats.in_queue if stats else 0 }}</strong>
+            <small>in queue / waiting now</small>
+        </div>
+        <div class="card stat">
+            <div class="stat-icon purple"></div>
+            <strong>{{ stats.rescheduled if stats else 0 }}</strong>
+            <small>rescheduled</small>
+        </div>
+    </div>
+
+    <!-- All Clinic Appointments Table -->
+    <div class="card" style="margin-top:18px;">
+        <div class="section-title">
+            <div>
+                <h2>Appointment Schedule &amp; Queue</h2>
+                <span class="muted" id="doctor-queue-headline">Showing all scheduled and queue patients</span>
+            </div>
+            <div class="row">
+                <span class="pill green" id="live-members-badge">{{ appointments|length }} records</span>
+                <button class="btn btn-ghost" data-action="refresh-queue" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date &amp; Time</th>
+                        <th>Patient</th>
+                        <th>Visit / Category</th>
+                        <th>Doctor</th>
+                        <th>Chair</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="doctor-appointments-tbody">
+                    {% for apt in appointments %}
+                    <tr data-apt-id="{{ apt.id }}">
+                        <td><b>{{ apt.start_time }}</b><br><small class="muted">{{ apt.appointment_date.strftime('%d %b %Y') if apt.appointment_date else '' }}</small></td>
+                        <td class="patient">
+                            <span class="avatar">{{ apt.patient.name[:2].upper() if apt.patient else 'PT' }}</span>
+                            <a href="{{ url_for('patients.detail', patient_id=apt.patient.id) if apt.patient else '#' }}" style="color:inherit;font-weight:bold;">
+                                {{ apt.patient.name if apt.patient else 'Walk-in Patient' }}
+                            </a>
+                        </td>
+                        <td>{{ apt.procedure_name }}</td>
+                        <td>{{ apt.doctor.name if apt.doctor else 'Dr. Ananya Sharma' }}</td>
+                        <td><b>{{ apt.chair.name if apt.chair else 'Chair 01' }}</b></td>
+                        <td><span class="pill green">Paid (Online)</span></td>
+                        <td>
+                            {% if apt.status == 'In Progress' or apt.status == 'Confirmed' %}
+                            <span class="pill green">{{ apt.status }}</span>
+                            {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
+                            <span class="pill orange">{{ apt.status }}</span>
+                            {% else %}
+                            <span class="pill">{{ apt.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if apt.status == 'In Progress' %}
+                            <button class="btn btn-primary" onclick="window.toast('Patient marked complete', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;">✓ Complete</button>
+                            {% elif apt.status == 'Checked In' or apt.status == 'Waiting' %}
+                            <button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')" style="padding:6px 14px;font-size:13px;font-weight:600;color:var(--blue);">Call patient</button>
+                            {% else %}
+                            <button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align:center;padding:24px;" class="muted">No appointments recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

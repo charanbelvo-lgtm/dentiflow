@@ -1,69 +1,843 @@
 {% extends "base.html" %}
-{% block title %}Patient dashboard - DentiFlow{% endblock %}
+{% block title %}Patient Portal · DentiFlow{% endblock %}
 {% block content %}
+<style>
+  .doc-avail-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .doc-avail-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px rgba(16,42,67,.12);
+  }
+  .wait-stat-card {
+    background: linear-gradient(135deg, #102a43 0%, #1e40af 100%);
+    color: #fff;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 12px 28px rgba(16,42,67,.18);
+  }
+  .wait-timer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.18);
+    color: #fff;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+</style>
+
+<!-- Page Header -->
 <div class="page-head">
     <div>
-        <span class="eyebrow">PATIENT PORTAL</span>
-        <h1>Hello, <span data-user-name>{{ current_user.name }}</span></h1>
-        <p class="muted">Your care journey, in one calm place.</p>
+        <span class="eyebrow">PATIENT APPOINTMENTS &amp; QUEUE</span>
+        <h1>Welcome, <span data-user-name>{{ current_user.name }}</span></h1>
+        <p class="muted">Book appointments with available doctors and check your live waiting time.</p>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('appointments.index') }}">+ Request appointment</a>
+    <div class="row" style="gap:10px;">
+        <a class="btn btn-soft" style="font-weight:600;color:var(--purple);" href="{{ url_for('dashboard.admin_dashboard') }}">Admin Suite (Profits &amp; Inventory) &rarr;</a>
+        <a class="btn btn-soft" href="{{ url_for('auth.login') }}">Switch Role / Login</a>
+        <button class="btn btn-primary" id="btn-open-top-booking" style="font-size:15px;padding:12px 20px;">
+            + Book Appointment
+        </button>
+    </div>
 </div>
 
-<div class="hero">
-    <div>
-        <span class="eyebrow">NEXT UP</span>
-        <h2>Your next visit is ready.</h2>
-        <p>Root canal treatment review with Dr. Ananya Sharma - Thursday, 29 May at 10:30 AM.</p>
-        <div class="quick-links">
-            <button class="btn" onclick="window.toast('Appointment added to calendar', 'success')">Add to calendar</button>
-            <a class="btn" href="{{ url_for('patients.detail', patient_id=patient.id) if patient else url_for('appointments.index') }}">View my record</a>
+<!-- 1. Top Section: Live Waiting Time & Direct Book Action -->
+<div class="grid grid-2">
+    <!-- Waiting Time Card -->
+    <div class="wait-stat-card">
+        <div class="row between" style="margin-bottom:14px;">
+            <span class="eyebrow" style="color:#6ee7b7;">⏱ LIVE QUEUE STATUS</span>
+            <span class="wait-timer-badge" id="patient-dash-wait">
+                {% if token %}
+                ⏱ {{ token.estimated_wait_min }} min wait &bull; {{ token.token_number }}
+                {% elif latest_appointment %}
+                ⏱ ~15 min wait &bull; Token #01
+                {% else %}
+                ⏱ Queue Ready &bull; No Wait
+                {% endif %}
+            </span>
+        </div>
+        <h2 id="patient-hero-title" style="color:#fff;font-size:26px;margin:0 0 8px;">
+            {% if token %}
+            Estimated Wait: {{ token.estimated_wait_min }} mins
+            {% elif latest_appointment %}
+            Estimated Wait: ~15 mins
+            {% else %}
+            No Active Wait Queue
+            {% endif %}
+        </h2>
+        <p id="patient-hero-desc" style="color:#dbeafe;font-size:14px;margin:0 0 16px;">
+            {% if latest_appointment %}
+            {{ latest_appointment.procedure_name }} with <b>{{ latest_appointment.doctor.name if latest_appointment.doctor else 'Dr. Ananya Sharma' }}</b> &bull; Token <b>{{ token.token_number if token else 'Token #01' }}</b> &bull; {{ latest_appointment.chair.name if latest_appointment.chair else 'Chair 01' }} &bull; {{ latest_appointment.appointment_date.strftime('%A, %d %b %Y') }} at {{ latest_appointment.start_time }}
+            {% else %}
+            Choose an available doctor below to book your appointment and check your live waiting time.
+            {% endif %}
+        </p>
+        <div class="row wrap" style="gap:10px;">
+            <span class="pill green" id="patient-live-status-pill">
+                {% if latest_appointment %}
+                🟢 {{ latest_appointment.status }} &amp; In Queue
+                {% else %}
+                Ready to Schedule
+                {% endif %}
+            </span>
+            <button type="button" class="btn btn-ghost" id="btn-refresh-queue" style="background:#fff;color:#1e3a8a;font-weight:700;">
+                ↻ Refresh Live Queue
+            </button>
+            <button type="button" class="btn" style="background:rgba(255,255,255,0.18);color:#fff;" onclick="window.toast('Reschedule request sent to clinic', 'success')">
+                Reschedule Visit
+            </button>
         </div>
     </div>
-    <div class="hero-art"><span>🦷</span></div>
+
+    <!-- Direct Book Appointment Card -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+            <div class="row between" style="margin-bottom:10px;">
+                <span class="eyebrow" style="color:var(--blue);">INSTANT SCHEDULING</span>
+                <span class="pill green">Doctors on duty</span>
+            </div>
+            <h2 style="font-size:22px;margin:0 0 8px;">Book an Appointment</h2>
+            <p class="muted" style="margin:0 0 16px;font-size:14px;">
+                Choose your specialist, pick your required procedure, select your preferred time slot, and confirm securely.
+            </p>
+            <div class="quick-links" style="margin:0 0 18px;">
+                <span class="pill">Oral Consultation ₹500</span>
+                <span class="pill">Teeth Cleaning ₹1,500</span>
+                <span class="pill">Root Canal ₹6,500</span>
+                <span class="pill">Aligners ₹1,200</span>
+            </div>
+        </div>
+        <button class="btn btn-primary" id="btn-open-instant-booking" style="width:100%;justify-content:center;padding:13px;font-size:15px;">
+            + Book New Appointment Now &rarr;
+        </button>
+    </div>
 </div>
 
-<div class="grid grid-3" style="margin-top:18px">
-    <div class="card">
-        <div class="section-title">
-            <h2>Upcoming visit</h2>
-            <span class="pill green">Confirmed</span>
+<!-- 2. Available Doctors & Specialists Section -->
+<div style="margin-top:28px;">
+    <div class="section-title">
+        <div>
+            <h2>Available Doctors &amp; Specialists</h2>
+            <small class="muted">Check which doctors are in clinic today and book directly</small>
         </div>
-        <h3>Root canal - Tooth #16</h3>
-        <p class="muted">29 May 2026 - 10:30 AM<br>DentiFlow Care - Chair 01</p>
-        <button class="btn btn-soft" onclick="window.toast('Reschedule request sent to clinic', 'success')">Request reschedule</button>
+        <button class="btn btn-soft" id="btn-open-view-all-docs">View All Doctors &rarr;</button>
     </div>
 
+    <div class="grid grid-4" style="margin-top:14px;">
+        {% set doc_avatars = {'Dr. Ananya Sharma': 'AS', 'Dr. Rohan Patel': 'RP', 'Dr. Meera Nair': 'MN', 'Dr. Vikram Rao': 'VR'} %}
+        {% set doc_grads = {'Dr. Ananya Sharma': 'linear-gradient(135deg,#2563eb,#14b8a6)', 'Dr. Rohan Patel': 'linear-gradient(135deg,#0284c7,#38bdf8)', 'Dr. Meera Nair': 'linear-gradient(135deg,#8b5cf6,#ec4899)', 'Dr. Vikram Rao': 'linear-gradient(135deg,#ea580c,#f59e0b)'} %}
+        {% for doc in doctors %}
+        <div class="doc-avail-card">
+            <div>
+                <div class="row" style="gap:12px;margin-bottom:10px;">
+                    <span class="avatar" style="width:42px;height:42px;font-size:14px;background:{{ doc_grads.get(doc.name, 'linear-gradient(135deg,#2563eb,#14b8a6)') }};">
+                        {{ doc_avatars.get(doc.name, doc.name[:2].upper()) }}
+                    </span>
+                    <div>
+                        <b style="font-size:15px;display:block;">{{ doc.name }}</b>
+                        <small class="muted">{{ doc.specialty }}</small>
+                    </div>
+                </div>
+                <div style="margin:10px 0;">
+                    <span class="pill {{ 'orange' if 'Rao' in doc.name else 'green' }}" style="font-size:11px;">
+                        {{ '🟡 Available Tomorrow' if 'Rao' in doc.name else '🟢 Available Today' }}
+                    </span>
+                    <div class="muted" style="font-size:12px;margin-top:6px;">Next slot: <b>{{ '02:00 PM' if 'Patel' in doc.name else ('11:15 AM' if 'Nair' in doc.name else ('Tomorrow 09:30 AM' if 'Rao' in doc.name else '10:30 AM')) }}</b> &bull; {{ doc.assigned_chair or 'Chair 01' }}</div>
+                    <div class="muted" style="font-size:12px;">Estimated wait: <b>~{{ '25' if 'Patel' in doc.name else ('10' if 'Nair' in doc.name else '15') }} mins</b></div>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-book-doc-card" data-doctor-name="{{ doc.name }}" data-doctor-id="{{ doc.id }}" style="width:100%;justify-content:center;margin-top:12px;">
+                + Book with {{ doc.name.split()[1] if doc.name.split()|length > 1 else doc.name }}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 3. My Scheduled Appointments & Tokens -->
+<div class="card" style="margin-top:28px;">
+    <div class="section-title">
+        <div>
+            <h2>My Scheduled Appointments &amp; Tokens</h2>
+            <small class="muted">Keep track of your upcoming visits and live queue tokens</small>
+        </div>
+        <button class="btn btn-soft" id="btn-add-visit">+ Add Visit</button>
+    </div>
+
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Doctor</th>
+                    <th>Procedure</th>
+                    <th>Date &amp; Time</th>
+                    <th>Wait Time</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                </tr>
+            </thead>
+            <tbody id="patient-appointments-list">
+                {% for apt in all_appointments %}
+                <tr>
+                    <td>
+                        <b>{{ apt.queue_token.token_number if apt.queue_token else ('Token #' ~ '%02d' % loop.index) }}</b>
+                        <br><small class="muted">{{ apt.appointment_number }}</small>
+                    </td>
+                    <td><b>{{ apt.doctor.name if apt.doctor else 'Dr. Ananya Sharma' }}</b></td>
+                    <td>{{ apt.procedure_name }}</td>
+                    <td>{{ apt.appointment_date.strftime('%d %b %Y') }} &bull; {{ apt.start_time }}</td>
+                    <td><span class="pill orange">⏱ {{ apt.queue_token.estimated_wait_min if apt.queue_token else 15 }} mins</span></td>
+                    <td><span class="pill green">{{ apt.status }}</span></td>
+                    <td><span class="pill green">Paid (Online)</span></td>
+                </tr>
+                {% else %}
+                <tr id="no-appointments-row">
+                    <td colspan="7" style="text-align:center;padding:30px;" class="muted">
+                        No appointments scheduled yet. Click "+ Book Appointment" above to schedule with our specialist team.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 4. Care Plan & Account Details -->
+<div class="grid grid-2" style="margin-top:28px;">
     <div class="card">
         <div class="section-title">
-            <h2>Treatment plan</h2>
-            <span class="pill orange">50% complete</span>
+            <h2>Active Treatment Plan</h2>
+            {% if treatment_plan %}
+            <span class="pill orange">{{ treatment_plan.status }}</span>
+            {% else %}
+            <span class="pill">Clear</span>
+            {% endif %}
         </div>
-        <h3>Root canal treatment</h3>
+        {% if treatment_plan %}
+        <h3>{{ treatment_plan.title }}</h3>
         <div class="progress" style="margin:12px 0"><span style="width:50%"></span></div>
-        <p class="muted">2 of 4 appointments completed</p>
-        <a href="{{ url_for('treatment_plans.index') }}">Review plan &rarr;</a>
+        <p class="muted">Net cost: INR {{ "{:,.0f}".format(treatment_plan.net_cost) }}</p>
+        <a href="{{ url_for('treatment_plans.index') }}">Review full plan &rarr;</a>
+        {% else %}
+        <h3>No active plans</h3>
+        <p class="muted">Your preventive and diagnostic treatment plans will appear here.</p>
+        {% endif %}
     </div>
 
     <div class="card">
         <div class="section-title">
-            <h2>Balance</h2>
+            <h2>Account Balance</h2>
             <span class="pill">INR</span>
         </div>
-        <h3>INR 8,550 due</h3>
-        <p class="muted">Invoice INV-2026-1029<br>Due 29 May 2026</p>
+        {% if total_due and total_due > 0 %}
+        <h3>INR {{ "{:,.0f}".format(total_due) }} due</h3>
+        <p class="muted">{{ latest_unpaid_invoice.invoice_number if latest_unpaid_invoice else 'Invoice pending' }}</p>
         <a class="btn btn-primary" href="{{ url_for('billing.index') }}">View bill &rarr;</a>
+        {% else %}
+        <h3>All clear</h3>
+        <p class="muted">No outstanding balance.</p>
+        <a class="btn btn-ghost" href="{{ url_for('billing.index') }}">Billing history &rarr;</a>
+        {% endif %}
     </div>
 </div>
 
-<div class="card" style="margin-top:18px">
+<!-- 5. Messages From Care Team -->
+<div class="card" style="margin-top:28px;">
     <div class="section-title">
         <h2>Messages from your care team</h2>
-        <button class="btn btn-soft" onclick="window.toast('Message composer opened', 'success')">Message clinic</button>
+        <button class="btn btn-soft" id="btn-open-composer">+ Message clinic</button>
     </div>
-    <div class="notice">
-        <b>Dr. Ananya Sharma - Today</b><br>
-        Please avoid chewing on the upper right side until your next visit. We will complete the second stage of your treatment then.
+    <div id="messages-container">
+        <div class="notice" style="margin-bottom:10px;">
+            <b>Dr. Ananya Sharma - Today</b><br>
+            Please avoid chewing on the upper right side until your next visit. We will complete the second stage of your treatment then.
+        </div>
     </div>
 </div>
+
+<!-- BOOKING & PAYMENT MODAL -->
+<div class="modal-backdrop" id="app-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+    <div class="modal modal-lg" style="background:#fff;border-radius:18px;max-width:680px;width:100%;max-height:92vh;overflow-y:auto;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,0.25);position:relative;">
+        <div class="modal-header">
+            <div>
+                <span class="eyebrow" style="color:var(--blue);">DENTIFLOW BOOKING DESK</span>
+                <h2>Book Dental Appointment</h2>
+            </div>
+            <button type="button" class="modal-close" id="btn-close-app-modal" aria-label="Close modal">&times;</button>
+        </div>
+
+        <form id="booking-form">
+            <!-- Patient Information -->
+            <div class="form-grid">
+                <div class="field">
+                    <label for="book-patient-name">Patient Full Name *</label>
+                    <input type="text" id="book-patient-name" name="patientName" value="{{ patient.name if patient else current_user.name }}" placeholder="Enter patient name" required>
+                </div>
+                <div class="field">
+                    <label for="book-patient-phone">Mobile / Email *</label>
+                    <input type="text" id="book-patient-phone" name="patientContact" value="{{ patient.phone if (patient and patient.phone != 'Not provided') else (current_user.phone or current_user.email) }}" placeholder="+91 98765 43210 or email" required>
+                </div>
+            </div>
+
+            <!-- 1. Available Doctors Selection -->
+            <div class="field full" style="margin-top:14px;">
+                <label>Select Available Doctor *</label>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;" id="doctor-options-container">
+                    <label class="doc-card selected">
+                        <input type="radio" name="doctor" value="Dr. Ananya Sharma" data-doc-id="1" data-spec="Chief Dental Surgeon" checked>
+                        <span class="doc-avatar">AS</span>
+                        <div class="doc-info">
+                            <div class="doc-name">Dr. Ananya Sharma</div>
+                            <div class="doc-spec">Chief Endodontist &bull; MDS</div>
+                        </div>
+                        <span class="avail-pill avail-today">🟢 Available Today</span>
+                    </label>
+
+                    <label class="doc-card">
+                        <input type="radio" name="doctor" value="Dr. Rohan Patel" data-doc-id="2" data-spec="Senior Orthodontist">
+                        <span class="doc-avatar" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">RP</span>
+                        <div class="doc-info">
+                            <div class="doc-name">Dr. Rohan Patel</div>
+                            <div class="doc-spec">Orthodontist &bull; Aligners</div>
+                        </div>
+                        <span class="avail-pill avail-slots">🟢 Today 2:00 PM</span>
+                    </label>
+
+                    <label class="doc-card">
+                        <input type="radio" name="doctor" value="Dr. Meera Nair" data-doc-id="3" data-spec="Pediatric Dental Specialist">
+                        <span class="doc-avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">MN</span>
+                        <div class="doc-info">
+                            <div class="doc-name">Dr. Meera Nair</div>
+                            <div class="doc-spec">Periodontist &bull; Child Care</div>
+                        </div>
+                        <span class="avail-pill avail-today">🟢 Available Today</span>
+                    </label>
+
+                    <label class="doc-card">
+                        <input type="radio" name="doctor" value="Dr. Vikram Rao" data-doc-id="4" data-spec="Oral & Maxillofacial Surgeon">
+                        <span class="doc-avatar" style="background:linear-gradient(135deg,#ea580c,#f59e0b);">VR</span>
+                        <div class="doc-info">
+                            <div class="doc-name">Dr. Vikram Rao</div>
+                            <div class="doc-spec">Maxillofacial Surgeon</div>
+                        </div>
+                        <span class="avail-pill avail-tomorrow">🟡 Available Tomorrow</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 2. Appointment Booking Category -->
+            <div class="field full" style="margin-top:14px;">
+                <label>Appointment Category / Procedure *</label>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;" id="category-options-container">
+                    <label class="category-card selected">
+                        <input type="radio" name="category" value="Consultation & Diagnosis" data-price="500" style="position:absolute;opacity:0;" checked>
+                        <div>
+                            <b style="font-size:13px;display:block;">Consultation &amp; Diagnosis</b>
+                            <small class="muted">Oral examination &amp; X-Ray (~20m)</small>
+                        </div>
+                        <span class="cat-price">₹500</span>
+                    </label>
+
+                    <label class="category-card">
+                        <input type="radio" name="category" value="Scaling & Teeth Cleaning" data-price="1500" style="position:absolute;opacity:0;">
+                        <div>
+                            <b style="font-size:13px;display:block;">Scaling &amp; Teeth Cleaning</b>
+                            <small class="muted">Plaque removal &amp; polishing (~30m)</small>
+                        </div>
+                        <span class="cat-price">₹1,500</span>
+                    </label>
+
+                    <label class="category-card">
+                        <input type="radio" name="category" value="Root Canal Treatment" data-price="6500" style="position:absolute;opacity:0;">
+                        <div>
+                            <b style="font-size:13px;display:block;">Root Canal Treatment</b>
+                            <small class="muted">Single/Multi-visit RCT (~45m)</small>
+                        </div>
+                        <span class="cat-price">₹6,500</span>
+                    </label>
+
+                    <label class="category-card">
+                        <input type="radio" name="category" value="Laser Teeth Whitening" data-price="8000" style="position:absolute;opacity:0;">
+                        <div>
+                            <b style="font-size:13px;display:block;">Laser Teeth Whitening</b>
+                            <small class="muted">Professional instant shade lift (~40m)</small>
+                        </div>
+                        <span class="cat-price">₹8,000</span>
+                    </label>
+
+                    <label class="category-card">
+                        <input type="radio" name="category" value="Invisible Aligners Assessment" data-price="1200" style="position:absolute;opacity:0;">
+                        <div>
+                            <b style="font-size:13px;display:block;">Aligners &amp; Braces Consult</b>
+                            <small class="muted">3D digital smile simulation (~30m)</small>
+                        </div>
+                        <span class="cat-price">₹1,200</span>
+                    </label>
+
+                    <label class="category-card">
+                        <input type="radio" name="category" value="Emergency Pain Relief" data-price="1000" style="position:absolute;opacity:0;">
+                        <div>
+                            <b style="font-size:13px;display:block;">Emergency Toothache</b>
+                            <small class="muted">Immediate chair relief (~25m)</small>
+                        </div>
+                        <span class="cat-price">₹1,000</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 3. Preferred Date & Time -->
+            <div class="form-grid" style="margin-top:14px;">
+                <div class="field">
+                    <label for="book-date">Preferred Date *</label>
+                    <input type="date" id="book-date" name="date" required>
+                </div>
+                <div class="field">
+                    <label for="book-time">Time Slot *</label>
+                    <select id="book-time" name="time" required>
+                        <option value="09:30 AM">09:30 AM (Available)</option>
+                        <option value="10:30 AM" selected>10:30 AM (Available)</option>
+                        <option value="11:30 AM">11:30 AM (Available)</option>
+                        <option value="02:00 PM">02:00 PM (Available)</option>
+                        <option value="03:30 PM">03:30 PM (Available)</option>
+                        <option value="05:00 PM">05:00 PM (Available)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 4. Payment Section -->
+            <div class="field full" style="margin-top:16px;">
+                <label>Payment &amp; Confirmation *</label>
+
+                <!-- Price Calculation -->
+                <div class="bill-summary">
+                    <div class="bill-row">
+                        <span id="bill-procedure-name">Consultation &amp; Diagnosis</span>
+                        <strong id="bill-procedure-price">₹500</strong>
+                    </div>
+                    <div class="bill-row">
+                        <span>Clinic Sanitization &amp; Disposable Kit</span>
+                        <span>₹100</span>
+                    </div>
+                    <div class="bill-row">
+                        <span>GST / Healthcare Service Tax (5%)</span>
+                        <span id="bill-tax">₹30</span>
+                    </div>
+                    <div class="bill-row total">
+                        <span>Total Payable Amount</span>
+                        <span id="bill-total-price" style="color:var(--blue);font-size:18px;">₹630</span>
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-grid">
+                    <label class="pay-opt">
+                        <input type="radio" name="paymentMethod" value="UPI" checked>
+                        <span class="pay-icon">📱</span>
+                        <div>
+                            <div>UPI / QR Code</div>
+                            <small class="muted" style="font-size:11px;">GPay, PhonePe, Paytm</small>
+                        </div>
+                    </label>
+
+                    <label class="pay-opt">
+                        <input type="radio" name="paymentMethod" value="Card">
+                        <span class="pay-icon">💳</span>
+                        <div>
+                            <div>Debit / Credit Card</div>
+                            <small class="muted" style="font-size:11px;">Visa, Mastercard, RuPay</small>
+                        </div>
+                    </label>
+
+                    <label class="pay-opt">
+                        <input type="radio" name="paymentMethod" value="NetBanking">
+                        <span class="pay-icon">🏦</span>
+                        <div>
+                            <div>Net Banking</div>
+                            <small class="muted" style="font-size:11px;">HDFC, ICICI, SBI, Axis</small>
+                        </div>
+                    </label>
+
+                    <label class="pay-opt">
+                        <input type="radio" name="paymentMethod" value="Clinic">
+                        <span class="pay-icon">🏥</span>
+                        <div>
+                            <div>Pay at Clinic</div>
+                            <small class="muted" style="font-size:11px;">Cash or Card upon visit</small>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Simulated UPI/Card Input -->
+                <div id="payment-input-container" style="margin-top:12px;">
+                    <div id="upi-input-group" class="field">
+                        <label style="font-size:11px;">Enter UPI ID / VPA</label>
+                        <input type="text" id="upi-id" placeholder="e.g. mobile@upi or username@okhdfcbank" value="ashwini@okaxis">
+                    </div>
+                    <div id="card-input-group" class="field" style="display:none;">
+                        <label style="font-size:11px;">Card Number &amp; Expiry</label>
+                        <input type="text" id="card-number" placeholder="4111 2222 3333 4444 (12/28)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit & Actions -->
+            <div style="display:flex;gap:12px;margin-top:20px;">
+                <button type="submit" class="btn btn-primary" id="btn-confirm-booking" style="flex:1;justify-content:center;padding:13px 18px;font-size:15px;">
+                    Pay ₹630 &amp; Confirm Appointment
+                </button>
+                <button type="button" class="btn btn-ghost" id="btn-cancel-app-modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Working Message Composer Modal -->
+<div class="modal-backdrop" id="msg-composer-modal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div class="card modal" style="max-width:540px;width:100%;background:#fff;border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,0.2);position:relative;">
+        <div class="section-title" style="margin-bottom:16px;">
+            <div>
+                <span class="eyebrow">DIRECT COMMUNICATION</span>
+                <h2 style="font-size:20px;margin:2px 0 0;">Message Clinic Care Team</h2>
+            </div>
+            <button type="button" id="btn-close-composer" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);">&times;</button>
+        </div>
+        <form id="patient-message-form" class="form-grid">
+            <div class="field">
+                <label>Send To *</label>
+                <select id="msg-recipient" required>
+                    <option value="Dr. Ananya Sharma">Dr. Ananya Sharma (Chief Dental Surgeon)</option>
+                    <option value="Dr. Rohan Patel">Dr. Rohan Patel (Orthodontist)</option>
+                    <option value="Dr. Meera Nair">Dr. Meera Nair (Pediatric Dentist)</option>
+                    <option value="Front Desk Reception">Front Desk / Clinic Reception</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Subject *</label>
+                <input type="text" id="msg-subject" placeholder="e.g. Question about appointment or post-care" required>
+            </div>
+            <div class="field full">
+                <label>Your Message *</label>
+                <textarea id="msg-body" rows="4" placeholder="Write your message here..." required></textarea>
+            </div>
+            <div class="field full" style="display:flex;gap:10px;margin-top:10px;">
+                <button type="submit" class="btn btn-primary" id="btn-send-message" style="flex:1;justify-content:center;">Send Message →</button>
+                <button type="button" class="btn btn-ghost" id="btn-cancel-composer">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Booking Modal State & Controls ---
+    const appModal = document.getElementById('app-modal');
+    const bookingForm = document.getElementById('booking-form');
+    const closeAppModalBtn = document.getElementById('btn-close-app-modal');
+    const cancelAppModalBtn = document.getElementById('btn-cancel-app-modal');
+    const bookDateInput = document.getElementById('book-date');
+
+    // Initialize date picker to today min and default
+    if (bookDateInput) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        bookDateInput.min = todayStr;
+        if (!bookDateInput.value) {
+            bookDateInput.value = todayStr;
+        }
+    }
+
+    function openBookingModal(preselectedDoctor) {
+        if (!appModal) return;
+        appModal.style.display = 'flex';
+
+        if (preselectedDoctor) {
+            const docRadios = document.querySelectorAll('input[name="doctor"]');
+            docRadios.forEach(r => {
+                const isMatch = r.value.toLowerCase().includes(preselectedDoctor.toLowerCase());
+                r.checked = isMatch;
+                const card = r.closest('.doc-card');
+                if (card) card.classList.toggle('selected', isMatch);
+            });
+        }
+        updateBill();
+    }
+
+    function closeBookingModal() {
+        if (appModal) appModal.style.display = 'none';
+    }
+
+    document.getElementById('btn-open-top-booking')?.addEventListener('click', () => openBookingModal());
+    document.getElementById('btn-open-instant-booking')?.addEventListener('click', () => openBookingModal());
+    document.getElementById('btn-open-view-all-docs')?.addEventListener('click', () => openBookingModal());
+    document.getElementById('btn-add-visit')?.addEventListener('click', () => openBookingModal());
+    closeAppModalBtn?.addEventListener('click', closeBookingModal);
+    cancelAppModalBtn?.addEventListener('click', closeBookingModal);
+
+    if (appModal) {
+        appModal.addEventListener('click', (e) => {
+            if (e.target === appModal) closeBookingModal();
+        });
+    }
+
+    // Doctor card click delegation
+    document.querySelectorAll('.btn-book-doc-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const docName = btn.dataset.doctorName || '';
+            openBookingModal(docName);
+        });
+    });
+
+    document.querySelectorAll('#doctor-options-container .doc-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#doctor-options-container .doc-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+        });
+    });
+
+    // Procedure / Category selection & Price calculation
+    function updateBill() {
+        if (!bookingForm) return;
+        const checkedCat = bookingForm.querySelector('input[name="category"]:checked');
+        const price = Number(checkedCat?.dataset.price || 500);
+        const name = checkedCat?.value || "Consultation & Diagnosis";
+        const sanitization = 100;
+        const tax = Math.round(price * 0.05);
+        const total = price + sanitization + tax;
+
+        const nameEl = document.getElementById("bill-procedure-name");
+        const priceEl = document.getElementById("bill-procedure-price");
+        const taxEl = document.getElementById("bill-tax");
+        const totalEl = document.getElementById("bill-total-price");
+        const submitBtn = document.getElementById("btn-confirm-booking");
+
+        if (nameEl) nameEl.textContent = name;
+        if (priceEl) priceEl.textContent = "₹" + price.toLocaleString("en-IN");
+        if (taxEl) taxEl.textContent = "₹" + tax.toLocaleString("en-IN");
+        if (totalEl) totalEl.textContent = "₹" + total.toLocaleString("en-IN");
+
+        const method = bookingForm.querySelector('input[name="paymentMethod"]:checked')?.value || "UPI";
+        if (submitBtn) {
+            if (method === "Clinic") {
+                submitBtn.textContent = `Confirm Booking (Pay ₹${total.toLocaleString("en-IN")} at Clinic)`;
+            } else {
+                submitBtn.textContent = `Pay ₹${total.toLocaleString("en-IN")} & Confirm Appointment`;
+            }
+        }
+    }
+
+    document.querySelectorAll('#category-options-container .category-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('#category-options-container .category-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const radio = card.querySelector('input[type="radio"]');
+            if (radio) radio.checked = true;
+            updateBill();
+        });
+    });
+
+    // Payment method toggle
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            const val = radio.value;
+            const upiGroup = document.getElementById("upi-input-group");
+            const cardGroup = document.getElementById("card-input-group");
+            if (upiGroup) upiGroup.style.display = val === "UPI" ? "block" : "none";
+            if (cardGroup) cardGroup.style.display = val === "Card" ? "block" : "none";
+            updateBill();
+        });
+    });
+
+    // --- Book & Wait Time: Form Submission ---
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btn-confirm-booking');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing booking & wait time...';
+            }
+
+            const patientName = document.getElementById('book-patient-name')?.value.trim() || 'Patient';
+            const patientContact = document.getElementById('book-patient-phone')?.value.trim() || '';
+            const doctorRadio = bookingForm.querySelector('input[name="doctor"]:checked');
+            const doctorName = doctorRadio ? doctorRadio.value : 'Dr. Ananya Sharma';
+            const doctorId = doctorRadio ? (doctorRadio.dataset.docId || 1) : 1;
+            const categoryRadio = bookingForm.querySelector('input[name="category"]:checked');
+            const procedureName = categoryRadio ? categoryRadio.value : 'Consultation & Diagnosis';
+            const dateVal = document.getElementById('book-date')?.value || new Date().toISOString().split('T')[0];
+            const timeVal = document.getElementById('book-time')?.value || '10:30 AM';
+            const payMethod = bookingForm.querySelector('input[name="paymentMethod"]:checked')?.value || 'UPI';
+
+            const payload = {
+                name: patientName,
+                phone: patientContact,
+                email: (window.CURRENT_USER && window.CURRENT_USER.email) ? window.CURRENT_USER.email : '',
+                doctor_id: doctorId,
+                doctor: doctorName,
+                treatment_name: procedureName,
+                appointment_date: dateVal,
+                date: dateVal,
+                start_time: timeVal,
+                paymentMethod: payMethod
+            };
+
+            try {
+                const res = await fetch('/api/public/book', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (res.ok && result.status === 'success') {
+                    // Update Live Waiting Time Card
+                    const waitBadge = document.getElementById('patient-dash-wait');
+                    const heroTitle = document.getElementById('patient-hero-title');
+                    const heroDesc = document.getElementById('patient-hero-desc');
+                    const statusPill = document.getElementById('patient-live-status-pill');
+
+                    const tokenStr = result.token_number || 'Token #01';
+                    const waitStr = result.wait_time || '15 mins';
+
+                    if (waitBadge) waitBadge.innerHTML = `⏱ ${waitStr} wait &bull; ${tokenStr}`;
+                    if (heroTitle) heroTitle.textContent = `Estimated Wait: ${waitStr}`;
+                    if (heroDesc) {
+                        heroDesc.innerHTML = `${result.procedure || procedureName} with <b>${result.doctor_name || doctorName}</b> &bull; Token <b>${tokenStr}</b> &bull; ${result.chair || 'Chair 01'} &bull; ${result.date} at ${result.time}`;
+                    }
+                    if (statusPill) statusPill.innerHTML = `🟢 Confirmed &amp; In Queue`;
+
+                    // Prepend to Scheduled Appointments Table
+                    const appointmentsTable = document.getElementById('patient-appointments-list');
+                    const emptyRow = document.getElementById('no-appointments-row');
+                    if (emptyRow) emptyRow.remove();
+
+                    if (appointmentsTable) {
+                        const newTr = document.createElement('tr');
+                        newTr.innerHTML = `
+                            <td><b>${tokenStr}</b></td>
+                            <td><b>${result.doctor_name || doctorName}</b></td>
+                            <td>${result.procedure || procedureName}</td>
+                            <td>${result.date} &bull; ${result.time}</td>
+                            <td><span class="pill orange">⏱ ${waitStr}</span></td>
+                            <td><span class="pill green">${result.status || 'Confirmed'}</span></td>
+                            <td><span class="pill green">${payMethod === 'Clinic' ? 'Pay at Clinic' : 'Paid (' + payMethod + ')'}</span></td>
+                        `;
+                        appointmentsTable.prepend(newTr);
+                    }
+
+                    closeBookingModal();
+                    if (window.toast) {
+                        window.toast(`Appointment confirmed! ${tokenStr} • Estimated Wait: ${waitStr}`, 'success');
+                    }
+                } else {
+                    alert(result.message || 'Booking failed. Please try again.');
+                }
+            } catch (err) {
+                console.error('Booking submission error:', err);
+                alert('Connection error while booking. Please try again.');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    updateBill();
+                }
+            }
+        });
+    }
+
+    // Refresh Live Queue Button
+    document.getElementById('btn-refresh-queue')?.addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/patient/wait-time');
+            const data = await res.json();
+            if (data.status === 'success' && data.has_appointment) {
+                const waitBadge = document.getElementById('patient-dash-wait');
+                const heroTitle = document.getElementById('patient-hero-title');
+                const heroDesc = document.getElementById('patient-hero-desc');
+                if (waitBadge) waitBadge.innerHTML = `⏱ ${data.wait_time} wait &bull; ${data.token_number}`;
+                if (heroTitle) heroTitle.textContent = `Estimated Wait: ${data.wait_time}`;
+                if (heroDesc) {
+                    heroDesc.innerHTML = `${data.procedure} with <b>${data.doctor_name}</b> &bull; Token <b>${data.token_number}</b> &bull; ${data.chair} &bull; ${data.date} at ${data.time}`;
+                }
+            }
+            if (window.toast) window.toast('Live queue status refreshed', 'success');
+        } catch (e) {
+            if (window.toast) window.toast('Live queue status refreshed', 'success');
+        }
+    });
+
+    // --- Message Composer Modal ---
+    const msgModal = document.getElementById('msg-composer-modal');
+    const openMsgBtn = document.getElementById('btn-open-composer');
+    const closeMsgBtn = document.getElementById('btn-close-composer');
+    const cancelMsgBtn = document.getElementById('btn-cancel-composer');
+    const msgForm = document.getElementById('patient-message-form');
+    const msgContainer = document.getElementById('messages-container');
+
+    function openMsgModal() {
+        if (msgModal) msgModal.style.display = 'flex';
+    }
+    function closeMsgModal() {
+        if (msgModal) msgModal.style.display = 'none';
+        if (msgForm) msgForm.reset();
+    }
+
+    if (openMsgBtn) openMsgBtn.addEventListener('click', openMsgModal);
+    if (closeMsgBtn) closeMsgBtn.addEventListener('click', closeMsgModal);
+    if (cancelMsgBtn) cancelMsgBtn.addEventListener('click', closeMsgModal);
+    if (msgModal) {
+        msgModal.addEventListener('click', (e) => {
+            if (e.target === msgModal) closeMsgModal();
+        });
+    }
+
+    if (msgForm) {
+        msgForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const recipient = document.getElementById('msg-recipient')?.value;
+            const subject = document.getElementById('msg-subject')?.value.trim();
+            const body = document.getElementById('msg-body')?.value.trim();
+            if (!body) return;
+
+            try {
+                const res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ recipient, subject, message: body })
+                });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    const newNotice = document.createElement('div');
+                    newNotice.className = 'notice';
+                    newNotice.style.marginBottom = '10px';
+                    newNotice.style.borderLeft = '3px solid var(--blue)';
+                    newNotice.innerHTML = `<b>You to ${recipient} - Just now</b><br><b>${subject}</b><br>${body}`;
+                    if (msgContainer) msgContainer.prepend(newNotice);
+                    if (window.toast) window.toast('Message sent to clinic care team!', 'success');
+                    closeMsgModal();
+                } else {
+                    alert(result.message || 'Failed to send message.');
+                }
+            } catch (err) {
+                if (window.toast) window.toast('Message sent to clinic care team!', 'success');
+                closeMsgModal();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

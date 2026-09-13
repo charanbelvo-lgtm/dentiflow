@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Create Account / Sign in · DentiFlow</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    .auth-tabs {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 22px;
+      gap: 4px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+    .auth-tab-btn.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      font-weight: 700;
+    }
+    .auth-tab-btn:hover:not(.active) {
+      color: #1e293b;
+    }
+    .role-choice label {
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .role-choice label:hover {
+      border-color: var(--blue, #0284c7);
+    }
+    .form-hint {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth">
+    <section class="auth-art">
+      <div class="auth-tooth">✦</div>
+      <h2>Care that flows.</h2>
+      <p>Appointments, clinical notes, treatment plans, inventory, and revenue in one vibrant workspace.</p>
+      <div class="quick-links">
+        <span class="pill">Role-Based Workspaces</span>
+        <span class="pill">Instant Account Setup</span>
+        <span class="pill">Local Demo Data</span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-card">
+        <!-- Auth Mode Toggle Tabs: Create Account (Default First) / Sign In -->
+        <div class="auth-tabs" role="tablist">
+          <button type="button" id="tab-btn-signup" class="auth-tab-btn active" role="tab" aria-selected="true">Create Account</button>
+          <button type="button" id="tab-btn-signin" class="auth-tab-btn" role="tab" aria-selected="false">Sign In</button>
+        </div>
+
+        <div class="eyebrow" id="auth-eyebrow">FIRST TIME USER?</div>
+        <h1 id="auth-title">Create an Account</h1>
+        <p class="muted" id="auth-subtitle">Please create your account first to access your DentiFlow workspace.</p>
+
+        <form data-login id="auth-form">
+          <div class="role-choice" style="grid-template-columns:repeat(3,1fr);">
+            <label>
+              <input type="radio" name="role" value="doctor" checked> <b>Doctor</b>
+              <small class="muted"><br>Clinical & visits</small>
+            </label>
+            <label>
+              <input type="radio" name="role" value="patient"> <b>Patient</b>
+              <small class="muted"><br>Book & wait time</small>
+            </label>
+            <label>
+              <input type="radio" name="role" value="admin"> <b>Admin</b>
+              <small class="muted"><br>Inventory & profits</small>
+            </label>
+          </div>
+
+          <div class="field" style="margin-top:14px">
+            <label id="auth-name-label">Full Name *</label>
+            <input type="text" name="name" id="auth-name-input" placeholder="Enter your full name" required autocomplete="name">
+          </div>
+
+          <div class="field" style="margin-top:14px">
+            <label>Email address *</label>
+            <input type="email" name="email" id="auth-email-input" placeholder="you@example.com" required autocomplete="email">
+          </div>
+
+          <!-- Signup-only: Mobile phone -->
+          <div class="field signup-only" id="signup-phone-field" style="margin-top:14px;display:block;">
+            <label>Phone / WhatsApp *</label>
+            <input type="tel" name="phone" id="auth-phone-input" placeholder="+91 98765 43210" autocomplete="tel">
+            <div class="form-hint">Used for appointment confirmations & queue status alerts.</div>
+          </div>
+
+          <div class="field" style="margin-top:14px">
+            <label id="auth-password-label">Password *</label>
+            <input type="password" name="password" id="auth-password-input" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+
+          <!-- Signup-only: Confirm password -->
+          <div class="field signup-only" id="signup-confirm-field" style="margin-top:14px;display:block;">
+            <label>Confirm password *</label>
+            <input type="password" name="confirm_password" id="auth-confirm-password-input" placeholder="••••••••" autocomplete="new-password">
+          </div>
+
+          <!-- Signup-only: Terms Checkbox -->
+          <div class="signup-only" id="signup-terms-field" style="margin-top:14px;display:block;font-size:12px;color:#64748b;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;">
+              <input type="checkbox" name="terms" id="auth-terms-checkbox" checked>
+              <span>I agree to clinic terms of service and patient privacy policy.</span>
+            </label>
+          </div>
+
+          <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:20px;padding:12px;font-weight:600;">Create Account & Continue →</button>
+        </form>
+
+        <!-- Demo quick logins (always available for instant role switching) -->
+        <div id="demo-login-section" style="display:block;">
+          <p class="muted" style="text-align:center;margin:18px 0 10px">or quick demo login</p>
+          <div class="grid grid-3" style="grid-template-columns:repeat(3,1fr);gap:8px;">
+            <button type="button" class="btn btn-soft" data-demo-role="doctor" style="justify-content:center;padding:8px 4px;">Doctor</button>
+            <button type="button" class="btn btn-soft" data-demo-role="patient" style="justify-content:center;padding:8px 4px;">Patient</button>
+            <button type="button" class="btn btn-soft" data-demo-role="admin" style="justify-content:center;padding:8px 4px;">Admin</button>
+          </div>
+        </div>
+
+        <!-- Mode switch footer link -->
+        <p class="muted" style="font-size:13px;text-align:center;margin-top:20px;" id="auth-switch-prompt">
+          Already have an account? <a href="#" id="auth-switch-link" style="color:var(--blue);font-weight:600;">Sign in here</a>
+        </p>
+
+        <p class="muted" style="font-size:12px;text-align:center;margin-top:12px">
+          <a href="./index.html">← Back to landing</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>

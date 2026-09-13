@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Workspace &middot; DentiFlow</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .admin-stat-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      padding: 22px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .admin-stat-card strong {
+      font: 700 28px "Space Grotesk", sans-serif;
+      display: block;
+      margin: 8px 0 4px;
+      color: var(--ink);
+    }
+    .admin-hero {
+      background: linear-gradient(135deg, #0e2138 0%, #1e3a8a 60%, #0d9488 100%);
+      color: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: 0 16px 36px rgba(14, 33, 56, 0.16);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .inventory-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .inventory-badge.low {
+      background: #fff4e5;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+    }
+    .inventory-badge.good {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .metric-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+    }
+    .metric-row:last-child {
+      border-bottom: 0;
+    }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .15s ease;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .admin-view {
+      display: none;
+      animation: fadeIn .2s ease forwards;
+    }
+    .admin-view.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem("dentiflowUser");
+        var u = raw ? JSON.parse(raw) : null;
+        if (!u) {
+          u = { name: "Dr. Rajesh Verma", role: "admin", email: "admin@dentiflow.com" };
+        } else {
+          u.role = "admin";
+          if (!u.name || u.name === "Ashwini Goud") {
+            u.name = "Dr. Rajesh Verma";
+          }
+        }
+        localStorage.setItem("dentiflowUser", JSON.stringify(u));
+        document.documentElement.className = "role-admin";
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="role-admin">
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/"><span class="brand-mark"></span>DentiFlow</a>
+      <nav class="nav">
+        <div class="nav-label">Administration</div>
+        <a href="#overview" class="active" data-admin-tab="overview"><span>Admin Dashboard</span></a>
+        <a href="#inventory" data-admin-tab="inventory"><span>Inventory Management</span></a>
+        <a href="#billing" data-admin-tab="billing"><span>Billing &amp; Invoices</span></a>
+        <a href="#reports" data-admin-tab="reports"><span>Financial Reports</span></a>
+        <div class="nav-label">Settings</div>
+        <a href="#profile" data-admin-tab="profile"><span>Practice Profile</span></a>
+        <div class="nav-label" style="margin-top:14px;">Clinical Switcher</div>
+        <a href="/dashboard" title="Switch to Doctor clinical queue"><span>Doctor Workspace &rarr;</span></a>
+        <a href="/portal" title="Switch to Patient booking portal"><span>Patient Portal &rarr;</span></a>
+      </nav>
+      <div class="sidebar-bottom">
+        <a href="/login" data-logout><span>Sign out / Login</span></a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+          <label class="search"><input data-search placeholder="Search inventory, profits, invoices..."></label>
+        </div>
+        <div class="top-actions">
+          <a href="/login" class="btn btn-soft" style="padding:6px 12px;font-size:12px;">Switch Role / Login</a>
+          <span class="pill purple" data-user-role>Admin workspace</span>
+          <div class="user-chip">
+            <span data-user-name>{{ current_user.name if current_user.is_authenticated and current_user.name else "Dr. Rajesh Verma" }}</span>
+            <span class="avatar" data-avatar style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">RV</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+
+        <!-- ========================================================= -->
+        <!-- VIEW 1: ADMIN DASHBOARD OVERVIEW -->
+        <!-- ========================================================= -->
+        <div class="admin-view active" id="view-overview">
+          <!-- Admin Hero -->
+          <div class="admin-hero">
+            <div>
+              <span class="eyebrow" style="color:#6ee7b7;">ADMINISTRATIVE &amp; FINANCIAL SUITE</span>
+              <h1 style="color:#fff;font-size:30px;margin:6px 0 10px;">Executive Practice Intelligence</h1>
+              <p style="color:#e0e7ff;max-width:620px;margin:0;font-size:14px;line-height:1.6;">
+                Monitor practice cash flow, profit margins, procurement schedules, and clinic capacity in real time.
+              </p>
+            </div>
+            <div class="row wrap" style="gap:10px;">
+              <button class="btn btn-teal" onclick="switchAdminTab('inventory')">+ Order Supplies</button>
+              <button class="btn" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.3);" onclick="switchAdminTab('reports')">Export P&amp;L</button>
+            </div>
+          </div>
+
+          <!-- Four Key Financial & Inventory Statistics -->
+          <div class="grid grid-4">
+            <div class="admin-stat-card" style="cursor:pointer;" onclick="switchAdminTab('billing')">
+              <div class="row between">
+                <span class="eyebrow" style="color:var(--blue);">MONTHLY REVENUE</span>
+                <span class="pill green">+14.2%</span>
+              </div>
+              <strong>₹4,28,500</strong>
+              <small class="muted">Gross collections &bull; May 2026</small>
+              <div class="progress" style="margin-top:10px;"><span style="width:88%;"></span></div>
+            </div>
+
+            <div class="admin-stat-card" style="cursor:pointer;" onclick="switchAdminTab('reports')">
+              <div class="row between">
+                <span class="eyebrow" style="color:var(--teal);">NET PROFIT</span>
+                <span class="pill green">66.5% Margin</span>
+              </div>
+              <strong style="color:#047857;">₹2,85,200</strong>
+              <small class="muted">After clinical supplies &amp; overhead</small>
+              <div class="progress" style="margin-top:10px;"><span style="width:66%;background:var(--teal);"></span></div>
+            </div>
+
+            <div class="admin-stat-card" style="cursor:pointer;" onclick="switchAdminTab('inventory')">
+              <div class="row between">
+                <span class="eyebrow" style="color:var(--orange);">INVENTORY HEALTH</span>
+                <span class="pill orange">6 Low Stock</span>
+              </div>
+              <strong>248 Items</strong>
+              <small class="muted">₹2.4L total stock valuation</small>
+              <div class="progress" style="margin-top:10px;"><span style="width:45%;background:var(--orange);"></span></div>
+            </div>
+
+            <div class="admin-stat-card" style="cursor:pointer;" onclick="switchAdminTab('billing')">
+              <div class="row between">
+                <span class="eyebrow" style="color:var(--purple);">COLLECTION EFFICIENCY</span>
+                <span class="pill purple">38 Invoices</span>
+              </div>
+              <strong>94.2%</strong>
+              <small class="muted">₹18,400 pending receivables</small>
+              <div class="progress" style="margin-top:10px;"><span style="width:94%;background:var(--purple);"></span></div>
+            </div>
+          </div>
+
+          <!-- 2-Column Section: Inventory Depletion & Revenue Trend -->
+          <div class="grid grid-2" style="margin-top:22px;">
+            <!-- Inventory Monitoring & Critical Stock Table -->
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <h2>Inventory Tracking &amp; Alerts</h2>
+                  <small class="muted">Real-time stock depletion and automatic reorder thresholds</small>
+                </div>
+                <div class="row">
+                  <button class="btn btn-soft" data-toast="Inventory synced with stockroom">Sync Stock</button>
+                  <button class="btn btn-primary" onclick="switchAdminTab('inventory')">All Inventory &rarr;</button>
+                </div>
+              </div>
+
+              <div class="table-wrap" style="margin-top:10px;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Item &amp; SKU</th>
+                      <th>On Hand</th>
+                      <th>Reorder Level</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-searchable>
+                      <td>
+                        <b>3M Filtek Composite Resin A2</b><br>
+                        <small class="muted">Restorative &bull; DentSupply Co.</small>
+                      </td>
+                      <td><b style="color:#ea580c;">6 syringes</b></td>
+                      <td>10</td>
+                      <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                      <td><button class="btn btn-soft" data-toast="Reorder request dispatched to DentSupply Co.">Reorder</button></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td>
+                        <b>Dental Bibs (Poly-backed Pink)</b><br>
+                        <small class="muted">Consumables &bull; MedSupply Ltd</small>
+                      </td>
+                      <td><b style="color:#ea580c;">3 boxes</b></td>
+                      <td>5</td>
+                      <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                      <td><button class="btn btn-soft" data-toast="Reorder request dispatched to MedSupply Ltd">Reorder</button></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td>
+                        <b>Lidocaine 2% w/ Adrenaline</b><br>
+                        <small class="muted">Anesthetics &bull; PharmaDent</small>
+                      </td>
+                      <td><b style="color:#ea580c;">12 cartridges</b></td>
+                      <td>20</td>
+                      <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                      <td><button class="btn btn-soft" data-toast="Reorder request dispatched to PharmaDent">Reorder</button></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td>
+                        <b>Latex Gloves &bull; Medium</b><br>
+                        <small class="muted">Consumables &bull; Medico</small>
+                      </td>
+                      <td><b>24 boxes</b></td>
+                      <td>8</td>
+                      <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                      <td><span class="pill green">Stocked</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="row between" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line);">
+                <span class="muted" style="font-size:12px;">Total active stock: 248 items across 4 dental operatories.</span>
+                <button class="btn btn-ghost" style="font-weight:700;font-size:13px;padding:4px 8px;" onclick="switchAdminTab('inventory')">Manage 243 other items &rarr;</button>
+              </div>
+            </div>
+
+            <!-- Revenue & Profit Statistics Chart -->
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <h2>Revenue &amp; Profit Growth</h2>
+                  <small class="muted">Historical performance over the last 5 months (in INR)</small>
+                </div>
+                <span class="pill green">+38% YoY</span>
+              </div>
+
+              <!-- Visual Bar Chart -->
+              <div class="bar-chart" style="height:175px;margin-top:20px;">
+                <div class="bar" style="height:48%;"><em>₹2.1L</em><small>Jan</small></div>
+                <div class="bar" style="height:64%;"><em>₹2.8L</em><small>Feb</small></div>
+                <div class="bar" style="height:58%;"><em>₹2.5L</em><small>Mar</small></div>
+                <div class="bar" style="height:80%;"><em>₹3.5L</em><small>Apr</small></div>
+                <div class="bar" style="height:98%;background:linear-gradient(var(--teal),#059669);"><em>₹4.3L</em><small>May</small></div>
+              </div>
+
+              <div style="margin-top:28px;">
+                <div class="metric-row">
+                  <span class="muted">Clinical Operatory Capacity</span>
+                  <b>84% Occupancy (4 Chairs Active)</b>
+                </div>
+                <div class="metric-row">
+                  <span class="muted">Average Revenue per Patient</span>
+                  <b>₹2,380 / visit</b>
+                </div>
+                <div class="metric-row">
+                  <span class="muted">Direct Supply &amp; Lab Cost Ratio</span>
+                  <b style="color:#059669;">18.5% (Target: &lt; 22%)</b>
+                </div>
+                <div class="metric-row">
+                  <span class="muted">Operating Overheads (Staff &amp; Rent)</span>
+                  <b>15.0%</b>
+                </div>
+                <div class="metric-row">
+                  <span class="muted">Net Operating Profit</span>
+                  <b style="color:var(--teal);font-size:15px;">₹2,85,200 (66.5%)</b>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-Column Administrative Quick Hub -->
+          <div class="grid grid-3" style="margin-top:22px;">
+            <div class="card" style="cursor:pointer;" onclick="switchAdminTab('inventory')">
+              <div class="row" style="margin-bottom:12px;">
+                <div class="stat-icon orange" style="margin:0;">📦</div>
+                <div>
+                  <b style="display:block;font-size:15px;">Supply Room &amp; Orders</b>
+                  <small class="muted">248 items tracked &bull; 6 need reorder</small>
+                </div>
+              </div>
+              <p class="muted" style="font-size:13px;margin-bottom:14px;">Review batch expiry dates, audit storage temperatures, and dispatch supplier purchase orders.</p>
+              <button class="btn btn-soft" style="width:100%;justify-content:center;">Open Supply Room &rarr;</button>
+            </div>
+
+            <div class="card" style="cursor:pointer;" onclick="switchAdminTab('billing')">
+              <div class="row" style="margin-bottom:12px;">
+                <div class="stat-icon teal" style="margin:0;">💳</div>
+                <div>
+                  <b style="display:block;font-size:15px;">Invoicing &amp; Billing</b>
+                  <small class="muted">94.2% collection &bull; ₹18.4k pending</small>
+                </div>
+              </div>
+              <p class="muted" style="font-size:13px;margin-bottom:14px;">Generate patient tax invoices, verify insurance claims, and log online or in-clinic payments.</p>
+              <button class="btn btn-soft" style="width:100%;justify-content:center;">Open Billing Desk &rarr;</button>
+            </div>
+
+            <div class="card" style="cursor:pointer;" onclick="switchAdminTab('reports')">
+              <div class="row" style="margin-bottom:12px;">
+                <div class="stat-icon purple" style="margin:0;">📊</div>
+                <div>
+                  <b style="display:block;font-size:15px;">Comprehensive Reports</b>
+                  <small class="muted">Monthly P&amp;L, Treatment mix</small>
+                </div>
+              </div>
+              <p class="muted" style="font-size:13px;margin-bottom:14px;">Deep-dive into treatment type profitability (General vs Orthodontics vs Cosmetic) and doctor productivity.</p>
+              <button class="btn btn-soft" style="width:100%;justify-content:center;">View Practice Reports &rarr;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 2: FULL INVENTORY MANAGEMENT -->
+        <!-- ========================================================= -->
+        <div class="admin-view" id="view-inventory">
+          <div class="page-head">
+            <div>
+              <span class="eyebrow">SUPPLY ROOM &amp; PROCUREMENT</span>
+              <h1>Inventory Management</h1>
+              <p class="muted">Audit real-time stock levels, reorder thresholds, and supplier orders across all 4 operatories.</p>
+            </div>
+            <div class="row">
+              <button class="btn btn-soft" data-toast="Inventory synced with central supplier catalog">Sync Stock</button>
+              <button class="btn btn-primary" onclick="openAdminOrderModal()">+ New Stock Order</button>
+            </div>
+          </div>
+
+          <div class="grid grid-3">
+            <div class="card stat">
+              <div class="stat-icon">📦</div>
+              <strong>248 Items</strong>
+              <small>Actively tracked across 4 operatories</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon orange">⚠️</div>
+              <strong style="color:#ea580c;">6 Alerts</strong>
+              <small>Items below safety reorder threshold</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon teal">₹</div>
+              <strong>₹2,42,800</strong>
+              <small>Total clinic inventory asset value</small>
+            </div>
+          </div>
+
+          <!-- Inventory Filter Chips -->
+          <div class="card" style="margin-top:20px;">
+            <div class="row between wrap" style="gap:12px;margin-bottom:16px;">
+              <div class="row wrap" style="gap:8px;">
+                <button class="filter-chip active" onclick="filterInventoryCategory('all', this)">All Items (248)</button>
+                <button class="filter-chip" onclick="filterInventoryCategory('low', this)">Low Stock (6)</button>
+                <button class="filter-chip" onclick="filterInventoryCategory('Restorative', this)">Restorative</button>
+                <button class="filter-chip" onclick="filterInventoryCategory('Consumables', this)">Consumables</button>
+                <button class="filter-chip" onclick="filterInventoryCategory('Anesthetics', this)">Anesthetics</button>
+                <button class="filter-chip" onclick="filterInventoryCategory('Endodontics', this)">Endodontics</button>
+              </div>
+              <span class="muted" style="font-size:13px;" id="inventory-showing-text">Showing 8 of 248 tracked items</span>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table" id="admin-inventory-table">
+                <thead>
+                  <tr>
+                    <th>Item &amp; SKU</th>
+                    <th>Category</th>
+                    <th>Operatory / Shelf</th>
+                    <th>On Hand</th>
+                    <th>Min Level</th>
+                    <th>Unit Cost</th>
+                    <th>Status</th>
+                    <th>Supplier</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr data-searchable data-category="Restorative" data-status="low">
+                    <td><b>3M Filtek Composite Resin A2</b><br><small class="muted">SKU: RES-3M-A2</small></td>
+                    <td><span class="pill">Restorative</span></td>
+                    <td>Cabinet B &bull; Shelf 2</td>
+                    <td><b style="color:#ea580c;" class="stock-num">6 syringes</b></td>
+                    <td>10</td>
+                    <td>₹1,850</td>
+                    <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                    <td>DentSupply Co.</td>
+                    <td><button class="btn btn-soft" onclick="orderItem(this, '3M Filtek Composite Resin A2')">Reorder +10</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Consumables" data-status="low">
+                    <td><b>Dental Bibs (Poly-backed Pink)</b><br><small class="muted">SKU: CON-BIB-PK</small></td>
+                    <td><span class="pill">Consumables</span></td>
+                    <td>Storage Room &bull; Bin 4</td>
+                    <td><b style="color:#ea580c;" class="stock-num">3 boxes</b></td>
+                    <td>5</td>
+                    <td>₹320</td>
+                    <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                    <td>MedSupply Ltd</td>
+                    <td><button class="btn btn-soft" onclick="orderItem(this, 'Dental Bibs')">Reorder +10</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Anesthetics" data-status="low">
+                    <td><b>Lidocaine 2% w/ Adrenaline 1:80,000</b><br><small class="muted">SKU: ANE-LID-ADR</small></td>
+                    <td><span class="pill">Anesthetics</span></td>
+                    <td>Locked Cabinet A</td>
+                    <td><b style="color:#ea580c;" class="stock-num">12 cartridges</b></td>
+                    <td>20</td>
+                    <td>₹140</td>
+                    <td><span class="inventory-badge low">&bull; Low Stock</span></td>
+                    <td>PharmaDent</td>
+                    <td><button class="btn btn-soft" onclick="orderItem(this, 'Lidocaine 2%')">Reorder +50</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Consumables" data-status="good">
+                    <td><b>Latex Examination Gloves &bull; Medium</b><br><small class="muted">SKU: CON-GLV-MED</small></td>
+                    <td><span class="pill">Consumables</span></td>
+                    <td>Operatories 1-4 &bull; Rack C1</td>
+                    <td><b class="stock-num">24 boxes</b></td>
+                    <td>8</td>
+                    <td>₹450</td>
+                    <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                    <td>Medico Supplies</td>
+                    <td><button class="btn btn-ghost" data-toast="Stock count verified">Audit</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Endodontics" data-status="good">
+                    <td><b>Endo Files &bull; 25mm Rotary Protaper</b><br><small class="muted">SKU: END-PRO-25</small></td>
+                    <td><span class="pill">Endodontics</span></td>
+                    <td>Operatory 1 &bull; Tray E3</td>
+                    <td><b class="stock-num">42 packs</b></td>
+                    <td>12</td>
+                    <td>₹2,400</td>
+                    <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                    <td>RootPro Medical</td>
+                    <td><button class="btn btn-ghost" data-toast="Stock count verified">Audit</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Restorative" data-status="good">
+                    <td><b>Alginate Impression Material (500g)</b><br><small class="muted">SKU: IMP-ALG-500</small></td>
+                    <td><span class="pill">Restorative</span></td>
+                    <td>Cabinet D &bull; Shelf 1</td>
+                    <td><b class="stock-num">14 bags</b></td>
+                    <td>6</td>
+                    <td>₹680</td>
+                    <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                    <td>DentSupply Co.</td>
+                    <td><button class="btn btn-ghost" data-toast="Stock count verified">Audit</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Consumables" data-status="good">
+                    <td><b>Sterilization Pouches (200s)</b><br><small class="muted">SKU: CON-STE-200</small></td>
+                    <td><span class="pill">Consumables</span></td>
+                    <td>Sterilization Bay &bull; Rack 2</td>
+                    <td><b class="stock-num">8 boxes</b></td>
+                    <td>4</td>
+                    <td>₹590</td>
+                    <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                    <td>MedSupply Ltd</td>
+                    <td><button class="btn btn-ghost" data-toast="Stock count verified">Audit</button></td>
+                  </tr>
+                  <tr data-searchable data-category="Restorative" data-status="good">
+                    <td><b>Universal Dental Bonding Agent (5ml)</b><br><small class="muted">SKU: RES-BND-05</small></td>
+                    <td><span class="pill">Restorative</span></td>
+                    <td>Refrigerated Unit A</td>
+                    <td><b class="stock-num">5 bottles</b></td>
+                    <td>3</td>
+                    <td>₹3,200</td>
+                    <td><span class="inventory-badge good">&bull; Optimal</span></td>
+                    <td>3M Healthcare</td>
+                    <td><button class="btn btn-ghost" data-toast="Stock count verified">Audit</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 3: FULL BILLING & INVOICES -->
+        <!-- ========================================================= -->
+        <div class="admin-view" id="view-billing">
+          <div class="page-head">
+            <div>
+              <span class="eyebrow">FINANCE &amp; CASH FLOW</span>
+              <h1>Billing &amp; Invoices</h1>
+              <p class="muted">Track receipts, outstanding patient balances, and clinic payment methods in real time.</p>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" onclick="openAdminInvoiceModal()">+ Create New Invoice</button>
+            </div>
+          </div>
+
+          <div class="grid grid-4">
+            <div class="card stat">
+              <div class="stat-icon">₹</div>
+              <strong>₹4,28,500</strong>
+              <small>Total billed this month</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon teal">✓</div>
+              <strong style="color:var(--teal);">₹4,10,100</strong>
+              <small>Total collected (94.2%)</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon orange">⏱</div>
+              <strong style="color:#ea580c;">₹18,400</strong>
+              <small>Outstanding receivables</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon purple">📑</div>
+              <strong>38 Invoices</strong>
+              <small>Issued in May 2026</small>
+            </div>
+          </div>
+
+          <div class="grid grid-2" style="margin-top:20px;">
+            <!-- Invoices Table -->
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <h2>All Clinic Invoices</h2>
+                  <small class="muted">Latest billing records across all procedures</small>
+                </div>
+                <span class="pill">May 2026</span>
+              </div>
+
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Invoice ID</th>
+                      <th>Patient</th>
+                      <th>Treatment</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-searchable>
+                      <td><b>INV-2026-1029</b></td>
+                      <td>Aravind Menon</td>
+                      <td>Root Canal Review</td>
+                      <td>₹17,110</td>
+                      <td><span class="pill orange">Partial (₹8,550 due)</span></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td><b>INV-2026-1028</b></td>
+                      <td>Vishal Rao</td>
+                      <td>Scaling &amp; Polishing</td>
+                      <td>₹4,500</td>
+                      <td><span class="pill green">Paid in Full</span></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td><b>INV-2026-1027</b></td>
+                      <td>Medha Iyer</td>
+                      <td>Pediatric Consultation</td>
+                      <td>₹3,200</td>
+                      <td><span class="pill green">Paid in Full</span></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td><b>INV-2026-1026</b></td>
+                      <td>Sameer Khan</td>
+                      <td>Composite Restoration #14</td>
+                      <td>₹5,800</td>
+                      <td><span class="pill green">Paid in Full</span></td>
+                    </tr>
+                    <tr data-searchable>
+                      <td><b>INV-2026-1025</b></td>
+                      <td>Pooja Hegde</td>
+                      <td>Zirconia Crown #21</td>
+                      <td>₹14,500</td>
+                      <td><span class="pill orange">Pending Insurance</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Record Payment Card -->
+            <div class="card">
+              <div class="section-title">
+                <div>
+                  <h2>Record Direct Payment</h2>
+                  <small class="muted">Log incoming payments into the practice ledger</small>
+                </div>
+                <span class="pill green">Live Ledger</span>
+              </div>
+
+              <form class="form-grid" id="admin-payment-form" onsubmit="handleAdminPayment(event)">
+                <div class="field full">
+                  <label>Select Invoice &amp; Patient</label>
+                  <select id="admin-pay-invoice" required>
+                    <option value="INV-2026-1029">INV-2026-1029 &bull; Aravind Menon (₹8,550 due)</option>
+                    <option value="INV-2026-1025">INV-2026-1025 &bull; Pooja Hegde (₹14,500 due)</option>
+                    <option value="NEW">Other / Walk-in Consultation</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label>Payment Amount (₹)</label>
+                  <input type="number" id="admin-pay-amount" min="100" value="8550" required>
+                </div>
+                <div class="field full">
+                  <label>Payment Mode</label>
+                  <select id="admin-pay-mode">
+                    <option>UPI / QR Code</option>
+                    <option>Credit / Debit Card</option>
+                    <option>Cash Receipt</option>
+                    <option>Net Banking / NEFT</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <button type="submit" class="btn btn-teal" style="width:100%;justify-content:center;margin-top:8px;">
+                    ✓ Record &amp; Generate Receipt
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 4: FULL FINANCIAL REPORTS & P&L -->
+        <!-- ========================================================= -->
+        <div class="admin-view" id="view-reports">
+          <div class="page-head">
+            <div>
+              <span class="eyebrow">PRACTICE INTELLIGENCE &amp; P&amp;L</span>
+              <h1>Financial Reports &amp; Analytics</h1>
+              <p class="muted">Detailed monthly profit &amp; loss statements, provider productivity, and clinical margin analytics.</p>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary" data-toast="P&amp;L Financial Report for May 2026 downloaded (PDF)">📥 Download P&amp;L Report</button>
+            </div>
+          </div>
+
+          <div class="grid grid-4">
+            <div class="card stat">
+              <div class="stat-icon">₹</div>
+              <strong>₹4.28 Lakh</strong>
+              <small>Gross Practice Collections</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon teal">📈</div>
+              <strong style="color:var(--teal);">₹2.85 Lakh</strong>
+              <small>Net Operating Profit (66.5%)</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon orange">🧪</div>
+              <strong style="color:#ea580c;">₹79,200</strong>
+              <small>Dental Lab &amp; Supply COGS (18.5%)</small>
+            </div>
+            <div class="card stat">
+              <div class="stat-icon purple">🏢</div>
+              <strong>₹64,100</strong>
+              <small>Staff &amp; Overheads (15.0%)</small>
+            </div>
+          </div>
+
+          <!-- P&L Breakdown Table -->
+          <div class="card" style="margin-top:20px;">
+            <div class="section-title">
+              <div>
+                <h2>Practice Profit &amp; Loss Statement (May 2026)</h2>
+                <small class="muted">Summary accounting breakdown of dental clinical operations</small>
+              </div>
+              <span class="pill green">Audited Healthy</span>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Ledger Category</th>
+                    <th>Account Line</th>
+                    <th>Monthly Total</th>
+                    <th>% of Gross Revenue</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>Revenue</b></td>
+                    <td>Clinical Dentistry Consultations &amp; Treatments</td>
+                    <td><b>₹4,28,500</b></td>
+                    <td>100.0%</td>
+                    <td><span class="pill green">Target Exceeded</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Cost of Goods</b></td>
+                    <td>Crown &amp; Bridge Dental Lab Fabrications</td>
+                    <td style="color:#ea580c;">- ₹42,100</td>
+                    <td>9.8%</td>
+                    <td><span class="pill">Controlled</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Cost of Goods</b></td>
+                    <td>Direct Operatory Consumables &amp; Disposables</td>
+                    <td style="color:#ea580c;">- ₹37,100</td>
+                    <td>8.7%</td>
+                    <td><span class="pill">Controlled</span></td>
+                  </tr>
+                  <tr style="background:#f8fafc;font-weight:700;">
+                    <td><b>Gross Margin</b></td>
+                    <td>Gross Clinical Profit</td>
+                    <td style="color:var(--teal);font-size:15px;">₹3,49,300</td>
+                    <td>81.5%</td>
+                    <td><span class="pill green">Excellent</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Operating Expenses</b></td>
+                    <td>Clinical Assistants &amp; Reception Payroll</td>
+                    <td style="color:#ea580c;">- ₹38,000</td>
+                    <td>8.9%</td>
+                    <td><span class="pill">Fixed</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Operating Expenses</b></td>
+                    <td>Facility Rent, Sterilization Power &amp; Software</td>
+                    <td style="color:#ea580c;">- ₹26,100</td>
+                    <td>6.1%</td>
+                    <td><span class="pill">Fixed</span></td>
+                  </tr>
+                  <tr style="background:#ecfdf5;font-weight:700;">
+                    <td style="color:#047857;"><b>Net Profit (EBITDA)</b></td>
+                    <td style="color:#047857;">Net Practice Income</td>
+                    <td style="color:#047857;font-size:18px;">₹2,85,200</td>
+                    <td style="color:#047857;">66.5%</td>
+                    <td><span class="pill green">Top Tier</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Doctor Performance / Attribution Table -->
+          <div class="card" style="margin-top:20px;">
+            <div class="section-title">
+              <div>
+                <h2>Doctor Provider Revenue Attribution</h2>
+                <small class="muted">Patient visits, procedure value, and satisfaction by clinician</small>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Doctor</th>
+                    <th>Specialty</th>
+                    <th>Patients Treated</th>
+                    <th>Revenue Contributed</th>
+                    <th>Average Rating</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><b>Dr. Rajesh Verma</b></td>
+                    <td>Implantology &amp; Oral Surgery</td>
+                    <td>14 Visits</td>
+                    <td><b>₹1,85,000</b></td>
+                    <td><span class="pill green">4.9 / 5.0 (98%)</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Dr. Ananya Sharma</b></td>
+                    <td>Endodontics &amp; Restorative</td>
+                    <td>18 Visits</td>
+                    <td><b>₹1,62,500</b></td>
+                    <td><span class="pill green">4.8 / 5.0 (96%)</span></td>
+                  </tr>
+                  <tr>
+                    <td><b>Dr. Rohan Gupta</b></td>
+                    <td>Orthodontics &amp; Pediatric Care</td>
+                    <td>10 Visits</td>
+                    <td><b>₹81,000</b></td>
+                    <td><span class="pill green">4.7 / 5.0 (94%)</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- VIEW 5: PRACTICE PROFILE & SETTINGS -->
+        <!-- ========================================================= -->
+        <div class="admin-view" id="view-profile">
+          <div class="page-head">
+            <div>
+              <span class="eyebrow">CLINIC CONFIGURATION</span>
+              <h1>Practice Profile &amp; Settings</h1>
+              <p class="muted">Administrative contact credentials, clinic legal details, and operational branches.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="section-title">
+                <h2>Clinic Facility Profile</h2>
+                <span class="pill green">Active License</span>
+              </div>
+              <p><b>Practice Name:</b> DentiFlow Dental Care &amp; Implant Center</p>
+              <p><b>Medical Director:</b> Dr. Rajesh Verma (BDS, MDS - Oral Implantology)</p>
+              <p><b>Registration / GSTIN:</b> 29AAAAA0000A1Z5</p>
+              <p><b>Address:</b> 842 100 Feet Road, Indiranagar, Bengaluru, Karnataka 560038</p>
+              <p><b>Support Email:</b> admin@dentiflow.com &bull; <b>Phone:</b> +91 98765 43210</p>
+            </div>
+
+            <div class="card">
+              <div class="section-title">
+                <h2>Clinical Operatories &amp; Capacity</h2>
+                <span class="pill green">4 Chairs Online</span>
+              </div>
+              <div class="metric-row">
+                <span>Chair 01 &bull; Endodontic Operatory</span>
+                <span class="pill green">Occupied (Dr. Ananya Sharma)</span>
+              </div>
+              <div class="metric-row">
+                <span>Chair 02 &bull; Implant &amp; Oral Surgery</span>
+                <span class="pill">Sterilized &amp; Ready</span>
+              </div>
+              <div class="metric-row">
+                <span>Chair 03 &bull; Orthodontics &amp; Aligners</span>
+                <span class="pill">Scheduled (02:30 PM)</span>
+              </div>
+              <div class="metric-row">
+                <span>Chair 04 &bull; Scaling &amp; Prevention</span>
+                <span class="pill">Sterilized &amp; Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- Interactive Add/Order Stock Modal -->
+  <div id="admin-order-modal" class="modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.65);z-index:9999;place-items:center;">
+    <div class="card" style="width:100%;max-width:480px;box-shadow:0 24px 48px rgba(0,0,0,0.3);margin:20px;">
+      <div class="section-title">
+        <div>
+          <h2>Dispatch Stock Order</h2>
+          <small class="muted">Create purchase requisition for dental supplies</small>
+        </div>
+        <button class="btn btn-ghost" onclick="closeAdminOrderModal()" style="font-size:18px;">&times;</button>
+      </div>
+      <form class="form-grid" onsubmit="handleCreateStockOrder(event)">
+        <div class="field full">
+          <label>Item Description</label>
+          <input type="text" id="order-item-name" placeholder="e.g. 3M Filtek Composite Resin A2" required>
+        </div>
+        <div class="field full">
+          <label>Category</label>
+          <select id="order-category">
+            <option>Restorative</option>
+            <option>Consumables</option>
+            <option>Anesthetics</option>
+            <option>Endodontics</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Quantity to Reorder</label>
+          <input type="number" id="order-qty" value="10" min="1" required>
+        </div>
+        <div class="field full">
+          <label>Supplier</label>
+          <select id="order-supplier">
+            <option>DentSupply Co.</option>
+            <option>MedSupply Ltd</option>
+            <option>PharmaDent</option>
+            <option>Medico Supplies</option>
+            <option>RootPro Medical</option>
+          </select>
+        </div>
+        <div class="row between" style="margin-top:14px;">
+          <button type="button" class="btn btn-ghost" onclick="closeAdminOrderModal()">Cancel</button>
+          <button type="submit" class="btn btn-teal">Dispatch Purchase Order</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interactive Create Invoice Modal -->
+  <div id="admin-invoice-modal" class="modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.65);z-index:9999;place-items:center;">
+    <div class="card" style="width:100%;max-width:480px;box-shadow:0 24px 48px rgba(0,0,0,0.3);margin:20px;">
+      <div class="section-title">
+        <div>
+          <h2>Generate Patient Invoice</h2>
+          <small class="muted">Issue invoice and record on practice ledger</small>
+        </div>
+        <button class="btn btn-ghost" onclick="closeAdminInvoiceModal()" style="font-size:18px;">&times;</button>
+      </div>
+      <form class="form-grid" onsubmit="handleCreateInvoice(event)">
+        <div class="field full">
+          <label>Patient Name</label>
+          <input type="text" id="inv-patient-name" placeholder="e.g. Aravind Menon" required>
+        </div>
+        <div class="field full">
+          <label>Procedure / Description</label>
+          <input type="text" id="inv-procedure" placeholder="e.g. Root Canal Treatment (Tooth #16)" required>
+        </div>
+        <div class="field full">
+          <label>Total Amount (₹)</label>
+          <input type="number" id="inv-amount" placeholder="15000" min="500" required>
+        </div>
+        <div class="field full">
+          <label>Initial Status</label>
+          <select id="inv-status">
+            <option value="Paid in Full">Paid in Full</option>
+            <option value="Partial">Partial (50% Deposit Received)</option>
+            <option value="Pending">Pending Payment</option>
+          </select>
+        </div>
+        <div class="row between" style="margin-top:14px;">
+          <button type="button" class="btn btn-ghost" onclick="closeAdminInvoiceModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Issue Invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    // In-page admin tab router that prevents navigation to doctor pages
+    function switchAdminTab(tabName) {
+      // 1. Hide all views
+      document.querySelectorAll(".admin-view").forEach(function(v) {
+        v.classList.remove("active");
+        v.style.display = "none";
+      });
+
+      // 2. Show requested view
+      var targetView = document.getElementById("view-" + tabName);
+      if (targetView) {
+        targetView.classList.add("active");
+        targetView.style.display = "block";
+      }
+
+      // 3. Update sidebar active classes
+      document.querySelectorAll(".sidebar .nav a[data-admin-tab]").forEach(function(link) {
+        if (link.getAttribute("data-admin-tab") === tabName) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+
+      // 4. Update URL hash without reload
+      if (history.replaceState) {
+        history.replaceState(null, null, "#" + tabName);
+      } else {
+        location.hash = "#" + tabName;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Attach click listeners to all data-admin-tab links
+    document.querySelectorAll(".sidebar .nav a[data-admin-tab]").forEach(function(link) {
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        var tab = this.getAttribute("data-admin-tab");
+        switchAdminTab(tab);
+      });
+    });
+
+    // Handle initial hash routing
+    window.addEventListener("DOMContentLoaded", function() {
+      var hash = (location.hash || "#overview").replace("#", "");
+      if (["overview", "inventory", "billing", "reports", "profile"].indexOf(hash) !== -1) {
+        switchAdminTab(hash);
+      }
+    });
+
+    // Inventory category filter
+    function filterInventoryCategory(cat, btn) {
+      document.querySelectorAll(".filter-chip").forEach(function(c) { c.classList.remove("active"); });
+      if (btn) btn.classList.add("active");
+
+      var rows = document.querySelectorAll("#admin-inventory-table tbody tr");
+      var count = 0;
+      rows.forEach(function(row) {
+        var rowCat = row.getAttribute("data-category");
+        var rowStatus = row.getAttribute("data-status");
+        if (cat === "all") {
+          row.hidden = false;
+          count++;
+        } else if (cat === "low") {
+          row.hidden = (rowStatus !== "low");
+          if (!row.hidden) count++;
+        } else {
+          row.hidden = (rowCat !== cat);
+          if (!row.hidden) count++;
+        }
+      });
+      document.getElementById("inventory-showing-text").textContent = "Showing " + count + " of 248 tracked items";
+    }
+
+    // Order item action
+    function orderItem(btn, itemName) {
+      btn.textContent = "Dispatched ✓";
+      btn.disabled = true;
+      btn.classList.add("pill", "green");
+      if (window.toast) {
+        window.toast("Purchase order for " + itemName + " dispatched to supplier!");
+      }
+    }
+
+    // Modals
+    function openAdminOrderModal() {
+      var modal = document.getElementById("admin-order-modal");
+      modal.style.display = "grid";
+    }
+    function closeAdminOrderModal() {
+      document.getElementById("admin-order-modal").style.display = "none";
+    }
+    function handleCreateStockOrder(e) {
+      e.preventDefault();
+      var item = document.getElementById("order-item-name").value;
+      var qty = document.getElementById("order-qty").value;
+      var sup = document.getElementById("order-supplier").value;
+      closeAdminOrderModal();
+      if (window.toast) {
+        window.toast("Order for " + qty + " units of " + item + " sent to " + sup + "!");
+      }
+    }
+
+    function openAdminInvoiceModal() {
+      var modal = document.getElementById("admin-invoice-modal");
+      modal.style.display = "grid";
+    }
+    function closeAdminInvoiceModal() {
+      document.getElementById("admin-invoice-modal").style.display = "none";
+    }
+    function handleCreateInvoice(e) {
+      e.preventDefault();
+      var patient = document.getElementById("inv-patient-name").value;
+      var amount = document.getElementById("inv-amount").value;
+      closeAdminInvoiceModal();
+      if (window.toast) {
+        window.toast("Invoice for " + patient + " (₹" + amount + ") created successfully!");
+      }
+    }
+
+    function handleAdminPayment(e) {
+      e.preventDefault();
+      var inv = document.getElementById("admin-pay-invoice").value;
+      var amt = document.getElementById("admin-pay-amount").value;
+      var mode = document.getElementById("admin-pay-mode").value;
+      if (window.toast) {
+        window.toast("Payment of ₹" + amt + " recorded via " + mode + " for " + inv + "!");
+      }
+      document.getElementById("admin-payment-form").reset();
+    }
+  </script>
+</body>
+</html>

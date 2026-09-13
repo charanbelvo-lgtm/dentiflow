@@ -8,15 +8,31 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    {% if current_user.is_authenticated %}
+    {% if current_user.is_authenticated and request.path not in ['/', '/login', '/register', '/book', '/portal'] %}
     <div class="site-shell">
         <aside class="sidebar">
             <a class="brand" href="{{ url_for('dashboard.index') }}">
                 <span class="brand-mark"></span>DentiFlow
             </a>
             <nav class="nav">
+                {% if current_user.is_authenticated and current_user.role == 'patient' %}
+                <div class="nav-label">Patient Workspace</div>
+                <a href="{{ url_for('dashboard.index') }}" class="{% if request.path == '/dashboard' or '/patient-dashboard' in request.path %}active{% endif %}">
+                    <span>Book &amp; Wait Time</span>
+                </a>
+                <a href="{{ url_for('public.booking_page') }}" class="{% if '/book' in request.path %}active{% endif %}">
+                    <span>📅 Book Appointment</span>
+                </a>
+                <a href="{{ url_for('appointments.index') }}" class="{% if '/appointments' in request.path %}active{% endif %}">
+                    <span>My Appointments</span>
+                </a>
+                <div class="nav-label">Settings</div>
+                <a href="{{ url_for('dashboard.profile') }}" class="{% if '/profile' in request.path %}active{% endif %}">
+                    <span>Profile</span>
+                </a>
+                {% else %}
                 <div class="nav-label">Workspace</div>
-                <a href="{{ url_for('dashboard.index') }}" class="{% if request.path == '/dashboard' or request.path == '/' %}active{% endif %}">
+                <a href="{{ url_for('dashboard.index') }}" class="{% if request.path == '/dashboard' %}active{% endif %}">
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ url_for('appointments.index') }}" class="{% if '/appointments' in request.path %}active{% endif %}">
@@ -32,11 +48,12 @@
                     <span>Dental chart</span>
                 </a>
                 <a href="{{ url_for('treatment_plans.index') }}" class="{% if '/treatment-plans' in request.path %}active{% endif %}">
-                    - <span>Treatment plans</span>
+                    <span>Treatment plans</span>
                 </a>
-                <div class="nav-label">Practice</div>
+                {% if current_user.role == 'admin' %}
+                <div class="nav-label practice-label">Administration</div>
                 <a href="{{ url_for('billing.index') }}" class="{% if '/billing' in request.path %}active{% endif %}">
-                    <span>Billing</span>
+                    <span>Billing &amp; Revenue</span>
                 </a>
                 <a href="{{ url_for('inventory.index') }}" class="{% if '/inventory' in request.path %}active{% endif %}">
                     <span>Inventory</span>
@@ -44,14 +61,27 @@
                 <a href="{{ url_for('reports.index') }}" class="{% if '/reports' in request.path %}active{% endif %}">
                     <span>Reports</span>
                 </a>
-                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path or '/profile' in request.path %}active{% endif %}">
+                <a href="{{ url_for('staff.index') }}" class="{% if '/staff' in request.path %}active{% endif %}">
+                    <span>Staff</span>
+                </a>
+                <a href="{{ url_for('branches.index') }}" class="{% if '/branches' in request.path %}active{% endif %}">
+                    <span>Branches</span>
+                </a>
+                <a href="{{ url_for('settings.index') }}" class="{% if '/settings' in request.path %}active{% endif %}">
+                    <span>Settings</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('dashboard.profile') }}" class="{% if '/profile' in request.path %}active{% endif %}">
                     <span>Profile</span>
                 </a>
+                {% endif %}
             </nav>
             <div class="sidebar-bottom">
-                <a href="{{ url_for('public.patient_portal') if current_user.role != 'patient' else url_for('dashboard.index') }}">
-                    <span>Patient view</span>
+                {% if not current_user.is_authenticated or current_user.role == 'admin' %}
+                <a href="{{ url_for('dashboard.admin_dashboard') }}">
+                    <span>Admin Suite &rarr;</span>
                 </a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}">
                     <span>Sign out</span>
                 </a>
@@ -66,11 +96,15 @@
                     </label>
                 </div>
                 <div class="top-actions">
-                    <span class="pill green"> Demo mode</span>
-                    <div class="user-chip">
-                        <span data-user-name>{{ current_user.name if current_user.name else 'Dr. Ananya Sharma' }}</span>
-                        <span class="avatar" data-avatar>{{ current_user.name[:2].upper() if current_user.name else 'AS' }}</span>
-                    </div>
+                    <a href="{{ url_for('auth.login', switch=1) }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;">Switch Role / Login 🔄</a>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('dashboard.admin_dashboard') }}" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;color:var(--purple,#6366f1);">Admin Suite</a>
+                    {% endif %}
+                    <span class="pill green">{{ current_user.role|title }} portal</span>
+                    <a href="{{ url_for('dashboard.profile') }}" class="user-chip" style="text-decoration:none;color:inherit;cursor:pointer;">
+                        <span data-user-name>{{ current_user.name if current_user.name else 'User' }}</span>
+                        <span class="avatar" data-avatar>{{ current_user.name[:2].upper() if current_user.name else 'DF' }}</span>
+                    </a>
                 </div>
             </header>
             <section class="content">
@@ -92,12 +126,28 @@
             email: {{ current_user.email | tojson }},
             role: {{ current_user.role | tojson }}
         };
+        try {
+            if (window.CURRENT_USER && window.CURRENT_USER.name) {
+                localStorage.setItem("dentiflowUser", JSON.stringify(window.CURRENT_USER));
+            }
+        } catch (e) {}
         {% else %}
-        window.CURRENT_USER = null;
+        (function() {
+            try {
+                var stored = localStorage.getItem("dentiflowUser");
+                if (stored) {
+                    window.CURRENT_USER = JSON.parse(stored);
+                } else {
+                    window.CURRENT_USER = null;
+                }
+            } catch (e) {
+                window.CURRENT_USER = null;
+            }
+        })();
         {% endif %}
     </script>
     <script src="{{ url_for('static', filename='js/firebase_config.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=20260912b"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

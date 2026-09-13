@@ -1,2 +1,262 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="DentiFlow dental clinic demo"><title>Welcome · DentiFlow</title><link rel="stylesheet" href="./css/style.css"></head><body>
-<main class="landing"><nav class="landing-nav"><div class="landing-logo">✦ Denti<span>Flow</span></div><div class="row"><a class="btn btn-ghost" href="./login.html">Sign in</a><a class="btn btn-primary" href="./login.html">View demo →</a></div></nav><section class="landing-hero"><div><span class="eyebrow">CLINIC OPERATIONS, SIMPLIFIED</span><h1>Smarter clinics.<br><span>Happier patients.</span></h1><p class="landing-copy">One calm workspace for appointments, clinical records, treatment planning, billing, and the people who make care happen.</p><div class="landing-actions"><a class="btn btn-primary" href="./login.html">Explore the demo →</a><a class="btn btn-ghost" href="#features">See what flows</a></div></div><div class="scene" aria-label="Animated DentiFlow clinic"><div class="scene-card">✓ Patient checked in</div><div class="scene-tooth">✦</div><div class="scene-building"><div class="scene-window left"></div><div class="scene-window right"></div><div class="scene-door"></div></div></div></section><section class="features" id="features"><div class="feature">▣<b>Appointments</b><span class="muted">Keep every chair moving.</span></div><div class="feature">♙<b>Patient records</b><span class="muted">A clear clinical story.</span></div><div class="feature">◉<b>Dental chart</b><span class="muted">Chart findings with confidence.</span></div><div class="feature">⌁<b>Analytics</b><span class="muted">See the whole practice.</span></div></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>DentiFlow · Dental Clinic Workspace</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
+
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+        
+<main class="auth">
+    <section class="auth-art">
+        <div class="landing-logo" style="color:#fff;font-size:26px;margin-bottom:20px;">✦ Denti<span style="color:#93c5fd;">Flow</span></div>
+        <div class="auth-tooth">✦</div>
+        <h2>Care that flows.</h2>
+        <p>Appointments, clinical notes, treatment plans, inventory, and revenue in one calm workspace.</p>
+        
+        <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px;">
+            <a href="./index.html" class="btn btn-primary" style="background:#fff;color:var(--blue);font-weight:700;padding:12px 18px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,0.15);">
+                <span>📅 Book an Appointment Online</span> <span style="margin-left:auto;">→</span>
+            </a>
+            <a href="./patient-portal.html" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:10px 16px;display:inline-flex;align-items:center;gap:8px;">
+                <span>🏥 Patient Portal &amp; Live Queue</span> <span style="margin-left:auto;">→</span>
+            </a>
+        </div>
+
+        <div class="quick-links" style="margin-top:32px;">
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Role-Based Security</span>
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Clinical Charting</span>
+            <span class="pill" style="background:rgba(255,255,255,0.18);color:#fff;">Instant Confirmation</span>
+        </div>
+    </section>
+
+    <section class="auth-panel">
+        <div class="auth-card">
+            
+
+            <!-- Auth Mode Toggle Tabs: Sign In / Create Account -->
+            <div class="auth-tabs" role="tablist" style="display:flex;background:#e2e8f0;border-radius:12px;padding:4px;margin-bottom:20px;gap:4px;">
+                <button type="button" id="tab-btn-signin" class="auth-tab-btn active" role="tab" style="flex:1;border:none;background:#fff;padding:9px 10px;border-radius:8px;font-weight:700;font-size:13px;color:#0f172a;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.08);">Sign In</button>
+                <button type="button" id="tab-btn-signup" class="auth-tab-btn" role="tab" style="flex:1;border:none;background:transparent;padding:9px 10px;border-radius:8px;font-weight:600;font-size:13px;color:#64748b;cursor:pointer;">Create Account</button>
+            </div>
+
+            
+                
+            
+
+            <!-- ================= 1. SIGN IN VIEW ================= -->
+            <div id="signin-section">
+                <div class="eyebrow">WELCOME BACK</div>
+                <h1 style="font-size:24px;margin:4px 0 6px;">Sign in to DentiFlow</h1>
+                <p class="muted" style="margin-bottom:16px;">Enter your credentials or choose a quick demo role.</p>
+
+                <form method="GET" action="javascript:void(0)" id="signin-form">
+                    <div class="role-choice" style="grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0 16px;">
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="doctor" checked>
+                            <b style="font-size:12px;display:block;margin-top:2px;">Doctor</b>
+                        </label>
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="patient" >
+                            <b style="font-size:12px;display:block;margin-top:2px;">Patient</b>
+                        </label>
+                        <label style="padding:8px;text-align:center;">
+                            <input type="radio" name="role" value="admin" >
+                            <b style="font-size:12px;display:block;margin-top:2px;">Admin</b>
+                        </label>
+                    </div>
+
+                    <div class="field">
+                        <label>Email address</label>
+                        <input type="email" name="email" id="signin-email" placeholder="example@gmail.com" value="" required autofocus>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Password</label>
+                        <input type="password" name="password" id="signin-password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="signin-submit-btn" style="width:100%;justify-content:center;margin-top:18px;padding:11px;">
+                        Sign in →
+                    </button>
+                </form>
+
+                <script>
+                    document.getElementById('signin-form')?.addEventListener('submit', function(e) {
+                        const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
+                        const email = (document.getElementById('signin-email')?.value || '').trim();
+                        let name = role === 'admin' ? 'Dr. Rajesh Verma' : (role === 'patient' ? 'Ashwini Goud' : 'Dr. Ananya Sharma');
+                        try {
+                            localStorage.setItem('dentiflowUser', JSON.stringify({ name: name, role: role, email: email }));
+                        } catch(err) {}
+
+                        // If hosted on GitHub Pages or static host (no Flask backend)
+                        const isStatic = window.location.hostname.includes('github.io') || window.location.protocol === 'file:' || !window.location.port;
+                        if (isStatic) {
+                            e.preventDefault();
+                            const target = role === 'admin' ? './admin-dashboard.html' : (role === 'patient' ? './patient-dashboard.html' : './dashboard.html');
+                            window.location.href = target;
+                            return false;
+                        }
+                    });
+                </script>
+
+                <!-- One-click Demo Preset Fillers & Quick Demo Links -->
+                <div style="margin-top:18px;border-top:1px solid #edf2f7;padding-top:14px;">
+                    <p class="muted" style="text-align:center;font-size:12px;margin:0 0 8px;">Quick demo login:</p>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;" id="demo-login-section">
+                        <a class="btn btn-soft" data-demo-role="doctor" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="./dashboard.html">Doctor</a>
+                        <a class="btn btn-soft" data-demo-role="patient" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="./patient-dashboard.html">Patient</a>
+                        <a class="btn btn-soft" data-demo-role="admin" style="justify-content:center;text-decoration:none;padding:7px 4px;font-size:12px;" href="./admin-dashboard.html">Admin</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 2. CREATE ACCOUNT VIEW ================= -->
+            <div id="signup-section" style="display:none;">
+                <div class="eyebrow">FIRST TIME USER?</div>
+                <h1 style="font-size:24px;margin:4px 0 6px;">Create your Account</h1>
+                <p class="muted" style="margin-bottom:16px;">Set up your profile to access your DentiFlow workspace.</p>
+
+                <form method="GET" action="javascript:void(0)" id="signup-form">
+                    <div class="field">
+                        <label>Account type</label>
+                        <select name="role" id="signup-role">
+                            <option value="patient" selected>Patient — appointments &amp; dental records</option>
+                            <option value="doctor">Doctor — clinical workspace &amp; charts</option>
+                        </select>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Full name</label>
+                        <input type="text" name="name" id="signup-name" placeholder="Ashwini Goud or Dr. Alex" required>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Email address</label>
+                        <input type="email" name="email" id="signup-email" placeholder="you@example.com" required>
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Phone number</label>
+                        <input type="tel" name="phone" id="signup-phone" placeholder="+91 98765 43210">
+                    </div>
+                    <div class="field" style="margin-top:12px">
+                        <label>Password (min 6 characters)</label>
+                        <input type="password" name="password" id="signup-password" minlength="6" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:18px;padding:11px;">
+                        Create Account &amp; Continue →
+                    </button>
+                </form>
+            </div>
+
+            <!-- Quick Action Links -->
+            <div style="margin-top:20px;padding-top:14px;border-top:1px solid #edf2f7;text-align:center;">
+                <p style="font-size:13px;margin:0 0 6px;">
+                    Need a consultation? <a href="./index.html" style="font-weight:700;color:var(--blue);">Patient Appointment Booking →</a>
+                </p>
+                <p style="font-size:12px;margin:0;">
+                    <span class="muted">Patients can sign in or create an account to book and check live wait times.</span>
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabSignIn = document.getElementById('tab-btn-signin');
+    const tabSignUp = document.getElementById('tab-btn-signup');
+    const sectionSignIn = document.getElementById('signin-section');
+    const sectionSignUp = document.getElementById('signup-section');
+
+    function setTab(mode) {
+        const tabs = [
+            { btn: tabSignIn, sec: sectionSignIn, name: 'signin' },
+            { btn: tabSignUp, sec: sectionSignUp, name: 'signup' }
+        ];
+
+        tabs.forEach(t => {
+            if (t.name === mode) {
+                t.btn.classList.add('active');
+                t.btn.style.background = '#fff';
+                t.btn.style.color = '#0f172a';
+                t.btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+                t.sec.style.display = 'block';
+            } else {
+                t.btn.classList.remove('active');
+                t.btn.style.background = 'transparent';
+                t.btn.style.color = '#64748b';
+                t.btn.style.boxShadow = 'none';
+                t.sec.style.display = 'none';
+            }
+        });
+    }
+
+    if (tabSignIn) tabSignIn.addEventListener('click', () => setTab('signin'));
+    if (tabSignUp) tabSignUp.addEventListener('click', () => setTab('signup'));
+
+    // Check URL parameters for default mode
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'signup') {
+        setTab('signup');
+    }
+
+    // Demo credentials filler map
+    const credentials = {
+        doctor: { email: 'doctor@gmail.com', pass: 'doctor123', role: 'doctor' },
+        patient: { email: 'patient@gmail.com', pass: 'patient123', role: 'patient' },
+        admin: { email: 'admin@gmail.com', pass: 'admin123', role: 'admin' }
+    };
+
+    document.querySelectorAll('[data-demo-role], [data-demo-login], [data-fill]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const roleKey = btn.dataset.demoRole || btn.dataset.demoLogin || btn.dataset.fill;
+            const cred = credentials[roleKey];
+            if (cred) {
+                e.preventDefault();
+                setTab('signin');
+                const emailInp = document.getElementById('signin-email');
+                const passInp = document.getElementById('signin-password');
+                const radio = document.querySelector(`input[name="role"][value="${cred.role}"]`);
+                if (emailInp) emailInp.value = cred.email;
+                if (passInp) passInp.value = cred.pass;
+                if (radio) radio.checked = true;
+                
+                const form = document.getElementById('signin-form');
+                if (form) form.submit();
+            }
+        });
+    });
+
+    const urlRole = params.get('role');
+    if (urlRole && credentials[urlRole]) {
+        const cred = credentials[urlRole];
+        const emailInp = document.getElementById('signin-email');
+        const passInp = document.getElementById('signin-password');
+        const radio = document.querySelector(`input[name="role"][value="${cred.role}"]`);
+        if (emailInp) emailInp.value = cred.email;
+        if (passInp) passInp.value = cred.pass;
+        if (radio) radio.checked = true;
+    }
+});
+</script>
+
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js?v=20260912b"></script>
+    
+</body>
+</html>

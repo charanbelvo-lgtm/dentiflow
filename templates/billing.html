@@ -7,28 +7,28 @@
         <h1>Billing</h1>
         <p class="muted">Track invoices, payments, and a healthy practice.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening invoice creator...', 'success')">+ Create invoice</button>
+    <button class="btn btn-primary" onclick="openInvoiceModal()">+ Create invoice</button>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
         <div class="stat-icon">INR</div>
-        <strong>INR 42.8k</strong>
+        <strong>INR {{ (stats.collected if stats else 0)|currency_round }}</strong>
         <small>collected this month</small>
     </div>
     <div class="card stat">
         <div class="stat-icon orange"></div>
-        <strong>INR 18.4k</strong>
+        <strong>INR {{ (stats.outstanding if stats else 0)|currency_round }}</strong>
         <small>outstanding</small>
     </div>
     <div class="card stat">
         <div class="stat-icon teal"></div>
-        <strong>94%</strong>
+        <strong>{{ stats.collection_rate if stats else 100 }}%</strong>
         <small>collection rate</small>
     </div>
     <div class="card stat">
         <div class="stat-icon purple"></div>
-        <strong>38</strong>
+        <strong>{{ stats.invoices_count if stats else (invoices|length) }}</strong>
         <small>invoices issued</small>
     </div>
 </div>
@@ -37,10 +37,10 @@
     <div class="card">
         <div class="section-title">
             <h2>Invoices</h2>
-            <span class="pill">May 2026</span>
+            <span class="pill">Current Cycle</span>
         </div>
         <div class="table-wrap">
-            <table class="table">
+            <table class="table" id="invoices-table">
                 <thead>
                     <tr>
                         <th>Invoice</th>
@@ -51,38 +51,25 @@
                 </thead>
                 <tbody>
                     {% for inv in invoices %}
-                    <tr>
+                    <tr id="inv-row-{{ inv.id }}">
                         <td><b>{{ inv.invoice_number }}</b></td>
-                        <td>{{ inv.patient.name if inv.patient else 'Aravind Menon' }}</td>
+                        <td>{{ inv.patient.name if inv.patient else 'Patient' }}</td>
                         <td>INR {{ inv.total_amount|currency_round }}</td>
-                        <td>
+                        <td class="inv-status-col">
                             {% if inv.status == 'Paid' %}
                             <span class="pill green">Paid</span>
                             {% elif inv.status == 'Partial' %}
                             <span class="pill orange">Partial - INR {{ inv.due_amount|currency_round }} due</span>
                             {% else %}
-                            <span class="pill red">{{ inv.status }}</span>
+                            <span class="pill red">{{ inv.status }} (INR {{ inv.due_amount|currency_round }} due)</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td>INV-2026-1029</td>
-                        <td>Aravind Menon</td>
-                        <td>INR 17,110</td>
-                        <td><span class="pill orange">Partial - INR 8,550 due</span></td>
-                    </tr>
-                    <tr>
-                        <td>INV-2026-1028</td>
-                        <td>Vishal Rao</td>
-                        <td>INR 4,500</td>
-                        <td><span class="pill green">Paid</span></td>
-                    </tr>
-                    <tr>
-                        <td>INV-2026-1027</td>
-                        <td>Medha Iyer</td>
-                        <td>INR 3,200</td>
-                        <td><span class="pill green">Paid</span></td>
+                        <td colspan="4" style="text-align:center;padding:30px;color:var(--muted);">
+                            No invoices recorded yet. Click <b>+ Create invoice</b> to issue one.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -92,34 +79,329 @@
     <div class="card">
         <div class="section-title">
             <h2>Record payment</h2>
-            <span class="pill green">INR - INR</span>
+            <span class="pill green">Instant Settlement</span>
         </div>
-        <form class="form-grid" id="payment-form" onsubmit="event.preventDefault(); window.toast('Payment of INR ' + Number(document.getElementById('pay-amount').value||8550).toLocaleString('en-IN') + ' recorded and synced', 'success'); this.reset();">
+        <form class="form-grid" id="billing-payment-form">
             <div class="field full">
                 <label>Invoice</label>
-                <select>
-                    <option>INV-2026-1029 - Aravind Menon</option>
-                    <option>INV-2026-1028 - Vishal Rao</option>
-                    <option>INV-2026-1027 - Medha Iyer</option>
+                <select id="pay-invoice-id" name="invoice_id" required>
+                    {% set list_source = unpaid_invoices if unpaid_invoices else invoices %}
+                    {% for inv in list_source %}
+                    <option value="{{ inv.id }}" data-due="{{ inv.due_amount }}" data-num="{{ inv.invoice_number }}">
+                        {{ inv.invoice_number }} - {{ inv.patient.name if inv.patient else 'Patient' }} (Due: INR {{ inv.due_amount|currency_round }})
+                    </option>
+                    {% else %}
+                    <option value="" disabled selected>No outstanding invoices</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="field full">
                 <label>Amount (INR)</label>
-                <input type="number" id="pay-amount" min="1" placeholder="8550" required>
+                <input type="number" id="pay-amount" name="amount" min="1" step="any" placeholder="Amount in INR" required>
             </div>
             <div class="field full">
-                <label>Method</label>
-                <select>
-                    <option>UPI</option>
-                    <option>Card</option>
-                    <option>Cash</option>
-                    <option>Bank transfer</option>
+                <label>Payment Method</label>
+                <select id="pay-method" name="payment_method">
+                    <option value="UPI" selected>UPI / QR Code</option>
+                    <option value="Card">Credit / Debit Card</option>
+                    <option value="Cash">Cash at Reception</option>
+                    <option value="Bank transfer">Direct Bank Transfer (NEFT/IMPS)</option>
                 </select>
             </div>
+
+            <!-- Prototype Mock UPI / QR Container -->
+            <div class="field full" id="mock-upi-container" style="display:block;">
+                <div style="background:var(--bg-subtle, #f8fafc);border:1px dashed var(--line, #cbd5e1);border-radius:10px;padding:16px;text-align:center;">
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+                        <span class="pill teal" style="font-size:11px;font-weight:700;">PROTOTYPE MOCK UPI / QR</span>
+                    </div>
+                    <!-- Mock QR Code SVG Pattern -->
+                    <svg width="130" height="130" viewBox="0 0 130 130" style="margin:0 auto;display:block;background:#ffffff;padding:8px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                        <!-- Finder Pattern Top-Left -->
+                        <rect x="10" y="10" width="30" height="30" fill="#0f172a" rx="4"/>
+                        <rect x="16" y="16" width="18" height="18" fill="#ffffff" rx="2"/>
+                        <rect x="20" y="20" width="10" height="10" fill="#0f172a" rx="1"/>
+
+                        <!-- Finder Pattern Top-Right -->
+                        <rect x="90" y="10" width="30" height="30" fill="#0f172a" rx="4"/>
+                        <rect x="96" y="16" width="18" height="18" fill="#ffffff" rx="2"/>
+                        <rect x="100" y="20" width="10" height="10" fill="#0f172a" rx="1"/>
+
+                        <!-- Finder Pattern Bottom-Left -->
+                        <rect x="10" y="90" width="30" height="30" fill="#0f172a" rx="4"/>
+                        <rect x="16" y="96" width="18" height="18" fill="#ffffff" rx="2"/>
+                        <rect x="20" y="100" width="10" height="10" fill="#0f172a" rx="1"/>
+
+                        <!-- Data matrix squares -->
+                        <rect x="48" y="12" width="6" height="6" fill="#0f172a"/>
+                        <rect x="58" y="12" width="6" height="6" fill="#0f172a"/>
+                        <rect x="68" y="12" width="6" height="6" fill="#0f172a"/>
+                        <rect x="78" y="18" width="6" height="6" fill="#0f172a"/>
+
+                        <rect x="12" y="48" width="6" height="6" fill="#0f172a"/>
+                        <rect x="24" y="48" width="6" height="6" fill="#0f172a"/>
+                        <rect x="36" y="56" width="6" height="6" fill="#0f172a"/>
+
+                        <rect x="48" y="48" width="34" height="34" fill="#0d9488" rx="6"/>
+                        <path d="M60 65 C60 58, 70 58, 70 65 C70 73, 67 76, 65 79 C63 76, 60 73, 60 65 Z" fill="#ffffff"/>
+
+                        <rect x="90" y="48" width="6" height="6" fill="#0f172a"/>
+                        <rect x="102" y="56" width="6" height="6" fill="#0f172a"/>
+                        <rect x="114" y="48" width="6" height="6" fill="#0f172a"/>
+
+                        <rect x="48" y="90" width="6" height="6" fill="#0f172a"/>
+                        <rect x="58" y="102" width="6" height="6" fill="#0f172a"/>
+                        <rect x="68" y="90" width="6" height="6" fill="#0f172a"/>
+                        <rect x="78" y="110" width="6" height="6" fill="#0f172a"/>
+                        <rect x="90" y="90" width="6" height="6" fill="#0f172a"/>
+                        <rect x="102" y="102" width="6" height="6" fill="#0f172a"/>
+                        <rect x="114" y="90" width="6" height="6" fill="#0f172a"/>
+                    </svg>
+
+                    <div style="margin-top:8px;font-weight:700;font-size:13px;font-family:monospace;color:var(--text,#0f172a);">
+                        dentiflow@icici
+                    </div>
+                    <small class="muted" style="display:block;margin-top:4px;font-size:11px;line-height:1.4;">
+                        Scan via Google Pay, PhonePe, Paytm, or BHIM UPI.<br>
+                        In prototype mode, click <b>Record payment</b> to instantly confirm and mark invoice as <b>Paid</b>.
+                    </small>
+                </div>
+            </div>
+
             <div class="field full">
-                <button class="btn btn-teal" type="submit">Record payment</button>
+                <button class="btn btn-teal" type="submit" id="btn-record-pay" style="width:100%;">Record payment</button>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Invoice Generator Modal -->
+<div id="invoice-create-modal" class="modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.65);z-index:9999;place-items:center;">
+    <div class="card" style="width:100%;max-width:520px;box-shadow:0 24px 48px rgba(0,0,0,0.3);margin:20px;">
+        <div class="section-title">
+            <div>
+                <h2>Generate Patient Invoice</h2>
+                <small class="muted">Issue invoice and record on practice ledger</small>
+            </div>
+            <button class="btn btn-ghost" onclick="closeInvoiceModal()" style="font-size:18px;">&times;</button>
+        </div>
+        <form class="form-grid" id="new-invoice-form" onsubmit="handleCreateInvoice(event)">
+            <div class="field full">
+                <label>Patient *</label>
+                <select id="inv-patient-id" required>
+                    {% for pat in patients %}
+                    <option value="{{ pat.id }}">{{ pat.name }} ({{ pat.patient_id }})</option>
+                    {% else %}
+                    <option value="1">Aravind Menon</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field full">
+                <label>Attending Doctor</label>
+                <select id="inv-doctor-id">
+                    {% for doc in doctors %}
+                    <option value="{{ doc.id }}">{{ doc.name }} ({{ doc.specialization }})</option>
+                    {% else %}
+                    <option value="1">Dr. Ananya Sharma</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field full">
+                <label>Procedure / Treatment Description *</label>
+                <input type="text" id="inv-desc" placeholder="e.g. Root Canal Treatment & Ceramic Crown" required>
+            </div>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label>Subtotal (INR) *</label>
+                    <input type="number" id="inv-subtotal" min="100" placeholder="5000" required>
+                </div>
+                <div class="field">
+                    <label>Discount (INR)</label>
+                    <input type="number" id="inv-discount" min="0" value="0" placeholder="0">
+                </div>
+            </div>
+            <div class="field full">
+                <label>Tax Rate (GST %)</label>
+                <input type="number" id="inv-tax-rate" min="0" max="28" value="18">
+            </div>
+            <div class="row between" style="margin-top:14px;width:100%;">
+                <button type="button" class="btn btn-ghost" onclick="closeInvoiceModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btn-issue-inv">Issue Invoice</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openInvoiceModal() {
+    const modal = document.getElementById('invoice-create-modal');
+    if (modal) {
+        modal.style.display = 'grid';
+    }
+}
+
+function closeInvoiceModal() {
+    const modal = document.getElementById('invoice-create-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+async function handleCreateInvoice(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-issue-inv');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Issuing invoice...';
+    }
+
+    const patientId = document.getElementById('inv-patient-id').value;
+    const doctorId = document.getElementById('inv-doctor-id').value;
+    const desc = document.getElementById('inv-desc').value.trim();
+    const subtotal = parseFloat(document.getElementById('inv-subtotal').value || 0);
+    const discount = parseFloat(document.getElementById('inv-discount').value || 0);
+    const taxRate = parseFloat(document.getElementById('inv-tax-rate').value || 18);
+
+    const payload = {
+        patient_id: patientId,
+        doctor_id: doctorId,
+        subtotal: subtotal,
+        discount_amount: discount,
+        tax_rate: taxRate,
+        payment_method: 'UPI',
+        items: [{
+            description: desc,
+            quantity: 1,
+            unit_price: subtotal,
+            discount: discount
+        }]
+    };
+
+    try {
+        const res = await fetch('/api/invoices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            window.toast(`Invoice ${data.invoice.invoice_number} created successfully!`, 'success');
+            closeInvoiceModal();
+            setTimeout(() => location.reload(), 600);
+        } else {
+            alert(data.message || 'Failed to create invoice.');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Issue Invoice';
+            }
+        }
+    } catch (err) {
+        console.error('Invoice creation error:', err);
+        alert('Could not issue invoice. Please try again.');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Issue Invoice';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const invSelect = document.getElementById('pay-invoice-id');
+    const amountInput = document.getElementById('pay-amount');
+    const methodSelect = document.getElementById('pay-method');
+    const upiContainer = document.getElementById('mock-upi-container');
+    const paymentForm = document.getElementById('billing-payment-form');
+
+    function syncDueAmount() {
+        if (!invSelect || !amountInput) return;
+        const selectedOpt = invSelect.options[invSelect.selectedIndex];
+        if (selectedOpt && selectedOpt.dataset.due) {
+            const due = parseFloat(selectedOpt.dataset.due);
+            amountInput.value = due > 0 ? due : '';
+        }
+    }
+
+    if (invSelect) {
+        invSelect.addEventListener('change', syncDueAmount);
+        syncDueAmount();
+    }
+
+    if (methodSelect && upiContainer) {
+        methodSelect.addEventListener('change', () => {
+            upiContainer.style.display = methodSelect.value === 'UPI' ? 'block' : 'none';
+        });
+    }
+
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btn-record-pay');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Recording payment...';
+            }
+
+            const invoiceId = invSelect.value;
+            const amount = parseFloat(amountInput.value || 0);
+            const method = methodSelect.value;
+
+            if (!invoiceId || isNaN(amount) || amount <= 0) {
+                alert('Please select a valid invoice and enter an amount greater than 0.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Record payment';
+                }
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/payments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        invoice_id: invoiceId,
+                        amount: amount,
+                        payment_method: method,
+                        notes: `Recorded at billing desk via ${method}`
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    window.toast(`✓ Payment of INR ${amount.toLocaleString('en-IN')} confirmed (${data.payment.receipt_number})`, 'success');
+                    
+                    // Update table row live if present
+                    const row = document.getElementById(`inv-row-${invoiceId}`);
+                    if (row) {
+                        const statusCol = row.querySelector('.inv-status-col');
+                        if (statusCol) {
+                            if (data.invoice.status === 'Paid') {
+                                statusCol.innerHTML = '<span class="pill green">Paid</span>';
+                            } else {
+                                statusCol.innerHTML = `<span class="pill orange">Partial - INR ${data.invoice.due_amount} due</span>`;
+                            }
+                        }
+                    }
+
+                    setTimeout(() => location.reload(), 900);
+                } else {
+                    alert(data.message || 'Payment processing failed.');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Record payment';
+                    }
+                }
+            } catch (err) {
+                console.error('Payment error:', err);
+                alert('Could not record payment. Check server connection.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Record payment';
+                }
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

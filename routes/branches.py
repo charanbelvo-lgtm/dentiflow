@@ -1,17 +1,20 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from flask_login import login_required, current_user
 from models import db, Branch, Chair, Doctor, Appointment, Invoice, Patient
+from security import admin_required, log_audit_event
 
 branches_bp = Blueprint('branches', __name__)
 
 @branches_bp.route('/branches')
 @login_required
+@admin_required
 def index():
     branches = Branch.query.all()
     return render_template('branches.html', branches=branches)
 
 @branches_bp.route('/api/branches')
 @login_required
+@admin_required
 def get_branches():
     branches = Branch.query.all()
     branch_data = []
@@ -33,8 +36,13 @@ def get_branches():
 
 @branches_bp.route('/api/branches/switch/<int:branch_id>', methods=['POST'])
 @login_required
+@admin_required
 def switch_branch(branch_id):
     branch = Branch.query.get_or_404(branch_id)
     session['active_branch_id'] = branch.id
     session['active_branch_name'] = branch.name
+    log_audit_event(
+        action=f"Switched active branch to '{branch.name}' (ID: {branch.id})",
+        module="Branch Management"
+    )
     return jsonify({'status': 'success', 'message': f'Switched to {branch.name}', 'branch': branch.to_dict()})

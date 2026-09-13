@@ -5,7 +5,7 @@
     <div>
         <span class="eyebrow">PRACTICE INTELLIGENCE</span>
         <h1>Reports</h1>
-        <p class="muted">A quick read on growth, care quality, and capacity.</p>
+        <p class="muted">A quick read on growth, care quality, and clinical capacity.</p>
     </div>
     <button class="btn btn-primary" onclick="window.toast('Practice intelligence report downloaded', 'success')">Download report</button>
 </div>
@@ -13,22 +13,22 @@
 <div class="grid grid-4">
     <div class="card stat">
         <div class="stat-icon">INR</div>
-        <strong>INR 4.28L</strong>
-        <small>revenue this month</small>
+        <strong>{{ stats.revenue_month_formatted if stats else 'INR 0' }}</strong>
+        <small>revenue collected</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon teal"></div>
-        <strong>128</strong>
-        <small>new patients</small>
+        <div class="stat-icon teal">👥</div>
+        <strong>{{ stats.new_patients if stats else 0 }}</strong>
+        <small>registered patients</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon orange"></div>
-        <strong>76%</strong>
+        <div class="stat-icon orange">💺</div>
+        <strong>{{ stats.chair_utilization if stats else '75%' }}</strong>
         <small>chair utilization</small>
     </div>
     <div class="card stat">
-        <div class="stat-icon purple"></div>
-        <strong>4.8/5</strong>
+        <div class="stat-icon purple">⭐</div>
+        <strong>{{ stats.patient_rating if stats else '4.9/5' }}</strong>
         <small>patient rating</small>
     </div>
 </div>
@@ -50,33 +50,33 @@
     <div class="card">
         <div class="section-title">
             <h2>Care mix</h2>
-            <span class="muted">This month</span>
+            <span class="muted">Active clinical distribution</span>
         </div>
         <div style="margin:18px 0">
             <div class="row between">
-                <b>General dentistry</b>
-                <span>42%</span>
+                <b>General dentistry &amp; Checkups</b>
+                <span>{{ care_mix.general if care_mix else 42 }}%</span>
             </div>
             <div class="progress">
-                <span style="width:42%"></span>
-            </div>
-        </div>
-        <div style="margin:18px 0">
-            <div class="row between">
-                <b>Endodontics</b>
-                <span>31%</span>
-            </div>
-            <div class="progress">
-                <span style="width:31%;background:var(--purple)"></span>
+                <span style="width:{{ care_mix.general if care_mix else 42 }}%"></span>
             </div>
         </div>
         <div style="margin:18px 0">
             <div class="row between">
-                <b>Cosmetic care</b>
-                <span>27%</span>
+                <b>Endodontics &amp; Root Canal</b>
+                <span>{{ care_mix.endodontics if care_mix else 31 }}%</span>
             </div>
             <div class="progress">
-                <span style="width:27%;background:var(--orange)"></span>
+                <span style="width:{{ care_mix.endodontics if care_mix else 31 }}%;background:var(--purple)"></span>
+            </div>
+        </div>
+        <div style="margin:18px 0">
+            <div class="row between">
+                <b>Cosmetic &amp; Orthodontics</b>
+                <span>{{ care_mix.cosmetic if care_mix else 27 }}%</span>
+            </div>
+            <div class="progress">
+                <span style="width:{{ care_mix.cosmetic if care_mix else 27 }}%;background:var(--orange)"></span>
             </div>
         </div>
     </div>

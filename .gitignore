@@ -10,3 +10,7 @@ database.db
 static/uploads/*
 !static/uploads/.gitkeep
 firebase-service-account.json
+scratch/
+*.exe
+cloudflared.exe
+tunnel_url.txt

@@ -3,18 +3,28 @@
 {% block content %}
 <div class="page-head">
     <div>
-        <span class="eyebrow">ODONTOGRAM</span>
+        <span class="eyebrow">ODONTOGRAM &bull; CLINICAL VISUALIZATION</span>
         <h1>Dental chart</h1>
-        <p class="muted">Click a tooth to inspect it. Right-click cycles its clinical state.</p>
+        <p class="muted">Inspect tooth-by-tooth diagnoses and restorations for each patient.</p>
     </div>
-    <button class="btn btn-ghost" data-reset-chart>Reset demo chart</button>
+    <div style="display:flex;align-items:center;gap:10px;">
+        <label style="font-size:13px;font-weight:600;color:var(--muted);">Patient:</label>
+        <select id="chart-patient-select" onchange="window.location.href='{{ url_for('clinical.chart') }}?patient_id=' + this.value" style="padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;font-weight:600;">
+            {% for p in patients %}
+            <option value="{{ p.id }}" {% if selected_patient and selected_patient.id == p.id %}selected{% endif %}>{{ p.name }} ({{ p.patient_id }})</option>
+            {% endfor %}
+        </select>
+    </div>
 </div>
 
 <div class="chart">
     <div class="mouth">
         <div class="section-title">
-            <h2>Adult dentition - FDI notation</h2>
-            <span class="pill green">Saved locally</span>
+            <div>
+                <h2>Adult dentition &bull; {{ selected_patient.name if selected_patient else 'Patient' }}</h2>
+                <small class="muted">{{ findings|length }} tooth record(s) on file</small>
+            </div>
+            <span class="pill green">Connected to Database</span>
         </div>
         <div class="chart-key">
             <span class="legend"><i></i>Healthy</span>
@@ -47,16 +57,71 @@
             </svg>
         </div>
     </div>
-    <aside class="card" data-tooth-detail data-selected="16">
+    <aside class="card" id="tooth-detail-card">
         <span class="eyebrow">SELECTED TOOTH</span>
-        <h2 data-detail-number>Tooth #16</h2>
-        <span class="pill orange" data-detail-state>Cavity</span>
-        <p class="muted" style="margin-top:18px">First molar - Upper right quadrant</p>
-        <div class="notice">
-            <b>Clinical detail</b><br>
-            Deep occlusal caries with percussion sensitivity. Recommend endodontic consultation.
+        <h2 id="tooth-detail-title">Tooth #16</h2>
+        <span class="pill orange" id="tooth-detail-status">Cavity</span>
+        <p class="muted" id="tooth-detail-location" style="margin-top:14px">First molar &bull; Upper right quadrant</p>
+        <div class="notice" id="tooth-detail-notes">
+            <b>Clinical diagnosis</b><br>
+            <span id="tooth-detail-diag">Deep occlusal caries with percussion sensitivity. Recommend endodontic consultation.</span>
         </div>
-        <a class="btn btn-primary" style="margin-top:15px;width:100%;justify-content:center" href="{{ url_for('treatment_plans.index') }}">Add to treatment plan</a>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+            <a class="btn btn-primary" style="width:100%;justify-content:center" href="{{ url_for('treatment_plans.index') }}">Review treatment plans &rarr;</a>
+        </div>
     </aside>
 </div>
+
+<script>
+window.PATIENT_FINDINGS = {{ (findings_data if findings_data is defined else []) | tojson | safe }};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const findingsMap = {};
+    window.PATIENT_FINDINGS.forEach(f => {
+        findingsMap[String(f.tooth_number)] = f;
+    });
+
+    // Apply classes to SVG teeth based on findings
+    document.querySelectorAll('.tooth').forEach(toothEl => {
+        const num = toothEl.dataset.tooth;
+        const finding = findingsMap[num];
+        if (finding) {
+            const st = (finding.status || '').toLowerCase();
+            if (st.includes('cavity') || st.includes('decay')) toothEl.classList.add('cavity');
+            else if (st.includes('filling') || st.includes('restor')) toothEl.classList.add('filling');
+            else if (st.includes('crown')) toothEl.classList.add('crown');
+            else if (st.includes('missing')) toothEl.classList.add('missing');
+            else if (st.includes('watch')) toothEl.classList.add('watch');
+        }
+
+        toothEl.addEventListener('click', () => {
+            document.querySelectorAll('.tooth').forEach(t => t.classList.remove('active'));
+            toothEl.classList.add('active');
+
+            const title = document.getElementById('tooth-detail-title');
+            const status = document.getElementById('tooth-detail-status');
+            const location = document.getElementById('tooth-detail-location');
+            const diag = document.getElementById('tooth-detail-diag');
+
+            if (title) title.textContent = `Tooth #${num}`;
+            const f = findingsMap[num];
+            if (f) {
+                if (status) {
+                    status.textContent = f.status;
+                    status.className = 'pill ' + (f.status.toLowerCase().includes('healthy') ? 'green' : 'orange');
+                }
+                if (location) location.textContent = `Surfaces: ${f.surfaces || 'Occlusal'} &bull; Estimated Cost: INR ${f.estimated_cost || 0}`;
+                if (diag) diag.textContent = `${f.diagnosis || 'Clinical evaluation recorded.'} Recommendation: ${f.recommended_treatment || 'Monitor at next visit.'}`;
+            } else {
+                if (status) {
+                    status.textContent = 'Healthy';
+                    status.className = 'pill green';
+                }
+                if (location) location.textContent = 'No pathology recorded for this tooth.';
+                if (diag) diag.textContent = 'Intact enamel and normal margin. No restorative intervention required.';
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

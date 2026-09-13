@@ -4,11 +4,13 @@ from flask_login import login_required, current_user
 from models import (
     db, InventoryItem, Supplier, PurchaseOrder, InventoryLog, AuditLog
 )
+from security import staff_required, admin_required, log_audit_event
 
 inventory_bp = Blueprint('inventory', __name__)
 
 @inventory_bp.route('/inventory')
 @login_required
+@admin_required
 def index():
     suppliers = Supplier.query.all()
     categories = ['Dental Materials', 'Consumables', 'Lab Materials', 'Medicines', 'Equipment']
@@ -16,8 +18,16 @@ def index():
 
 @inventory_bp.route('/api/inventory', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def api_inventory():
     if request.method == 'POST':
+        if current_user.role != 'admin':
+            log_audit_event(
+                action=f"ACCESS_DENIED: {current_user.name} ({current_user.role}) denied creating inventory item",
+                module="Inventory"
+            )
+            return jsonify({'status': 'error', 'message': 'Access forbidden: only administrators can create items.'}), 403
+
         data = request.get_json()
         count = InventoryItem.query.count() + 1
         item_code = data.get('item_code') or f"MAT-ITM-{str(count).zfill(2)}"
@@ -53,6 +63,11 @@ def api_inventory():
         db.session.add(log)
         db.session.commit()
 
+        log_audit_event(
+            action=f"Added Inventory Item '{item.name}' (Code: {item.item_code}, Stock: {item.current_stock} {item.unit})",
+            module="Inventory"
+        )
+
         return jsonify({'status': 'success', 'message': 'Inventory item added', 'item': item.to_dict()}), 201
 
     category = request.args.get('category')
@@ -74,6 +89,7 @@ def api_inventory():
 
 @inventory_bp.route('/api/inventory/<int:item_id>/adjust', methods=['POST'])
 @login_required
+@admin_required
 def adjust_stock(item_id):
     item = InventoryItem.query.get_or_404(item_id)
     data = request.get_json()
@@ -99,20 +115,17 @@ def adjust_stock(item_id):
     db.session.commit()
 
     # Log audit
-    audit = AuditLog(
-        user_name=current_user.name,
-        user_role=current_user.role,
+    log_audit_event(
         action=f"Stock {change_type} ({qty} {item.unit}) for '{item.name}' — {reason}",
         module="Inventory",
-        ip_address=request.remote_addr or '127.0.0.1'
+        details=f"Item ID: {item.id}, Quantity: {qty}, Reason: {reason}"
     )
-    db.session.add(audit)
-    db.session.commit()
 
     return jsonify({'status': 'success', 'message': f'Stock updated for {item.name}', 'item': item.to_dict()})
 
 @inventory_bp.route('/api/inventory/purchase-orders', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def purchase_orders():
     if request.method == 'POST':
         data = request.get_json()
@@ -130,6 +143,10 @@ def purchase_orders():
         )
         db.session.add(po)
         db.session.commit()
+        log_audit_event(
+            action=f"Created Purchase Order {po.po_number} (₹{po.total_amount:,.0f}) with {po.supplier_name}",
+            module="Inventory"
+        )
         return jsonify({'status': 'success', 'message': f'Purchase order {po.po_number} created', 'po': po.to_dict()}), 201
 
     pos = PurchaseOrder.query.order_by(PurchaseOrder.id.desc()).all()

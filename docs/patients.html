@@ -1,3 +1,597 @@
-﻿<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Patients  -  DentiFlow</title><link rel="stylesheet" href="./css/style.css"></head><body><div class="site-shell"><aside class="sidebar"><a class="brand" href="./index.html"><span class="brand-mark"></span>DentiFlow</a><nav class="nav"><div class="nav-label">Workspace</div><a href="./dashboard.html"> <span>Dashboard</span></a><a href="./appointments.html"> <span>Appointments</span></a><a href="./patients.html"> <span>Patients</span></a><a href="./clinical.html"> <span>Clinical notes</span></a><a href="./dental-chart.html"> <span>Dental chart</span></a><a href="./treatment-plans.html"> -  <span>Treatment plans</span></a><div class="nav-label">Practice</div><a href="./billing.html"> <span>Billing</span></a><a href="./inventory.html"> <span>Inventory</span></a><a href="./reports.html"> <span>Reports</span></a><a href="./profile.html"> <span>Profile</span></a></nav><div class="sidebar-bottom"><a href="./patient-dashboard.html"> <span>Patient view</span></a><a href="#" data-logout> <span>Sign out</span></a></div></aside><main class="main"><header class="topbar"><div class="topbar-left"><button class="menu-toggle" data-menu aria-label="Open menu"></button><label class="search"> <input data-search placeholder="Search this demo..."></label></div><div class="top-actions"><span class="pill green"> Demo mode</span><div class="user-chip"><span data-user-name>Dr. Ananya Sharma</span><span class="avatar" data-avatar>AS</span></div></div></header><section class="content"><div class="page-head"><div><span class="eyebrow">CARE DIRECTORY</span><h1>Patients</h1><p class="muted">A clear clinical story for every person you care for.</p></div><button class="btn btn-primary" data-modal="app-modal">+ Add patient</button></div><div class="grid grid-4"><div class="card stat"><div class="stat-icon"></div><strong>1,284</strong><small>active patients</small></div><div class="card stat"><div class="stat-icon teal"></div><strong>42</strong><small>new this month</small></div><div class="card stat"><div class="stat-icon orange"></div><strong>18</strong><small>visits today</small></div><div class="card stat"><div class="stat-icon purple"></div><strong>94%</strong><small>satisfaction</small></div></div><div class="card" style="margin-top:18px"><div class="section-title"><h2>All patients</h2><span class="muted">Showing 4 of 1,284</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Patient</th><th>Patient ID</th><th>Last visit</th><th>Care focus</th><th>Status</th></tr></thead><tbody><tr data-searchable><td><a class="patient" href="./patient-detail.html"><span class="avatar">AM</span><b>Aravind Menon</b></a></td><td>DF-2026-001</td><td>Today, 09:00</td><td>Tooth #16  -  RCT</td><td><span class="pill orange">In care</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">VR</span><b>Vishal Rao</b></td><td>DF-2026-002</td><td>May 18, 2026</td><td>Scaling follow-up</td><td><span class="pill green">Active</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">MI</span><b>Medha Iyer</b></td><td>DF-2026-003</td><td>May 04, 2026</td><td>Pediatric review</td><td><span class="pill green">Active</span></td></tr><tr data-searchable><td class="patient"><span class="avatar">SK</span><b>Sameer Khan</b></td><td>DF-2026-004</td><td>Apr 27, 2026</td><td>Cleaning</td><td><span class="pill">Follow-up</span></td></tr></tbody></table></div></div></section></main></div><script src="./js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Patients - DentiFlow</title>
+    <link rel="icon" href="./favicon.ico" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css">
 
+<script src="./js/mock_api.js"></script>
+</head>
+<body>
+    
+    <div class="site-shell">
+        <aside class="sidebar">
+            <a class="brand" href="./dashboard.html">
+                <span class="brand-mark"></span>DentiFlow
+            </a>
+            <nav class="nav">
+                
+                <div class="nav-label">Workspace</div>
+                <a href="./dashboard.html" class="">
+                    <span>Dashboard</span>
+                </a>
+                <a href="./appointments.html" class="">
+                    <span>Appointments</span>
+                </a>
+                <a href="./patients.html" class="active">
+                    <span>Patients</span>
+                </a>
+                <a href="./clinical.html" class="">
+                    <span>Clinical notes</span>
+                </a>
+                <a href="./dental-chart.html" class="">
+                    <span>Dental chart</span>
+                </a>
+                <a href="./treatment-plans.html" class="">
+                    <span>Treatment plans</span>
+                </a>
+                
+                <a href="/profile" class="">
+                    <span>Profile</span>
+                </a>
+                
+            </nav>
+            <div class="sidebar-bottom">
+                
+                <a href="./login.html">
+                    <span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" data-menu aria-label="Open menu"></button>
+                    <label class="search">
+                        <input data-search placeholder="Search this demo...">
+                    </label>
+                </div>
+                <div class="top-actions">
+                    <a href="/login?switch=1" class="btn btn-soft" style="padding:6px 12px;font-size:12px;font-weight:600;">Switch Role / Login 🔄</a>
+                    
+                    <span class="pill green">Doctor portal</span>
+                    <a href="/profile" class="user-chip" style="text-decoration:none;color:inherit;cursor:pointer;">
+                        <span data-user-name>Dr. Ananya Sharma</span>
+                        <span class="avatar" data-avatar>DR</span>
+                    </a>
+                </div>
+            </header>
+            <section class="content">
+                
+<div class="page-head">
+    <div>
+        <span class="eyebrow">CARE DIRECTORY</span>
+        <h1>Patients</h1>
+        <p class="muted">A clear clinical story for every person you care for.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openAddPatientModal()">+ Add patient</button>
+</div>
 
+<div class="grid grid-4">
+    <div class="card stat">
+        <div class="stat-icon"></div>
+        <strong id="stat-total-count">16</strong>
+        <small>registered patients</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon teal"></div>
+        <strong>42</strong>
+        <small>new this month</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon orange"></div>
+        <strong>18</strong>
+        <small>visits today</small>
+    </div>
+    <div class="card stat">
+        <div class="stat-icon purple"></div>
+        <strong>98%</strong>
+        <small>satisfaction</small>
+    </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+    <div class="section-title">
+        <h2>All patients</h2>
+        <span class="muted" id="patient-count-badge">Showing 16 records</span>
+    </div>
+    <div class="table-wrap">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Patient ID</th>
+                    <th>Last visit</th>
+                    <th>Care focus</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="patients-table-body">
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">PR</span>
+                            <b>Pre-Push Verification Patient</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-016</td>
+                    <td>Today, 09:00</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">PR</span>
+                            <b>Pre-Push Verification Patient</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-015</td>
+                    <td>Today, 09:00</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">SR</span>
+                            <b>srinivas</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-014</td>
+                    <td>Today, 09:00</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">SH</span>
+                            <b>shashi</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-013</td>
+                    <td>Today, 09:00</td>
+                    <td>General Dentistry</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">CH</span>
+                            <b>charan</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-012</td>
+                    <td>Today, 09:00</td>
+                    <td>General Dentistry</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">BU</span>
+                            <b>Budige Ashwini</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-011</td>
+                    <td>Today, 09:00</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">BU</span>
+                            <b>BudigeAshwini Goud</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-010</td>
+                    <td>Today, 09:00</td>
+                    <td>General Dentistry</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">AS</span>
+                            <b>Ashu Goud</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-009</td>
+                    <td>Today, 09:00</td>
+                    <td>General Dentistry</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">LO</span>
+                            <b>Lokesh Iyer</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-008</td>
+                    <td>01 Sep, 15:30</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">ME</span>
+                            <b>Medha Nair</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-007</td>
+                    <td>08 Sep, 15:30</td>
+                    <td>Periodontist &amp; Implantologist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">VI</span>
+                            <b>Vishal Rao</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-006</td>
+                    <td>25 Aug, 15:30</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">AR</span>
+                            <b>Aravind Kumar</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-005</td>
+                    <td>07 Sep, 15:30</td>
+                    <td>Oral &amp; Maxillofacial Surgeon</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">LO</span>
+                            <b>Lokesh</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-004</td>
+                    <td>06 Sep, 15:30</td>
+                    <td>Periodontist &amp; Implantologist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">ME</span>
+                            <b>Medha</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-003</td>
+                    <td>20 Aug, 15:30</td>
+                    <td>Consultant Orthodontist (Invisalign Platinum)</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">VI</span>
+                            <b>Vishal</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-002</td>
+                    <td>04 Sep, 15:30</td>
+                    <td>Consultant Orthodontist (Invisalign Platinum)</td>
+                    <td>
+                        
+                        <span class="pill green">Active</span>
+                        
+                    </td>
+                </tr>
+                
+                <tr data-searchable>
+                    <td>
+                        <a class="patient" href="./patient-detail.html">
+                            <span class="avatar">AR</span>
+                            <b>Aravind</b>
+                        </a>
+                    </td>
+                    <td>DF-2026-001</td>
+                    <td>28 Aug, 15:30</td>
+                    <td>Chief Endodontist &amp; Cosmetic Dentist</td>
+                    <td>
+                        
+                        <span class="pill orange">In care</span>
+                        
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Patient Modal Backdrop -->
+<div id="add-patient-modal" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);position:relative;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <div>
+                <span class="eyebrow">NEW REGISTRATION</span>
+                <h2 style="margin:0;font-size:20px;">Add New Patient</h2>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="closeAddPatientModal()" style="font-size:20px;line-height:1;padding:4px 10px;">✕</button>
+        </div>
+
+        <form id="new-patient-form">
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Full Name *</label>
+                <input type="text" name="name" placeholder="e.g. Ashwini Goud" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Phone Number *</label>
+                    <input type="tel" name="phone" placeholder="+91 98765 43210" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Email Address</label>
+                    <input type="email" name="email" placeholder="patient@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Age</label>
+                    <input type="number" name="age" min="1" max="120" value="28" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Gender</label>
+                    <select name="gender" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        <option value="Male">Male</option>
+                        <option value="Female" selected>Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Blood Group</label>
+                    <select name="blood_group" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        <option value="A+">A+</option>
+                        <option value="B+" selected>B+</option>
+                        <option value="O+">O+</option>
+                        <option value="AB+">AB+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Primary Doctor</label>
+                <select name="primary_doctor_id" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                    
+                    <option value="1">Dr. Ananya Sharma (Chief Endodontist &amp; Cosmetic Dentist)</option>
+                    
+                    <option value="2">Dr. Rohan Patel (Consultant Orthodontist (Invisalign Platinum))</option>
+                    
+                    <option value="3">Dr. Meera Nair (Periodontist &amp; Implantologist)</option>
+                    
+                    <option value="4">Dr. Vikram Rao (Oral &amp; Maxillofacial Surgeon)</option>
+                    
+                </select>
+            </div>
+
+            <div class="field" style="margin-bottom:16px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Medical Alert / Note (Optional)</label>
+                <input type="text" name="medical_alert" placeholder="e.g. ALLERGY: Penicillin, Diabetic, Hypertension" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="closeAddPatientModal()">Cancel</button>
+                <button type="submit" id="save-patient-btn" class="btn btn-primary" style="padding:10px 20px;">
+                    Save & Sync Patient →
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+            </section>
+        </main>
+    </div>
+    
+
+    <!-- Firebase & Client User Integration -->
+    <script>
+        window.FIREBASE_CONFIG = {"apiKey": "", "appId": "", "authDomain": "", "measurementId": "", "messagingSenderId": "", "projectId": "", "storageBucket": ""};
+        try {
+            var rawUser = localStorage.getItem("dentiflowUser");
+            if (rawUser) {
+                window.CURRENT_USER = JSON.parse(rawUser);
+            }
+        } catch(e) {}
+    </script>
+    <script src="./js/firebase_config.js"></script>
+    <script src="./js/app.js?v=20260912b"></script>
+    
+<script>
+function openAddPatientModal() {
+    const modal = document.getElementById('add-patient-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const nameInput = modal.querySelector('input[name="name"]');
+        if (nameInput) nameInput.focus();
+    }
+}
+
+function closeAddPatientModal() {
+    const modal = document.getElementById('add-patient-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('new-patient-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('save-patient-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving & Syncing...';
+        }
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/patients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                const patient = data.patient;
+                
+                // Real-time Cloud Firestore Sync
+                if (window.DentiFlowFirebase && window.DentiFlowFirebase.isReady) {
+                    await window.DentiFlowFirebase.syncPatient(patient);
+                }
+
+                window.toast(`✓ Patient ${patient.name} (${patient.patient_id}) saved & synced!`, 'success');
+                
+                // Add new row to table
+                const tbody = document.getElementById('patients-table-body');
+                if (tbody) {
+                    const initials = (patient.name || 'PT').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
+                    const newRow = document.createElement('tr');
+                    newRow.setAttribute('data-searchable', '');
+                    newRow.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                    newRow.innerHTML = `
+                        <td>
+                            <a class="patient" href="/patients/${patient.id}">
+                                <span class="avatar">${initials}</span>
+                                <b>${patient.name}</b>
+                            </a>
+                        </td>
+                        <td>${patient.patient_id}</td>
+                        <td>Just now</td>
+                        <td>${patient.primary_doctor_name || 'General Dentistry'}</td>
+                        <td><span class="pill green">Active</span></td>
+                    `;
+                    tbody.insertBefore(newRow, tbody.firstChild);
+                }
+
+                // Update count badge
+                const totalStat = document.getElementById('stat-total-count');
+                if (totalStat) {
+                    const currentCount = parseInt(totalStat.textContent || '0', 10);
+                    totalStat.textContent = currentCount + 1;
+                }
+
+                form.reset();
+                closeAddPatientModal();
+            } else {
+                alert(data.message || 'Failed to add patient.');
+            }
+        } catch (err) {
+            console.error('Error adding patient:', err);
+            alert('Network error saving patient. Please check server connection.');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save & Sync Patient →';
+            }
+        }
+    });
+});
+</script>
+
+</body>
+</html>

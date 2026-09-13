@@ -5,11 +5,13 @@ from models import (
     db, LabOrder, Equipment, ReferralDoctor, FeedbackNPS, Campaign,
     InsuranceClaim, Patient, Doctor, AuditLog
 )
+from security import admin_required, staff_required, log_audit_event
 
 operations_bp = Blueprint('operations', __name__)
 
 @operations_bp.route('/operations')
 @login_required
+@admin_required
 def index():
     lab_orders = LabOrder.query.order_by(LabOrder.id.desc()).all()
     equipments = Equipment.query.all()
@@ -34,7 +36,9 @@ def index():
 
 # 1. Dental Lab Orders Tracker
 @operations_bp.route('/api/lab-orders', methods=['GET', 'POST'])
+@operations_bp.route('/api/operations/lab-orders', methods=['GET', 'POST'])
 @login_required
+@staff_required
 def api_lab_orders():
     if request.method == 'POST':
         data = request.get_json()
@@ -59,15 +63,11 @@ def api_lab_orders():
         db.session.commit()
 
         # Log audit
-        log = AuditLog(
-            user_name=current_user.name,
-            user_role=current_user.role,
+        log_audit_event(
             action=f"Sent Lab Order {order.order_number} ({order.restoration_type}) to {order.lab_name}",
             module="Lab Operations",
-            ip_address=request.remote_addr or '127.0.0.1'
+            details=f"Order Number: {order.order_number}, Lab: {order.lab_name}, Cost: {order.cost}"
         )
-        db.session.add(log)
-        db.session.commit()
 
         return jsonify({'status': 'success', 'message': 'Lab order placed', 'order': order.to_dict()}), 201
 
@@ -76,17 +76,23 @@ def api_lab_orders():
 
 @operations_bp.route('/api/lab-orders/<int:order_id>/stage', methods=['POST'])
 @login_required
+@staff_required
 def update_lab_stage(order_id):
     order = LabOrder.query.get_or_404(order_id)
     data = request.get_json()
     new_stage = data.get('stage') # Prescription, Sent to Lab, In Production, Quality Check, Ready, Delivered
     order.stage = new_stage
     db.session.commit()
+    log_audit_event(
+        action=f"Updated Lab Order #{order.id} stage to '{new_stage}'",
+        module="Lab Operations"
+    )
     return jsonify({'status': 'success', 'message': f'Lab order stage updated to {new_stage}', 'order': order.to_dict()})
 
 # 2. Equipment Maintenance Log
 @operations_bp.route('/api/equipment/<int:equipment_id>/service', methods=['POST'])
 @login_required
+@admin_required
 def service_equipment(equipment_id):
     eq = Equipment.query.get_or_404(equipment_id)
     today = date.today()
@@ -96,21 +102,18 @@ def service_equipment(equipment_id):
     db.session.commit()
 
     # Log audit
-    log = AuditLog(
-        user_name=current_user.name,
-        user_role=current_user.role,
+    log_audit_event(
         action=f"Logged routine service for equipment '{eq.name}'",
         module="Equipment",
-        ip_address=request.remote_addr or '127.0.0.1'
+        details=f"Equipment: {eq.name}, Next Service Due: {eq.next_service_due}"
     )
-    db.session.add(log)
-    db.session.commit()
 
     return jsonify({'status': 'success', 'message': f'Service logged for {eq.name}', 'equipment': eq.to_dict()})
 
 # 3. Marketing Campaign Launcher Simulator
 @operations_bp.route('/api/campaigns/<int:campaign_id>/launch', methods=['POST'])
 @login_required
+@admin_required
 def launch_campaign(campaign_id):
     camp = Campaign.query.get_or_404(campaign_id)
     camp.status = 'Active'
@@ -120,15 +123,11 @@ def launch_campaign(campaign_id):
     db.session.commit()
 
     # Log audit
-    log = AuditLog(
-        user_name=current_user.name,
-        user_role=current_user.role,
+    log_audit_event(
         action=f"Launched Marketing Campaign '{camp.title}' via {camp.channels}",
         module="Marketing",
-        ip_address=request.remote_addr or '127.0.0.1'
+        details=f"Campaign ID: {camp.id}, Sent: {camp.sent_count}"
     )
-    db.session.add(log)
-    db.session.commit()
 
     return jsonify({
         'status': 'success',
