@@ -7,14 +7,14 @@
         <h1>Appointments</h1>
         <p class="muted">Coordinate every chair, clinician, and patient.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening appointment scheduler...', 'success')">+ Book appointment</button>
+    <button class="btn btn-primary" onclick="openBookAptModal()">+ Book appointment</button>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
         <div class="stat-icon"></div>
-        <strong>18</strong>
-        <small>todays visits</small>
+        <strong id="stat-apt-count">{{ appointments|length }}</strong>
+        <small>scheduled visits</small>
     </div>
     <div class="card stat">
         <div class="stat-icon teal"></div>
@@ -35,8 +35,8 @@
 
 <div class="card" style="margin-top:18px">
     <div class="section-title">
-        <h2>Wednesday - 27 May 2026</h2>
-        <button class="btn btn-ghost" onclick="window.toast('Calendar refreshed', 'success')">Refresh</button>
+        <h2>Today's Appointments</h2>
+        <button class="btn btn-ghost" onclick="location.reload()">Refresh</button>
     </div>
     <div class="table-wrap">
         <table class="table">
@@ -50,7 +50,7 @@
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="appointments-table-body">
                 {% for apt in appointments %}
                 <tr>
                     <td><b>{{ apt.start_time }}</b></td>
@@ -90,25 +90,187 @@
                     <td><span class="pill green">In progress</span></td>
                     <td><button class="btn btn-soft" onclick="window.toast('Patient marked complete', 'success')">Complete</button></td>
                 </tr>
-                <tr>
-                    <td><b>10:30</b></td>
-                    <td class="patient"><span class="avatar">VR</span>Vishal Rao</td>
-                    <td>Scaling follow-up</td>
-                    <td>Chair 02</td>
-                    <td><span class="pill orange">Checked in</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Patient called to chair', 'success')">Call patient</button></td>
-                </tr>
-                <tr>
-                    <td><b>12:00</b></td>
-                    <td class="patient"><span class="avatar">MI</span>Medha Iyer</td>
-                    <td>Pediatric consultation</td>
-                    <td>Chair 03</td>
-                    <td><span class="pill">Upcoming</span></td>
-                    <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Book Appointment Modal Backdrop -->
+<div id="book-apt-modal" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);position:relative;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <div>
+                <span class="eyebrow">NEW RESERVATION</span>
+                <h2 style="margin:0;font-size:20px;">Book Patient Appointment</h2>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="closeBookAptModal()" style="font-size:20px;line-height:1;padding:4px 10px;">✕</button>
+        </div>
+
+        <form id="new-appointment-form">
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Patient *</label>
+                <select name="patient_id" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                    {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.name }} ({{ p.patient_id }})</option>
+                    {% else %}
+                    <option value="1">Aravind Menon (DF-2026-001)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Doctor *</label>
+                    <select name="doctor_id" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        {% for doc in doctors %}
+                        <option value="{{ doc.id }}">{{ doc.name }} ({{ doc.specialty }})</option>
+                        {% else %}
+                        <option value="1">Dr. Ananya Sharma</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Operatory / Chair</label>
+                    <select name="chair_id" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        {% for c in chairs %}
+                        <option value="{{ c.id }}">{{ c.name or ('Chair 0' ~ c.id) }}</option>
+                        {% else %}
+                        <option value="1">Chair 01</option>
+                        <option value="2">Chair 02</option>
+                        <option value="3">Chair 03</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Procedure / Service *</label>
+                <select name="procedure_name" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                    <option value="General Dental Consultation">General Dental Consultation & Checkup</option>
+                    <option value="Scaling & Oral Prophylaxis">Scaling & Oral Prophylaxis</option>
+                    <option value="Root Canal Treatment">Root Canal Treatment (RCT)</option>
+                    <option value="Composite Dental Filling">Composite Dental Filling</option>
+                    <option value="Laser Teeth Whitening">Laser Teeth Whitening</option>
+                    <option value="Orthodontic Consultation">Orthodontic Consultation</option>
+                </select>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Date *</label>
+                    <input type="date" name="appointment_date" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Time Slot *</label>
+                    <select name="start_time" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        <option value="09:00 AM">09:00 AM</option>
+                        <option value="10:00 AM" selected>10:00 AM</option>
+                        <option value="11:30 AM">11:30 AM</option>
+                        <option value="02:00 PM">02:00 PM</option>
+                        <option value="03:30 PM">03:30 PM</option>
+                        <option value="05:00 PM">05:00 PM</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="closeBookAptModal()">Cancel</button>
+                <button type="submit" id="save-apt-btn" class="btn btn-primary" style="padding:10px 20px;">
+                    Confirm & Save Booking →
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openBookAptModal() {
+    const modal = document.getElementById('book-apt-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const dateInput = modal.querySelector('input[name="appointment_date"]');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+    }
+}
+
+function closeBookAptModal() {
+    const modal = document.getElementById('book-apt-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('new-appointment-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('save-apt-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving Booking...';
+        }
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                const apt = data.appointment;
+                
+                // Real-time Cloud Firestore Queue sync if checked-in or waiting
+                if (data.token && window.DentiFlowFirebase && window.DentiFlowFirebase.isReady) {
+                    await window.DentiFlowFirebase.syncQueueToken(data.token);
+                }
+
+                window.toast(`✓ Appointment ${apt.appointment_number} confirmed for ${apt.patient_name}!`, 'success');
+                
+                // Add row to appointments table
+                const tbody = document.getElementById('appointments-table-body');
+                if (tbody) {
+                    const initials = (apt.patient_name || 'PT').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
+                    const newRow = document.createElement('tr');
+                    newRow.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                    newRow.innerHTML = `
+                        <td><b>${apt.start_time}</b></td>
+                        <td class="patient">
+                            <span class="avatar">${initials}</span>
+                            <a href="/patients/${apt.patient_id}" style="color:inherit;font-weight:bold;">${apt.patient_name}</a>
+                        </td>
+                        <td>${apt.procedure_name}</td>
+                        <td>${apt.chair_name || 'Chair 01'}</td>
+                        <td><span class="pill green">${apt.status}</span></td>
+                        <td><button class="btn btn-soft" onclick="window.toast('Reminder sent', 'success')">Remind</button></td>
+                    `;
+                    tbody.insertBefore(newRow, tbody.firstChild);
+                }
+
+                form.reset();
+                closeBookAptModal();
+            } else {
+                alert(data.message || 'Failed to book appointment.');
+            }
+        } catch (err) {
+            console.error('Error booking appointment:', err);
+            alert('Network error booking appointment. Please check server connection.');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Confirm & Save Booking →';
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

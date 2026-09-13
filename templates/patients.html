@@ -7,14 +7,14 @@
         <h1>Patients</h1>
         <p class="muted">A clear clinical story for every person you care for.</p>
     </div>
-    <button class="btn btn-primary" onclick="window.toast('Opening patient registration...', 'success')">+ Add patient</button>
+    <button class="btn btn-primary" onclick="openAddPatientModal()">+ Add patient</button>
 </div>
 
 <div class="grid grid-4">
     <div class="card stat">
         <div class="stat-icon"></div>
-        <strong>1,284</strong>
-        <small>active patients</small>
+        <strong id="stat-total-count">{{ patients|length }}</strong>
+        <small>registered patients</small>
     </div>
     <div class="card stat">
         <div class="stat-icon teal"></div>
@@ -28,7 +28,7 @@
     </div>
     <div class="card stat">
         <div class="stat-icon purple"></div>
-        <strong>94%</strong>
+        <strong>98%</strong>
         <small>satisfaction</small>
     </div>
 </div>
@@ -36,7 +36,7 @@
 <div class="card" style="margin-top:18px">
     <div class="section-title">
         <h2>All patients</h2>
-        <span class="muted">Showing {{ patients|length }} records</span>
+        <span class="muted" id="patient-count-badge">Showing {{ patients|length }} records</span>
     </div>
     <div class="table-wrap">
         <table class="table">
@@ -49,7 +49,7 @@
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="patients-table-body">
                 {% for p in patients %}
                 <tr data-searchable>
                     <td>
@@ -60,7 +60,7 @@
                     </td>
                     <td>{{ p.patient_id }}</td>
                     <td>{{ p.last_visit.strftime('%d %b, %H:%M') if p.last_visit else 'Today, 09:00' }}</td>
-                    <td>{{ p.primary_doctor.specialty if p.primary_doctor else 'Tooth #16 - General' }}</td>
+                    <td>{{ p.primary_doctor.specialty if p.primary_doctor else 'General Dentistry' }}</td>
                     <td>
                         {% if p.outstanding_balance > 0 %}
                         <span class="pill orange">In care</span>
@@ -77,30 +77,185 @@
                     <td>Tooth #16 - RCT</td>
                     <td><span class="pill orange">In care</span></td>
                 </tr>
-                <tr data-searchable>
-                    <td class="patient"><span class="avatar">VR</span><b>Vishal Rao</b></td>
-                    <td>DF-2026-002</td>
-                    <td>May 18, 2026</td>
-                    <td>Scaling follow-up</td>
-                    <td><span class="pill green">Active</span></td>
-                </tr>
-                <tr data-searchable>
-                    <td class="patient"><span class="avatar">MI</span><b>Medha Iyer</b></td>
-                    <td>DF-2026-003</td>
-                    <td>May 04, 2026</td>
-                    <td>Pediatric review</td>
-                    <td><span class="pill green">Active</span></td>
-                </tr>
-                <tr data-searchable>
-                    <td class="patient"><span class="avatar">SK</span><b>Sameer Khan</b></td>
-                    <td>DF-2026-004</td>
-                    <td>Apr 27, 2026</td>
-                    <td>Cleaning</td>
-                    <td><span class="pill">Follow-up</span></td>
-                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- Add Patient Modal Backdrop -->
+<div id="add-patient-modal" class="modal-backdrop" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);position:relative;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <div>
+                <span class="eyebrow">NEW REGISTRATION</span>
+                <h2 style="margin:0;font-size:20px;">Add New Patient</h2>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="closeAddPatientModal()" style="font-size:20px;line-height:1;padding:4px 10px;">✕</button>
+        </div>
+
+        <form id="new-patient-form">
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Full Name *</label>
+                <input type="text" name="name" placeholder="e.g. Ashwini Goud" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Phone Number *</label>
+                    <input type="tel" name="phone" placeholder="+91 98765 43210" required style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Email Address</label>
+                    <input type="email" name="email" placeholder="patient@example.com" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Age</label>
+                    <input type="number" name="age" min="1" max="120" value="28" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Gender</label>
+                    <select name="gender" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        <option value="Male">Male</option>
+                        <option value="Female" selected>Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Blood Group</label>
+                    <select name="blood_group" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                        <option value="A+">A+</option>
+                        <option value="B+" selected>B+</option>
+                        <option value="O+">O+</option>
+                        <option value="AB+">AB+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="field" style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Primary Doctor</label>
+                <select name="primary_doctor_id" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                    {% for doc in doctors %}
+                    <option value="{{ doc.id }}">{{ doc.name }} ({{ doc.specialty }})</option>
+                    {% else %}
+                    <option value="1">Dr. Ananya Sharma (Chief Endodontist)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field" style="margin-bottom:16px;">
+                <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text-muted);">Medical Alert / Note (Optional)</label>
+                <input type="text" name="medical_alert" placeholder="e.g. ALLERGY: Penicillin, Diabetic, Hypertension" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="btn btn-ghost" onclick="closeAddPatientModal()">Cancel</button>
+                <button type="submit" id="save-patient-btn" class="btn btn-primary" style="padding:10px 20px;">
+                    Save & Sync Patient →
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openAddPatientModal() {
+    const modal = document.getElementById('add-patient-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        const nameInput = modal.querySelector('input[name="name"]');
+        if (nameInput) nameInput.focus();
+    }
+}
+
+function closeAddPatientModal() {
+    const modal = document.getElementById('add-patient-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('new-patient-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('save-patient-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving & Syncing...';
+        }
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+
+        try {
+            const res = await fetch('/api/patients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.status === 'success') {
+                const patient = data.patient;
+                
+                // Real-time Cloud Firestore Sync
+                if (window.DentiFlowFirebase && window.DentiFlowFirebase.isReady) {
+                    await window.DentiFlowFirebase.syncPatient(patient);
+                }
+
+                window.toast(`✓ Patient ${patient.name} (${patient.patient_id}) saved & synced!`, 'success');
+                
+                // Add new row to table
+                const tbody = document.getElementById('patients-table-body');
+                if (tbody) {
+                    const initials = (patient.name || 'PT').split(' ').map(x => x[0]).slice(0, 2).join('').toUpperCase();
+                    const newRow = document.createElement('tr');
+                    newRow.setAttribute('data-searchable', '');
+                    newRow.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+                    newRow.innerHTML = `
+                        <td>
+                            <a class="patient" href="/patients/${patient.id}">
+                                <span class="avatar">${initials}</span>
+                                <b>${patient.name}</b>
+                            </a>
+                        </td>
+                        <td>${patient.patient_id}</td>
+                        <td>Just now</td>
+                        <td>${patient.primary_doctor_name || 'General Dentistry'}</td>
+                        <td><span class="pill green">Active</span></td>
+                    `;
+                    tbody.insertBefore(newRow, tbody.firstChild);
+                }
+
+                // Update count badge
+                const totalStat = document.getElementById('stat-total-count');
+                if (totalStat) {
+                    const currentCount = parseInt(totalStat.textContent || '0', 10);
+                    totalStat.textContent = currentCount + 1;
+                }
+
+                form.reset();
+                closeAddPatientModal();
+            } else {
+                alert(data.message || 'Failed to add patient.');
+            }
+        } catch (err) {
+            console.error('Error adding patient:', err);
+            alert('Network error saving patient. Please check server connection.');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save & Sync Patient →';
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

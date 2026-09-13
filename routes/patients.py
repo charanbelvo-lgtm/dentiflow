@@ -6,6 +6,7 @@ from models import (
     Appointment, ToothFinding, PeriodontalRecord, Prescription,
     TreatmentPlan, Invoice, XRayImage, ClinicalNote, Doctor, AuditLog
 )
+from firebase_service import sync_patient_to_firestore
 
 patients_bp = Blueprint('patients', __name__)
 
@@ -31,9 +32,13 @@ def api_patients():
     if request.method == 'POST':
         data = request.get_json() or request.form
         
-        # Generate patient ID
-        count = Patient.query.count() + 1
-        new_patient_id = f"DF-2026-{str(count).zfill(3)}"
+        # Generate unique patient ID
+        last_pt = Patient.query.order_by(Patient.id.desc()).first()
+        next_pt_num = (last_pt.id + 1) if last_pt else 1
+        new_patient_id = f"DF-2026-{str(next_pt_num).zfill(3)}"
+        while Patient.query.filter_by(patient_id=new_patient_id).first():
+            next_pt_num += 1
+            new_patient_id = f"DF-2026-{str(next_pt_num).zfill(3)}"
         
         patient = Patient(
             patient_id=new_patient_id,
@@ -79,7 +84,10 @@ def api_patients():
         db.session.add(log)
         db.session.commit()
 
-        return jsonify({'status': 'success', 'message': 'Patient added successfully', 'patient': patient.to_dict()}), 201
+        patient_dict = patient.to_dict()
+        sync_patient_to_firestore(patient_dict)
+
+        return jsonify({'status': 'success', 'message': 'Patient added successfully', 'patient': patient_dict}), 201
 
     # GET with search, filter, sort
     query = Patient.query

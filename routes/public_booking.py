@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, jsonify
 from models import db, Appointment, Patient, Doctor, TreatmentMaster, QueueToken, Branch
+from firebase_service import sync_patient_to_firestore
 
 public_bp = Blueprint('public', __name__)
 
@@ -31,8 +32,13 @@ def public_book():
     # Find or create patient
     patient = Patient.query.filter_by(phone=phone).first()
     if not patient:
-        count = Patient.query.count() + 1
-        patient_id_code = f"DF-2026-{str(count).zfill(3)}"
+        last_pt = Patient.query.order_by(Patient.id.desc()).first()
+        next_pt_num = (last_pt.id + 1) if last_pt else 1
+        patient_id_code = f"DF-2026-{str(next_pt_num).zfill(3)}"
+        while Patient.query.filter_by(patient_id=patient_id_code).first():
+            next_pt_num += 1
+            patient_id_code = f"DF-2026-{str(next_pt_num).zfill(3)}"
+
         patient = Patient(
             patient_id=patient_id_code,
             name=name,
@@ -47,11 +53,17 @@ def public_book():
         db.session.commit()
 
     # Create Appointment
-    apt_count = Appointment.query.count() + 1080
+    last_apt = Appointment.query.order_by(Appointment.id.desc()).first()
+    next_apt_num = (last_apt.id + 1081) if last_apt else 1081
+    apt_no_str = f"APT-{next_apt_num}"
+    while Appointment.query.filter_by(appointment_number=apt_no_str).first():
+        next_apt_num += 1
+        apt_no_str = f"APT-{next_apt_num}"
+
     apt_date = datetime.strptime(apt_date_str, '%Y-%m-%d').date() if apt_date_str else date.today()
 
     appointment = Appointment(
-        appointment_number=f"APT-{apt_count}",
+        appointment_number=apt_no_str,
         patient_id=patient.id,
         doctor_id=doctor_id,
         chair_id=1,
@@ -67,6 +79,9 @@ def public_book():
     )
     db.session.add(appointment)
     db.session.commit()
+
+    # Sync patient to Firestore
+    sync_patient_to_firestore(patient.to_dict())
 
     return jsonify({
         'status': 'success',

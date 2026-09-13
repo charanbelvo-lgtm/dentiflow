@@ -128,6 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await res.json();
             if (result.status === 'success') {
+                if (window.DentiFlowFirebase && window.DentiFlowFirebase.isReady) {
+                    await window.DentiFlowFirebase.syncPatient({
+                        name: data.name,
+                        phone: data.phone,
+                        email: data.email,
+                        age: data.age,
+                        gender: data.gender,
+                        primary_doctor_name: result.doctor_name || 'Dr. Sharma'
+                    });
+                }
                 form.style.display = 'none';
                 const conf = document.getElementById('booking-confirmation');
                 const msg = document.getElementById('booking-msg');

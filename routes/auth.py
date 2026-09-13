@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from models import db, User, AuditLog, Doctor, Patient
+from firebase_service import sync_user_to_firestore, sync_patient_to_firestore
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -60,6 +61,11 @@ def register():
             db.session.add(patient)
 
         db.session.commit()
+
+        # Cloud Firestore Sync
+        sync_user_to_firestore(user.to_dict())
+        if patient:
+            sync_patient_to_firestore(patient.to_dict())
 
         if request.is_json:
             return jsonify({'status': 'success', 'redirect': url_for('auth.login')}), 201

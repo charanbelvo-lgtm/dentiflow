@@ -5,6 +5,7 @@ from models import (
     db, Invoice, InvoiceItem, Payment, EMIPlan, PaymentInstallment,
     Patient, Doctor, Branch, AuditLog
 )
+from firebase_service import sync_invoice_to_firestore
 
 billing_bp = Blueprint('billing', __name__)
 
@@ -21,8 +22,12 @@ def index():
 def api_invoices():
     if request.method == 'POST':
         data = request.get_json()
-        count = Invoice.query.count() + 1032
-        inv_no = f"INV-2026-{count}"
+        last_inv = Invoice.query.order_by(Invoice.id.desc()).first()
+        next_inv_num = (last_inv.id + 1033) if last_inv else 1033
+        inv_no = f"INV-2026-{next_inv_num}"
+        while Invoice.query.filter_by(invoice_number=inv_no).first():
+            next_inv_num += 1
+            inv_no = f"INV-2026-{next_inv_num}"
 
         subtotal = float(data.get('subtotal', 0.0))
         discount_amount = float(data.get('discount_amount', 0.0))
@@ -90,7 +95,10 @@ def api_invoices():
         db.session.add(log)
         db.session.commit()
 
-        return jsonify({'status': 'success', 'message': 'Invoice created successfully', 'invoice': invoice.to_dict()}), 201
+        inv_dict = invoice.to_dict()
+        sync_invoice_to_firestore(inv_dict)
+
+        return jsonify({'status': 'success', 'message': 'Invoice created successfully', 'invoice': inv_dict}), 201
 
     patient_id = request.args.get('patient_id')
     query = Invoice.query
@@ -116,8 +124,12 @@ def record_payment():
     payment_method = data.get('payment_method', 'UPI')
     txn_id = data.get('transaction_id') or f"TXN-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
-    count = Payment.query.count() + 906
-    rcp_no = f"RCP-2026-{count}"
+    last_pmt = Payment.query.order_by(Payment.id.desc()).first()
+    next_rcp_num = (last_pmt.id + 907) if last_pmt else 907
+    rcp_no = f"RCP-2026-{next_rcp_num}"
+    while Payment.query.filter_by(receipt_number=rcp_no).first():
+        next_rcp_num += 1
+        rcp_no = f"RCP-2026-{next_rcp_num}"
 
     payment = Payment(
         receipt_number=rcp_no,
@@ -167,11 +179,14 @@ def record_payment():
     db.session.add(log)
     db.session.commit()
 
+    inv_dict = invoice.to_dict()
+    sync_invoice_to_firestore(inv_dict)
+
     return jsonify({
         'status': 'success',
         'message': f'Payment of ₹{amount:,.0f} recorded successfully',
         'payment': payment.to_dict(),
-        'invoice': invoice.to_dict()
+        'invoice': inv_dict
     })
 
 # Printable view for Invoice

@@ -2,6 +2,7 @@ from datetime import datetime, date, timedelta
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, current_user
 from models import db, Appointment, Patient, Doctor, Chair, QueueToken, AuditLog
+from firebase_service import sync_appointment_to_firestore, sync_queue_token_to_firestore
 
 appointments_bp = Blueprint('appointments', __name__)
 
@@ -19,9 +20,13 @@ def api_appointments():
     if request.method == 'POST':
         data = request.get_json() or request.form
         
-        # Calculate appointment number
-        count = Appointment.query.count() + 1080
-        apt_no = f"APT-{count}"
+        # Calculate unique appointment number
+        last_apt = Appointment.query.order_by(Appointment.id.desc()).first()
+        next_num = (last_apt.id + 1081) if last_apt else 1081
+        apt_no = f"APT-{next_num}"
+        while Appointment.query.filter_by(appointment_number=apt_no).first():
+            next_num += 1
+            apt_no = f"APT-{next_num}"
         
         # Parse date
         apt_date_str = data.get('appointment_date')
@@ -51,12 +56,19 @@ def api_appointments():
         db.session.commit()
 
         # If status is Waiting or today's appointment with immediate check-in, create queue token
+        token = None
         if appointment.status == 'Waiting' or data.get('auto_checkin'):
-            token_count = QueueToken.query.count() + 14
+            last_tok = QueueToken.query.order_by(QueueToken.id.desc()).first()
+            next_tok_num = (last_tok.id + 1) if last_tok else 1
+            tok_num_str = f"Token #{str(next_tok_num).zfill(3)}"
+            while QueueToken.query.filter_by(token_number=tok_num_str).first():
+                next_tok_num += 1
+                tok_num_str = f"Token #{str(next_tok_num).zfill(3)}"
+
             token = QueueToken(
                 appointment_id=appointment.id,
                 patient_id=appointment.patient_id,
-                token_number=f"Token #{str(token_count).zfill(3)}",
+                token_number=tok_num_str,
                 doctor_id=appointment.doctor_id,
                 chair_id=appointment.chair_id,
                 procedure_name=appointment.procedure_name,
@@ -79,7 +91,12 @@ def api_appointments():
         db.session.add(log)
         db.session.commit()
 
-        return jsonify({'status': 'success', 'message': 'Appointment scheduled successfully', 'appointment': appointment.to_dict()}), 201
+        apt_dict = appointment.to_dict()
+        sync_appointment_to_firestore(apt_dict)
+        if token:
+            sync_queue_token_to_firestore(token.to_dict())
+
+        return jsonify({'status': 'success', 'message': 'Appointment scheduled successfully', 'appointment': apt_dict, 'token': token.to_dict() if token else None}), 201
 
     # GET filter appointments
     query = Appointment.query
